@@ -3,8 +3,16 @@
 import { useEffect, useState, useRef } from "react";
 import { Message } from "@/types";
 
+interface SocketClient {
+  socket: WebSocket | null;
+  messages: Message[];
+  handleSend: (message: Message) => void;
+  loading: boolean;
+}
+
 export const useSocket = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [loading, setLoading] = useState(true);
   const hasConnected = useRef(false);
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -17,10 +25,12 @@ export const useSocket = () => {
     setSocket(ws);
 
     ws.onopen = (e) => {
+      setLoading(false);
       console.log("Connected to server", e);
     };
 
     ws.onmessage = (message) => {
+      setLoading(false);
       console.log(message.data);
       setMessages((prev) => [...prev, JSON.parse(message.data)]);
     };
@@ -43,9 +53,10 @@ export const useSocket = () => {
   }, []);
 
   const handleSend = (message: Message) => {
+    setLoading(true);
     setMessages((prev) => [...prev, message]);
     socket?.send(JSON.stringify(message));
   };
 
-  return { socket, messages, handleSend };
+  return { socket, messages, handleSend, loading } as SocketClient;
 };

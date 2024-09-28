@@ -7,16 +7,18 @@ import { Message } from "@/types";
 
 export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
-  const { handleSend } = useContext(GlobalContext);
+  const {
+    client: { handleSend },
+  } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleMessage = () => {
+    if (!messageText) return;
     const message: Message = {
       text: messageText,
       timestamp: new Date(),
       sender: "user",
     };
-
     handleSend(message);
     setMessageText("");
   };
@@ -30,6 +32,12 @@ export const ChatInput = () => {
       <Textarea
         placeholder="Find, watch, buy."
         className="w-full"
+        color="info"
+        theme={{
+          colors: {
+            info: "border-green-100 focus:border-green-400 focus:ring-green-400",
+          },
+        }}
         rows={1}
         ref={inputRef}
         onChange={(e) => setMessageText(e.target.value)}
