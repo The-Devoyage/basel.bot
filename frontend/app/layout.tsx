@@ -12,8 +12,8 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Flick Cart",
-  description: "Find, flick, buy.",
+  title: "Basel's",
+  description: "Basel's here to help you find and watch products and services.",
 };
 
 export default function RootLayout({
