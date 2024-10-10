@@ -10,8 +10,10 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from controllers.product import create_product, get_products
 from pydantic import BaseModel 
-from typing import Literal
+from typing import Literal, Optional, List
 from datetime import datetime
+
+from controllers.match import match_function_call
 
 # Load the environment variables
 load_dotenv()
@@ -25,28 +27,27 @@ google_api_key = os.getenv('GOOGLE_API_KEY')
 genai.configure(api_key=google_api_key)
 model = genai.GenerativeModel(model_name="gemini-1.5-flash", tools=[get_products, create_product])
 
-class Message(BaseModel):
-    text: str
-    timestamp: datetime
-    sender: Literal["user", "bot"]
-
 class Product(BaseModel):
+    product_id: int
     name: str
     description: str
     url: str
     thumbnail_url: str
     status: bool
 
+class Message(BaseModel):
+    text: str
+    timestamp: datetime
+    sender: Literal["user", "bot"]
+    products: Optional[List[Product]]
+
 # Define a handler for incoming connections
 async def chat(websocket):
-    chat = model.start_chat(enable_automatic_function_calling=True)
+    chat = model.start_chat()
     response = chat.send_message("""
                                  A new user has connected to the AI Marketplace that you manage called Basel's.
+
                                  You are Basel!
-                                 Allow the user to browse, create, and buy products and services that
-                                 other users have posted. You can also help the user with any questions
-                                 about the products and services. Users have the role of both the browser
-                                 and the affiliate that posts the links.
 
                                  Personality:
                                  - Friendly
@@ -56,22 +57,33 @@ async def chat(websocket):
                                  - Inspirational
                                  - Generation Alpha (do not lay it on too thick, but be aware of the generation)
 
-                                 You can help users to find products or post products.
+                                 Help users with the following:
 
-                                 - Create products: Users can ask you to create a product for them. You can ask them
-                                    for the URL. To create a product, call the create_product tool. You only need the url
-                                    to do so, nothing more. Creating a product is the same as "Adding" or "Posting" a product.
-                                 - Find products: By default, you help users find products. If they are not adding or creating products,
-                                 you should generate and use keywords to search for products in the database using the get_products function. 
-                                 When choosing keywords, consider variations of the words, synonyms, and related words. Always use at least 10 keywords.
-                                 Always return a description, image, and a link to the product. You can also return the price and other details if you have them.
+                                 Creating or Adding Products to the Database:
+                                 - Users can ask you to create a product for them. You can ask them for the URL. 
+                                 - To create a product, call the create_product tool. 
+                                 - The only requirement to add a product is the URL. 
 
-                                 If the user tries to do anything other than create or find products, you can respond with
+                                 Searching or Finding products: 
+                                 - Your primary job is to search for products and return them to the user.
+                                 - When a user asks you to find a product, then you should generate and use keywords to 
+                                 search for products in the database using the get_products function. 
+                                 - When choosing keywords, consider variations of the words, synonyms, and related words. 
+                                 - Always use at least 10 keywords. 
+                                 - When dealing with results of products in groups, only give a short summerization of the group. 
+                                 - You don't need to describe each product in detail because the API returns the detailed description 
+                                 outside the context of your conversation.
+
+                                 Rules:
+                                 - If the user tries to do anything other than create or find products, you can respond with
                                  a friendly message that you are here to help them with products and services.
 
-                                 Greet the user and ask them how you can help them today.
+                                 Initial Instruction:
+                                 - Greet the user.
+                                 - Start by asking them what product they would like to find.
+                                 - They might respond with a product description or search query, if they do, simply search for products.
                                  """)
-    response = Message(text=response.text, timestamp=datetime.now(), sender="bot")
+    response = Message(text=response.text, timestamp=datetime.now(), sender="bot", products=[])
     await websocket.send(response.json())
 
     async for raw in websocket:
@@ -83,15 +95,48 @@ async def chat(websocket):
 
             logger.info(f"Response: {response}")
 
-            if not response.text:
-                response = Message(text="Sorry, I don't understand that.. or something went wrong. Please try again.", timestamp=datetime.now(), sender="bot")
-                await websocket.send(response.json())
+            if len(response.parts) > 1:
+                logger.info(f"Response parts: {len(response.parts)}")
+
+                responses = {}
+
+                for part in response.parts:
+                    if fn := part.function_call:
+                        result = match_function_call(fn)
+                        if result:
+                            responses[fn.name] = result
+
+                logger.info(f"Responses: {responses}")
+
+
+                if responses:
+                    response_parts = [
+                        genai.protos.Part(function_response=genai.protos.FunctionResponse(name=fn, response={"result": val}))
+                        for fn, val in responses.items()
+                    ]
+
+                    response = chat.send_message(response_parts)
+
+                    if response.text:
+                        response = Message(text=response.text, timestamp=datetime.now(), sender="bot", products=responses.get("get_products", []))
+                        await websocket.send(response.json())
+                    else:
+                        response = Message(text="Sorry, I don't understand that.. or something went wrong. Please try again.", timestamp=datetime.now(), sender="bot", products=[])
+                        await websocket.send(response.json())
+                else:
+                    response = Message(text="Hmm.. I was not able to complete this. Please try again.", timestamp=datetime.now(), sender="bot", products=[])
+                    await websocket.send(response.json())
             else:
-                response = Message(text=response.text, timestamp=datetime.now(), sender="bot")
-                await websocket.send(response.json())
+                if not response.text:
+                    response = Message(text="Sorry, I don't understand that.. or something went wrong. Please try again.", timestamp=datetime.now(), sender="bot", products=[])
+                    await websocket.send(response.json())
+                else:
+                    response = Message(text=response.text, timestamp=datetime.now(), sender="bot", products=[])
+                    await websocket.send(response.json())
         except Exception as e:
             logger.error(e)
-            await websocket.send("Heyyyy... I am having some trouble with that. Let's try again.")
+            response = Message(text="Sorry, I am having some trouble with that. Let's try again.", timestamp=datetime.now(), sender="bot", products=[])
+            await websocket.send(response.json())
 
 # Start the WebSocket server
 async def start_server():

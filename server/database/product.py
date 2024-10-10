@@ -17,11 +17,14 @@ def select_products(descriptions: list[str], categories: list[str]):
     logger.debug(f"Categories: {categories}")
 
     conn = sqlite3.connect('flickcart.db')
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     try:
         # description_clauses = " OR ".join(["description MATCH ?"] * len(descriptions))
         description_clauses = " OR ".join(descriptions)
+        description_clauses = " OR ".join([f"description:\"{desc}\" OR name:\"{desc}\"" for desc in descriptions])
+
         # category_clauses = " OR ".join(["c.name = ?"] * len(categories))
 
         logger.debug(f"Description Clauses: {description_clauses}")
@@ -31,15 +34,25 @@ def select_products(descriptions: list[str], categories: list[str]):
                         SELECT * 
                         FROM product p
                         JOIN product_meta pm ON p.rowid = pm.product_id 
-                        WHERE p.description MATCH ?
+                        WHERE product MATCH ?
                         AND pm.status = 1
                         LIMIT 20
                         """, (description_clauses, ))
-        products = cursor.fetchall()
+        rows = cursor.fetchall()
 
-        logger.debug(f"Products: {products}")
+        logger.debug(f"Rows: {rows}")
+
+        products = []
+
+        for row in rows:
+            row_dict = dict(row)
+            logger.debug(f"Product: {row_dict}")
+            products.append(row_dict)
+
+        logger.debug(f"Products: {rows}")
 
         conn.close()
+
         return products
     except Exception as e:
         conn.close()
@@ -68,8 +81,8 @@ def insert_product(name: str, url: str, thumbnail_url: str, description: str, ca
         product_id = cursor.lastrowid
 
         cursor.execute("""
-                       INSERT INTO product_meta(product_id, url, thumbnail_url)
-                       VALUES (?, ?, ?)
+                       INSERT INTO product_meta(product_id, url, thumbnail_url, status)
+                       VALUES (?, ?, ?, 1)
                        """, (product_id, url, thumbnail_url))
 
         for category_id in category_ids:
