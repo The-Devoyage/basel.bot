@@ -12,7 +12,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Basel's",
+  title: "Basels",
   description: "Basel's here to help you find and watch products and services.",
 };
 

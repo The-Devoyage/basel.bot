@@ -1,4 +1,4 @@
-import { Product } from "../product";
+import { Posting } from "../product";
 
 export interface Message {
   text: string;

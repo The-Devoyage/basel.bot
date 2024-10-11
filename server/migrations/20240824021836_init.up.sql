@@ -9,6 +9,7 @@
 -- Create Table user 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
@@ -31,6 +32,7 @@ CREATE TABLE user (
 );
 CREATE TABLE user_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   user_id INTEGER NOT NULL,
   email TEXT NOT NULL,
   first_name TEXT NOT NULL,
@@ -53,16 +55,23 @@ CREATE TABLE user_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_user_history_trigger
+AFTER INSERT ON user
+BEGIN
+  INSERT INTO user_history (user_id, uuid, email, first_name, last_name, phone, role_id, status, image, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.email, NEW.first_name, NEW.last_name, NEW.phone, NEW.role_id, NEW.status, NEW.image, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER user_history_trigger
 AFTER UPDATE ON user
 BEGIN
-  INSERT INTO user_history (user_id, email, first_name, last_name, phone, role_id, status, image, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.email, NEW.first_name, NEW.last_name, NEW.phone, NEW.role_id, NEW.status, NEW.image, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO user_history (user_id, uuid, email, first_name, last_name, phone, role_id, status, image, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.email, NEW.first_name, NEW.last_name, NEW.phone, NEW.role_id, NEW.status, NEW.image, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 -- Create Table user_profile
 CREATE TABLE user_profile (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   user_id INTEGER NOT NULL,
   title TEXT,
   summary TEXT,
@@ -84,6 +93,7 @@ CREATE TABLE user_profile (
 );
 CREATE TABLE user_profile_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   user_profile_id INTEGER NOT NULL,
   user_id INTEGER NOT NULL,
   title TEXT,
@@ -105,16 +115,23 @@ CREATE TABLE user_profile_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_user_profile_history_trigger
+AFTER INSERT ON user_profile
+BEGIN
+  INSERT INTO user_profile_history (user_profile_id, uuid, user_id, title, summary, location, website, github, linkedin, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.user_id, NEW.title, NEW.summary, NEW.location, NEW.website, NEW.github, NEW.linkedin, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER user_profile_history_trigger
 AFTER UPDATE ON user_profile
 BEGIN
-  INSERT INTO user_profile_history (user_profile_id, user_id, title, summary, location, website, github, linkedin, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.user_id, NEW.title, NEW.summary, NEW.location, NEW.website, NEW.github, NEW.linkedin, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO user_profile_history (user_profile_id, uuid, user_id, title, summary, location, website, github, linkedin, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.user_id, NEW.title, NEW.summary, NEW.location, NEW.website, NEW.github, NEW.linkedin, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 -- Create Table User Education
 CREATE TABLE user_profile_education (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   user_profile_id INTEGER NOT NULL,
   school TEXT NOT NULL,
   degree TEXT NOT NULL,
@@ -136,6 +153,7 @@ CREATE TABLE user_profile_education (
 );
 CREATE TABLE user_profile_education_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   user_profile_education_id INTEGER NOT NULL,
   user_profile_id INTEGER NOT NULL,
   school TEXT NOT NULL,
@@ -157,16 +175,23 @@ CREATE TABLE user_profile_education_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_user_profile_education_history_trigger
+AFTER INSERT ON user_profile_education
+BEGIN
+  INSERT INTO user_profile_education_history (user_profile_education_id, uuid, user_profile_id, school, degree, field_of_study, start_date, end_date, description, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.user_profile_id, NEW.school, NEW.degree, NEW.field_of_study, NEW.start_date, NEW.end_date, NEW.description, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER user_profile_education_history_trigger
 AFTER UPDATE ON user_profile_education
 BEGIN
-  INSERT INTO user_profile_education_history (user_profile_education_id, user_profile_id, school, degree, field_of_study, start_date, end_date, description, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.user_profile_id, NEW.school, NEW.degree, NEW.field_of_study, NEW.start_date, NEW.end_date, NEW.description, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO user_profile_education_history (user_profile_education_id, uuid, user_profile_id, school, degree, field_of_study, start_date, end_date, description, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.user_profile_id, NEW.school, NEW.degree, NEW.field_of_study, NEW.start_date, NEW.end_date, NEW.description, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 -- Create Table organization
 CREATE TABLE organization (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   description TEXT,
   image INTEGER,
@@ -185,6 +210,7 @@ CREATE TABLE organization (
 );
 CREATE TABLE organization_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   organization_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   description TEXT,
@@ -203,16 +229,23 @@ CREATE TABLE organization_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_organization_history_trigger
+AFTER INSERT ON organization
+BEGIN
+  INSERT INTO organization_history (organization_id, uuid, name, description, image, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.name, NEW.description, NEW.image, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER organization_history_trigger
 AFTER UPDATE ON organization
 BEGIN
-  INSERT INTO organization_history (organization_id, name, description, image, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.name, NEW.description, NEW.image, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO organization_history (organization_id, uuid, name, description, image, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.name, NEW.description, NEW.image, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 -- Create Table organization_user
 CREATE TABLE organization_user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   organization_id INTEGER NOT NULL,
   user_id INTEGER NOT NULL,
   edit_posting BOOLEAN NOT NULL DEFAULT 0,
@@ -235,6 +268,7 @@ CREATE TABLE organization_user (
 );
 CREATE TABLE organization_user_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   organization_user_id INTEGER NOT NULL,
   organization_id INTEGER NOT NULL,
   user_id INTEGER NOT NULL,
@@ -257,16 +291,23 @@ CREATE TABLE organization_user_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_organization_user_history_trigger
+AFTER INSERT ON organization_user
+BEGIN
+  INSERT INTO organization_user_history (organization_user_id, uuid, organization_id, user_id, edit_posting, delete_posting, create_posting, manage_application, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.organization_id, NEW.uuid, NEW.user_id, NEW.edit_posting, NEW.delete_posting, NEW.create_posting, NEW.manage_application, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER organization_user_history_trigger
 AFTER UPDATE ON organization_user
 BEGIN
-  INSERT INTO organization_user_history (organization_user_id, organization_id, user_id, edit_posting, delete_posting, create_posting, manage_application, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.organization_id, NEW.user_id, NEW.edit_posting, NEW.delete_posting, NEW.create_posting, NEW.manage_application, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO organization_user_history (organization_user_id, uuid, organization_id, user_id, edit_posting, delete_posting, create_posting, manage_application, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.organization_id, NEW.uuid, NEW.user_id, NEW.edit_posting, NEW.delete_posting, NEW.create_posting, NEW.manage_application, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 -- Create Table posting
 CREATE TABLE posting (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   organization_id INTEGER NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
@@ -285,6 +326,7 @@ CREATE TABLE posting (
 );
 CREATE TABLE posting_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   posting_id INTEGER NOT NULL,
   organization_id INTEGER NOT NULL,
   title TEXT NOT NULL,
@@ -303,16 +345,23 @@ CREATE TABLE posting_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_posting_history_trigger
+AFTER INSERT ON posting
+BEGIN
+  INSERT INTO posting_history (posting_id, uuid, organization_id, title, description, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.organization_id, NEW.title, NEW.description, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER posting_history_trigger
 AFTER UPDATE ON posting
 BEGIN
-  INSERT INTO posting_history (posting_id, organization_id, title, description, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.organization_id, NEW.title, NEW.description, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO posting_history (posting_id, uuid, organization_id, title, description, status, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.organization_id, NEW.title, NEW.description, NEW.status, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 -- Create Table application
 CREATE TABLE application (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   posting_id INTEGER NOT NULL,
   user_profile_id INTEGER NOT NULL,
   status_id INTEGER NOT NULL,
@@ -332,6 +381,7 @@ CREATE TABLE application (
 );
 CREATE TABLE application_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   application_id INTEGER NOT NULL,
   posting_id INTEGER NOT NULL,
   user_profile_id INTEGER NOT NULL,
@@ -351,16 +401,23 @@ CREATE TABLE application_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_application_history_trigger
+AFTER INSERT ON application
+BEGIN
+  INSERT INTO application_history (application_id, uuid, posting_id, user_profile_id, status_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.posting_id, NEW.user_profile_id, NEW.status_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER application_history_trigger
 AFTER UPDATE ON application
 BEGIN
-  INSERT INTO application_history (application_id, posting_id, user_profile_id, status_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.posting_id, NEW.user_profile_id, NEW.status_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO application_history (application_id, uuid, posting_id, user_profile_id, status_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.posting_id, NEW.user_profile_id, NEW.status_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END; 
 
 -- Create Table message
 CREATE TABLE message (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   user_id INTEGER NOT NULL,
   sender TEXT NOT NULL CHECK (sender IN ('user', 'bot')),
   text TEXT NOT NULL,
@@ -378,6 +435,7 @@ CREATE TABLE message (
 );
 CREATE TABLE message_history(
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   message_id INTEGER NOT NULL,
   user_id INTEGER NOT NULL,
   sender TEXT NOT NULL CHECK (sender IN ('user', 'bot')),
@@ -395,15 +453,22 @@ CREATE TABLE message_history(
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_message_history_trigger
+AFTER INSERT ON message
+BEGIN
+  INSERT INTO message_history (message_id, uuid, user_id, sender, text, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.user_id, NEW.sender, NEW.text, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER message_history_trigger
 AFTER UPDATE ON message
 BEGIN
-  INSERT INTO message_history (message_id, user_id, sender, text, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.user_id, NEW.sender, NEW.text, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO message_history (message_id, uuid, user_id, sender, text, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.user_id, NEW.sender, NEW.text, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 CREATE TABLE image (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
   created_by INTEGER NOT NULL,
@@ -419,6 +484,7 @@ CREATE TABLE image (
 );
 CREATE TABLE image_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   image_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
@@ -434,17 +500,24 @@ CREATE TABLE image_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_image_history_trigger
+AFTER INSERT ON image
+BEGIN
+  INSERT INTO image_history (image_id, uuid, name, url, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.name, NEW.url, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER image_history_trigger
 AFTER UPDATE ON image
 BEGIN
-  INSERT INTO image_history (image_id, name, url, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.name, NEW.url, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO image_history (image_id, uuid, name, url, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.name, NEW.url, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 
 -- Create table posting_skill
 CREATE TABLE posting_skill (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   posting_id INTEGER NOT NULL,
   skill_id INTEGER NOT NULL,
   created_by INTEGER NOT NULL,
@@ -462,6 +535,7 @@ CREATE TABLE posting_skill (
 );
 CREATE TABLE posting_skill_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   posting_skill_id INTEGER NOT NULL,
   posting_id INTEGER NOT NULL,
   skill_id INTEGER NOT NULL,
@@ -478,16 +552,23 @@ CREATE TABLE posting_skill_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_posting_skill_history_trigger
+AFTER INSERT ON posting_skill
+BEGIN
+  INSERT INTO posting_skill_history (posting_skill_id, uuid, posting_id, skill_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.posting_id, NEW.skill_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER posting_skill_history_trigger
 AFTER UPDATE ON posting_skill
 BEGIN
-  INSERT INTO posting_skill_history (posting_skill_id, posting_id, skill_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.posting_id, NEW.skill_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO posting_skill_history (posting_skill_id, uuid, posting_id, skill_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.posting_id, NEW.skill_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END; 
 
 -- Create table user_profile_skill
 CREATE TABLE user_profile_skill (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   user_profile_id INTEGER NOT NULL,
   skill_id INTEGER NOT NULL,
   created_by INTEGER NOT NULL,
@@ -505,6 +586,7 @@ CREATE TABLE user_profile_skill (
 );
 CREATE TABLE user_profile_skill_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
   user_skill_id INTEGER NOT NULL,
   user_profile_id INTEGER NOT NULL,
   skill_id INTEGER NOT NULL,
@@ -521,11 +603,17 @@ CREATE TABLE user_profile_skill_history (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
+CREATE TRIGGER new_user_profile_skill_history_trigger
+AFTER INSERT ON user_profile_skill
+BEGIN
+  INSERT INTO user_skill_history (user_profile_skill_id, uuid, user_profile_id, skill_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.user_profile_id, NEW.skill_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+END;
 CREATE TRIGGER user_profile_skill_history_trigger
 AFTER UPDATE ON user_profile_skill
 BEGIN
-  INSERT INTO user_skill_history (user_profile_skill_id, user_profile_id, skill_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.user_profile_id, NEW.skill_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO user_skill_history (user_profile_skill_id, uuid, user_profile_id, skill_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.user_profile_id, NEW.skill_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 -- REFERENCE TABLES
