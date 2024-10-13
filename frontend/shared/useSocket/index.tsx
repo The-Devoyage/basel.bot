@@ -21,7 +21,7 @@ export const useSocket = () => {
       return;
     }
 
-    const ws = new WebSocket("ws://localhost:8765");
+    const ws = new WebSocket("ws://localhost:8000/ws");
     setSocket(ws);
 
     ws.onopen = (e) => {
