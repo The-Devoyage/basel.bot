@@ -13,6 +13,27 @@ The mono repo has a Frontend(nextjs) and Backend(FastAPI).
 
 1. In the server directory
 
+First create a virtual environment (may be different on windows):
+
+```bash
+cd server
+python -m venv venv
+```
+
+Then, activate the environment(may be different on windows):
+
+```bash
+source ./venv/bin/activate
+```
+
+Install the dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Finally, run the server:
+
 ```bash
 fastapi dev main.py
 ```
