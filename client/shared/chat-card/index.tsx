@@ -12,9 +12,7 @@ interface ChatCardProps {
 
 export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
   ({ message }, ref) => {
-    console.log("MESSAGE", message);
     const isBot = message.sender === "bot";
-
     const getIcon = () => {
       switch (message.sender) {
         case "bot":

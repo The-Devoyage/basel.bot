@@ -4,11 +4,10 @@ import { useContext, useEffect, useRef } from "react";
 import { GlobalContext } from "@/app/provider";
 import { ChatCard } from "@/shared/chat-card";
 import { Loader } from "@/shared/loader";
+import { Button } from "flowbite-react";
 
 export const ChatBody = () => {
-  const {
-    client: { messages, loading },
-  } = useContext(GlobalContext);
+  const { client } = useContext(GlobalContext);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -19,22 +18,32 @@ export const ChatBody = () => {
         window.scrollTo(0, window.scrollY + top - 74);
       }
     }
-  }, [ref.current, messages]);
+  }, [ref.current, client?.messages]);
 
-  if (loading && !messages.length) {
+  if (!client?.connected) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Button onClick={client?.handleConnect} color="green">
+          Hello Basil!
+        </Button>
+      </div>
+    );
+  }
+
+  if (client?.loading && !client?.messages.length) {
     return <Loader />;
   }
 
   return (
     <div className="flex flex-col space-y-4">
-      {messages.map((m, index) => (
+      {client?.messages.map((m, index) => (
         <ChatCard
           key={m.timestamp?.toString()}
           message={m}
-          ref={index === messages.length - 1 ? ref : undefined}
+          ref={index === client?.messages.length - 1 ? ref : undefined}
         />
       ))}
-      {loading && <Loader />}
+      {client?.loading && <Loader />}
     </div>
   );
 };

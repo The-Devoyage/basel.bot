@@ -1,9 +1,10 @@
 "use client";
 
-import { DarkThemeToggle, Navbar, useThemeMode } from "flowbite-react";
+import { Navbar, useThemeMode } from "flowbite-react";
 import Logo from "../../public/logo.svg";
 import { useEffect, useState } from "react";
 import { useWindowSize } from "../useWindowSize";
+import { Auth } from "./components";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
@@ -19,11 +20,7 @@ export const Nav = () => {
       <Navbar.Brand href="/" className="text-2xl font-bold dark:text-white">
         <Logo style={{ fill, height: "3rem" }} />
       </Navbar.Brand>
-      <Navbar.Toggle />
       <Navbar.Collapse>
-        <Navbar.Link href="#">Search</Navbar.Link>
-        <Navbar.Link href="#">Watching</Navbar.Link>
-        <Navbar.Link href="#">Cart</Navbar.Link>
         {windowSize.isMobile && (
           <Navbar.Link
             onClick={() =>
@@ -34,7 +31,10 @@ export const Nav = () => {
           </Navbar.Link>
         )}
       </Navbar.Collapse>
-      <DarkThemeToggle className="hidden md:block" />
+      <div className="flex flex-row">
+        <Auth />
+        <Navbar.Toggle />
+      </div>
     </Navbar>
   );
 };

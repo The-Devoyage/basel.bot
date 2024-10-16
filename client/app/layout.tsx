@@ -4,6 +4,7 @@ import { ThemeModeScript } from "flowbite-react";
 import { GlobalProvider } from "./provider";
 import { ChatInput } from "@/shared/chat-input";
 import { Nav } from "@/shared/nav";
+import { Toaster } from "@/shared/toaster";
 import "./globals.css";
 
 const spaceMono = Space_Mono({
@@ -28,6 +29,7 @@ export default function RootLayout({
       </head>
       <GlobalProvider>
         <body className={`h-screen w-full bg-slate-100 ${spaceMono.className}`}>
+          <Toaster />
           <Nav />
           <main
             className="container relative top-16 mx-auto mb-16 flex p-4 dark:bg-slate-800"

@@ -7,9 +7,7 @@ import { Message } from "@/types";
 
 export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
-  const {
-    client: { handleSend },
-  } = useContext(GlobalContext);
+  const { client } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleMessage = () => {
@@ -19,7 +17,7 @@ export const ChatInput = () => {
       timestamp: new Date(),
       sender: "user",
     };
-    handleSend(message);
+    client?.handleSend(message);
     setMessageText("");
   };
 
