@@ -1,6 +1,11 @@
 -- Add down migration script here
 
 -- Drop Entities
+DROP TRIGGER IF EXISTS message_history_trigger;
+DROP TRIGGER IF EXISTS new_message_history_trigger;
+DROP TABLE IF EXISTS message_history;
+DROP TABLE IF EXISTS message;
+
 DROP TRIGGER IF EXISTS user_history_trigger;
 DROP TRIGGER IF EXISTS new_user_history_trigger;
 DROP TABLE IF EXISTS user_history;
@@ -16,10 +21,10 @@ DROP TRIGGER IF EXISTS new_organization_history_trigger;
 DROP TABLE IF EXISTS organization_history;
 DROP TABLE IF EXISTS organization;
 
-DROP TRIGGER IF EXISTS image_history_trigger;
-DROP TRIGGER IF EXISTS new_image_history_trigger;
-DROP TABLE IF EXISTS image_history;
-DROP TABLE IF EXISTS image;
+DROP TRIGGER IF EXISTS upload_history_trigger;
+DROP TRIGGER IF EXISTS new_upload_history_trigger;
+DROP TABLE IF EXISTS upload_history;
+DROP TABLE IF EXISTS upload;
 
 DROP TRIGGER IF EXISTS posting_history_trigger;
 DROP TRIGGER IF EXISTS new_posting_history_trigger;
@@ -30,11 +35,6 @@ DROP TRIGGER IF EXISTS application_history_trigger;
 DROP TRIGGER IF EXISTS new_application_history_trigger;
 DROP TABLE IF EXISTS application_history;
 DROP TABLE IF EXISTS application;
-
-DROP TRIGGER IF EXISTS message_history_trigger;
-DROP TRIGGER IF EXISTS new_message_history_trigger;
-DROP TABLE IF EXISTS message_history;
-DROP TABLE IF EXISTS message;
 
 DROP TRIGGER IF EXISTS posting_skill_history_trigger;
 DROP TRIGGER IF EXISTS new_posting_skill_history_trigger;

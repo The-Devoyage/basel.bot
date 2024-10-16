@@ -3,22 +3,20 @@
 -- ENTITY TABLES
 ----------------------------------------------
 
--- TODO: 
--- - Organization_Users and/or Access Control Tables
-
 -- Create Table user 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   uuid TEXT NOT NULL UNIQUE,
   email TEXT NOT NULL UNIQUE,
-  first_name TEXT NOT NULL,
-  last_name TEXT NOT NULL,
+  first_name TEXT DEFAULT NULL,
+  last_name TEXT DEFAULT NULL,
   phone TEXT UNIQUE,
   role_id INTEGER NOT NULL, 
-  status BOOLEAN NOT NULL DEFAULT 1,
+  status BOOLEAN NOT NULL DEFAULT 0,
   image INTEGER,
-  created_by INTEGER NOT NULL,
-  updated_by INTEGER NOT NULL,
+  auth_id TEXT NOT NULL,
+  created_by INTEGER DEFAULT NULL,
+  updated_by INTEGER DEFAULT NULL,
   deleted_by INTEGER DEFAULT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -35,14 +33,15 @@ CREATE TABLE user_history (
   uuid TEXT NOT NULL UNIQUE,
   user_id INTEGER NOT NULL,
   email TEXT NOT NULL,
-  first_name TEXT NOT NULL,
-  last_name TEXT NOT NULL,
+  first_name TEXT DEFAULT NULL,
+  last_name TEXT DEFAULT NULL,
   phone TEXT,
   role_id INTEGER NOT NULL, 
-  status BOOLEAN NOT NULL DEFAULT 1,
+  status BOOLEAN NOT NULL DEFAULT 0,
   image INTEGER,
-  created_by INTEGER NOT NULL,
-  updated_by INTEGER NOT NULL,
+  auth_id TEXT NOT NULL,
+  created_by INTEGER DEFAULT NULL,
+  updated_by INTEGER DEFAULT NULL,
   deleted_by INTEGER DEFAULT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -58,14 +57,14 @@ CREATE TABLE user_history (
 CREATE TRIGGER new_user_history_trigger
 AFTER INSERT ON user
 BEGIN
-  INSERT INTO user_history (user_id, uuid, email, first_name, last_name, phone, role_id, status, image, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.uuid, NEW.email, NEW.first_name, NEW.last_name, NEW.phone, NEW.role_id, NEW.status, NEW.image, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO user_history (user_id, uuid, email, first_name, last_name, phone, role_id, status, image, auth_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.email, NEW.first_name, NEW.last_name, NEW.phone, NEW.role_id, NEW.status, NEW.image, NEW.auth_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 CREATE TRIGGER user_history_trigger
 AFTER UPDATE ON user
 BEGIN
-  INSERT INTO user_history (user_id, uuid, email, first_name, last_name, phone, role_id, status, image, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
-  SELECT NEW.id, NEW.uuid, NEW.email, NEW.first_name, NEW.last_name, NEW.phone, NEW.role_id, NEW.status, NEW.image, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
+  INSERT INTO user_history (user_id, uuid, email, first_name, last_name, phone, role_id, status, image, auth_id, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  SELECT NEW.id, NEW.uuid, NEW.email, NEW.first_name, NEW.last_name, NEW.phone, NEW.role_id, NEW.status, NEW.image, NEW.auth_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
 -- Create Table user_profile
@@ -466,7 +465,7 @@ BEGIN
   SELECT NEW.id, NEW.uuid, NEW.user_id, NEW.sender, NEW.text, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
-CREATE TABLE image (
+CREATE TABLE upload (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   uuid TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
@@ -482,10 +481,10 @@ CREATE TABLE image (
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
-CREATE TABLE image_history (
+CREATE TABLE upload_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   uuid TEXT NOT NULL UNIQUE,
-  image_id INTEGER NOT NULL,
+  upload_id INTEGER NOT NULL,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
   created_by INTEGER NOT NULL,
@@ -495,21 +494,21 @@ CREATE TABLE image_history (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP DEFAULT NULL,
   --Foreign Keys
-  FOREIGN KEY (image_id) REFERENCES image(id),
+  FOREIGN KEY (upload_id) REFERENCES upload(id),
   FOREIGN KEY (created_by) REFERENCES user(id),
   FOREIGN KEY (updated_by) REFERENCES user(id),
   FOREIGN KEY (deleted_by) REFERENCES user(id)
 );
-CREATE TRIGGER new_image_history_trigger
-AFTER INSERT ON image
+CREATE TRIGGER new_upload_history_trigger
+AFTER INSERT ON upload
 BEGIN
-  INSERT INTO image_history (image_id, uuid, name, url, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  INSERT INTO upload_history(upload_id, uuid, name, url, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
   SELECT NEW.id, NEW.uuid, NEW.name, NEW.url, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
-CREATE TRIGGER image_history_trigger
-AFTER UPDATE ON image
+CREATE TRIGGER upload_history_trigger
+AFTER UPDATE ON upload 
 BEGIN
-  INSERT INTO image_history (image_id, uuid, name, url, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
+  INSERT INTO upload_history (upload_id, uuid, name, url, created_at, updated_at, created_by, updated_by, deleted_at, deleted_by)
   SELECT NEW.id, NEW.uuid, NEW.name, NEW.url, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 

@@ -2,6 +2,7 @@ import sqlite3
 import uuid
 from datetime import datetime
 
+
 class UserModel:
     def __init__(self, db_path):
         self.db_path = db_path
@@ -9,37 +10,135 @@ class UserModel:
     def _get_connection(self):
         return sqlite3.connect(self.db_path)
 
-    def create_user(self, cursor, email, first_name, last_name, phone, role_id, created_by, updated_by, status=1, image=None):
+    def create_user(
+        self,
+        cursor,
+        email,
+    ):
         """Create a new user with a generated UUID."""
         user_uuid = str(uuid.uuid4())
-        cursor.execute("""
-            INSERT INTO user (uuid, email, first_name, last_name, phone, role_id, status, image, created_by, updated_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (user_uuid, email, first_name, last_name, phone, role_id, status, image, created_by, updated_by))
+        auth_id = str(uuid.uuid4())
+        cursor.execute(
+            """
+            INSERT INTO user (uuid, email, auth_id, role_id )
+            VALUES (
+                ?, ?, ?,
+                (SELECT id FROM role WHERE identifier = 'user')
+            )
+        """,
+            (
+                user_uuid,
+                email,
+                auth_id,
+            ),
+        )
         return cursor.lastrowid  # Return the newly created user's ID
 
     def get_user_by_id(self, cursor, user_id):
         """Retrieve a user by their ID."""
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT * FROM user WHERE id = ?
-        """, (user_id,))
-        return cursor.fetchone()
+        """,
+            (user_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        columns = [column[0] for column in cursor.description]
+        return dict(zip(columns, row))
 
-    def update_user(self, cursor, user_id, email, first_name, last_name, phone, role_id, updated_by, status=1, image=None):
+    def get_user_by_email(self, cursor, email):
+        """Retrieve a user by their email."""
+        cursor.execute(
+            """
+            SELECT * FROM user WHERE email = ?
+        """,
+            (email,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        columns = [column[0] for column in cursor.description]
+        return dict(zip(columns, row))
+
+    def get_user_by_auth_id(self, cursor, auth_id):
+        """Retrieve a user by their auth ID."""
+        cursor.execute(
+            """
+            SELECT * FROM user WHERE auth_id = ?
+        """,
+            (auth_id,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        columns = [column[0] for column in cursor.description]
+        return dict(zip(columns, row))
+
+    def update_user(
+        self,
+        cursor,
+        user_id,
+        email=None,
+        first_name=None,
+        last_name=None,
+        phone=None,
+        role_id=None,
+        updated_by=None,
+        status=None,
+        image=None,
+    ):
         """Update a user's information."""
-        cursor.execute("""
+
+        query = """
             UPDATE user
-            SET email = ?, first_name = ?, last_name = ?, phone = ?, role_id = ?, status = ?, image = ?, updated_by = ?, updated_at = ?
-            WHERE id = ?
-        """, (email, first_name, last_name, phone, role_id, status, image, updated_by, datetime.now(), user_id))
+            SET updated_by = ?, updated_at = ?
+        """
+
+        if email is not None:
+            query += ", email = ?"
+        if first_name is not None:
+            query += ", first_name = ?"
+        if last_name is not None:
+            query += ", last_name = ?"
+        if phone is not None:
+            query += ", phone = ?"
+        if role_id is not None:
+            query += ", role_id = ?"
+        if status is not None:
+            query += ", status = ?"
+        if image is not None:
+            query += ", image = ?"
+
+        query += " WHERE id = ?"
+
+        cursor.execute(
+            query,
+            (
+                updated_by,
+                datetime.now(),
+                email,
+                first_name,
+                last_name,
+                phone,
+                role_id,
+                status,
+                image,
+                user_id,
+            ),
+        )
+
         return cursor.rowcount  # Return the number of rows updated
 
     def delete_user(self, cursor, user_id, deleted_by):
         """Soft delete a user."""
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE user
             SET deleted_by = ?, deleted_at = ?
             WHERE id = ?
-        """, (deleted_by, datetime.now(), user_id))
+        """,
+            (deleted_by, datetime.now(), user_id),
+        )
         return cursor.rowcount  # Return the number of rows updated (soft delete)
-
