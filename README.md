@@ -41,6 +41,7 @@ fastapi dev main.py
 2. In the client directory
 
 ```bash
+npm install
 npm run dev
 ```
 
