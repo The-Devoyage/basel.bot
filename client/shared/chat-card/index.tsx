@@ -5,6 +5,7 @@ import { Typography } from "../typography";
 import { Message } from "@/types";
 import { PiUserCircleDuotone } from "react-icons/pi";
 import Image from "next/image";
+import Markdown from "react-markdown";
 
 interface ChatCardProps {
   message: Message;
@@ -35,9 +36,9 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
               {isBot ? "Basel" : "You"}
             </Typography.Heading>
           </div>
-          <Typography.Paragraph className="break-words">
+          <Markdown className="prose w-full break-words dark:text-slate-300">
             {message.text}
-          </Typography.Paragraph>
+          </Markdown>
         </Card>
         <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {message.products?.map((product) => (

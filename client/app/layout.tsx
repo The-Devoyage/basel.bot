@@ -34,7 +34,7 @@ export default function RootLayout({
           <Toaster />
           <Nav />
           <main
-            className="container relative top-16 mx-auto mb-16 flex p-4 dark:bg-slate-800"
+            className="container relative top-16 mx-auto mb-16 flex p-4 dark:bg-slate-900"
             style={{
               minHeight: "calc(100vh - 148px)",
             }}

@@ -1,7 +1,14 @@
 "use client";
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
-import { FC, createContext, useMemo, useEffect, useReducer } from "react";
+import {
+  FC,
+  createContext,
+  useMemo,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import { Message } from "@/types";
 import { Notification } from "@/shared/toaster";
 
@@ -28,7 +35,7 @@ interface GlobalProviderProps {
 
 export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const client = useSocket<Message, Message>("ws://localhost:8000/ws");
-  const token = window.localStorage.getItem("token");
+  const [token, setToken] = useState<string | null>(null);
   const [{ toasts }, dispatch] = useReducer(
     (
       state: { toasts: Notification[] },
@@ -55,6 +62,8 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   );
 
   useEffect(() => {
+    const t = window.localStorage.getItem("token");
+    setToken(t);
     return () => {
       client.handleClose();
     };

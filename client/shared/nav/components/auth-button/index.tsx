@@ -16,9 +16,7 @@ export const Auth = () => {
       email: "",
     },
   });
-  const token = window.localStorage.getItem("token");
-
-  const { dispatch } = useContext(GlobalContext);
+  const { dispatch, token } = useContext(GlobalContext);
 
   const {
     handleSend,

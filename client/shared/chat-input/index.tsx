@@ -28,8 +28,8 @@ export const ChatInput = () => {
   return (
     <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
       <Textarea
-        placeholder="Find, watch, buy."
-        className="w-full"
+        placeholder="Your last interview starts here..."
+        className="w-full focus:border-green-400 focus:ring-green-400 dark:bg-slate-900 dark:text-white"
         color="info"
         theme={{
           colors: {
