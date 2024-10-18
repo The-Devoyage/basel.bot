@@ -21,10 +21,10 @@ DROP TRIGGER IF EXISTS new_organization_history_trigger;
 DROP TABLE IF EXISTS organization_history;
 DROP TABLE IF EXISTS organization;
 
-DROP TRIGGER IF EXISTS upload_history_trigger;
-DROP TRIGGER IF EXISTS new_upload_history_trigger;
-DROP TABLE IF EXISTS upload_history;
-DROP TABLE IF EXISTS upload;
+DROP TRIGGER IF EXISTS file_history_trigger;
+DROP TRIGGER IF EXISTS new_file_history_trigger;
+DROP TABLE IF EXISTS file_history;
+DROP TABLE IF EXISTS file;
 
 DROP TRIGGER IF EXISTS posting_history_trigger;
 DROP TRIGGER IF EXISTS new_posting_history_trigger;

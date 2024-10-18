@@ -6,6 +6,7 @@ import { Message } from "@/types";
 import { Notification } from "@/shared/toaster";
 
 interface GlobalContext {
+  token: string | null;
   client: SocketClient<Message, Message> | null;
   toasts: Notification[];
   dispatch: React.Dispatch<{
@@ -15,6 +16,7 @@ interface GlobalContext {
 }
 
 export const GlobalContext = createContext<GlobalContext>({
+  token: null,
   client: null,
   toasts: [],
   dispatch: null,
@@ -26,6 +28,7 @@ interface GlobalProviderProps {
 
 export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const client = useSocket<Message, Message>("ws://localhost:8000/ws");
+  const token = window.localStorage.getItem("token");
   const [{ toasts }, dispatch] = useReducer(
     (
       state: { toasts: Notification[] },
@@ -58,7 +61,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   }, []);
 
   const value = useMemo(
-    () => ({ client, toasts, dispatch }),
+    () => ({ client, toasts, dispatch, token }),
     [
       client.socket,
       client.messages,
@@ -66,6 +69,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
       client.loading,
       toasts,
       dispatch,
+      token,
     ],
   );
 

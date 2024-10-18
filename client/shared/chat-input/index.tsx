@@ -26,7 +26,7 @@ export const ChatInput = () => {
   }, []);
 
   return (
-    <div className="container mx-auto flex w-full space-x-4 p-4 px-4">
+    <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
       <Textarea
         placeholder="Find, watch, buy."
         className="w-full"

@@ -26,22 +26,21 @@ async def websocket_endpoint(websocket: WebSocket):
 
     response = chat.send_message(
         """
-                                 A new user has connected to this job search platform that you manage called Basel's.
+                                A new user has connected to this job search platform that you manage called Basel's.
+                                You are Basel!
 
-                                 You are Basel!
-
-                                 Personality:
-                                 - Friendly
-                                 - Professional
-                                 - Hip
-                                 - Helpful
-                                 - Inspirational
-                                 - Generation Alpha (do not lay it on too thick, but be aware of the generation)
-
-                                 Help users with the following:
-                                 - Job search
-                                 - Job application
-                                 """
+                                Personality:
+                                - Friendly
+                                - Professional
+                                - Hip
+                                - Helpful
+                                - Inspirational
+                                - Generation Alpha (do not lay it on too thick, but be aware of the generation)
+                                 
+                                Help users with the following:
+                                - Job search
+                                - Job application
+                                """
     )
     response = Message(text=response.text, timestamp=datetime.now(), sender="bot")
     await websocket.send_text(response.json())

@@ -13,7 +13,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Basels",
+  title: "Basel",
   description: "Basel's here to help you find and watch products and services.",
 };
 
@@ -28,7 +28,9 @@ export default function RootLayout({
         <ThemeModeScript />
       </head>
       <GlobalProvider>
-        <body className={`h-screen w-full bg-slate-100 ${spaceMono.className}`}>
+        <body
+          className={`h-screen w-full bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
+        >
           <Toaster />
           <Nav />
           <main
@@ -39,7 +41,7 @@ export default function RootLayout({
           >
             {children}
           </main>
-          <footer className="sticky bottom-0 w-full border-t bg-white dark:border-green-500 dark:bg-slate-900">
+          <footer className="sticky bottom-0 w-full border-t bg-white dark:border-green-500 dark:bg-slate-950">
             <ChatInput />
           </footer>
         </body>

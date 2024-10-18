@@ -1,28 +1,30 @@
+from datetime import datetime, timedelta
 import os
 import logging
-import sqlite3
 from fastapi import APIRouter, HTTPException, WebSocket
 import jwt
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 from database.role import RoleModel
 from database.user import UserModel
+from utils.environment import get_env_var
 from utils.jwt import create_jwt
 
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+# Environment variables
+auth_secret = get_env_var("AUTH_SECRET")
+access_secret = get_env_var("ACCESS_SECRET")
+jwt_algorithm = get_env_var("JWT_ALGORITHM")
+client_url = get_env_var("CLIENT_URL")
+
 # Database
 role_model = RoleModel("basel.db")
 user_model = UserModel("basel.db")
 
-active_register_connections = {}
-
-
-@router.post("/login")
-def login():
-    pass
+active_auth_connections = {}
 
 
 @router.post("/logout")
@@ -30,49 +32,54 @@ def logout():
     pass
 
 
-class RegisterStart(BaseModel):
+class AuthStart(BaseModel):
     email: str
 
 
-@router.websocket("/register-start")
-async def register_start(websocket: WebSocket):
+@router.websocket("/auth-start")
+async def auth_start(websocket: WebSocket):
     await websocket.accept()
 
     # Get the connection
     connection = user_model._get_connection()
     cursor = connection.cursor()
 
-    secret = os.getenv("REGISTER_SECRET")
+    secret = os.getenv("AUTH_SECRET")
     if not secret:
-        raise ValueError("REGISTER_SECRET environment variable not set")
+        raise ValueError("AUTH_SECRET environment variable not set")
 
     while True:
         try:
             data = await websocket.receive_text()
-            register_data = RegisterStart.parse_raw(data)
+            auth_data = AuthStart.parse_raw(data)
 
-            logger.debug(f"Register data: {register_data}")
+            logger.debug(f"Auth data: {auth_data}")
 
-            if not register_data.email:
+            if not auth_data.email:
                 raise ValueError("Email is required")
 
-            user_id = user_model.create_user(
-                cursor=cursor,
-                email=register_data.email,
-            )
-
-            user = user_model.get_user_by_id(cursor, user_id)
+            user = user_model.get_user_by_email(cursor, auth_data.email)
             if not user:
-                raise ValueError("Failed to create user")
+                user_id = user_model.create_user(
+                    cursor=cursor,
+                    email=auth_data.email,
+                )
+                user = user_model.get_user_by_id(cursor, user_id)
+                if not user:
+                    raise ValueError("Failed to create user")
 
-            create_jwt({"uuid": user["uuid"], "auth_id": user["auth_id"]}, secret)
+            expire_time = datetime.utcnow() + timedelta(minutes=3)
+
+            token = create_jwt(
+                {"uuid": user.uuid, "auth_id": user.auth_id, "exp": expire_time}, secret
+            )
+            magic_link = f"{client_url}/auth/{token}"
+
+            logger.debug(f"Magic link: {magic_link}")
 
             connection.commit()
 
-            logger.debug(f"User created: {user}")
-            logger.debug(f"JWT: {jwt}")
-
-            active_register_connections[user["auth_id"]] = websocket
+            active_auth_connections[user.auth_id] = websocket
 
             await websocket.send_json(
                 {
@@ -87,47 +94,63 @@ async def register_start(websocket: WebSocket):
             )
 
 
-@router.post("/register-finish")
-def register_finish(token: str):
+class AuthFinish(BaseModel):
+    token: str
+
+
+@router.post("/auth-finish")
+async def auth_finish(auth_finish: AuthFinish):
     # Decode the token
-    register_secret = os.getenv("REGISTER_SECRET")
-    if not register_secret:
-        raise Exception("REGISTER_SECRET not set")
-    auth_secret = os.getenv("AUTH_SECRET")
-    if not auth_secret:
-        raise Exception("AUTH_SECRET not set")
+    if not auth_finish.token or auth_finish.token is None:
+        return HTTPException(status_code=400, detail="Token is required")
     try:
-        payload = jwt.decode(token, register_secret)
+        payload = jwt.decode(auth_finish.token, auth_secret, algorithms=[jwt_algorithm])
         connection = user_model._get_connection()
         cursor = connection.cursor()
         user = user_model.get_user_by_auth_id(cursor, payload["auth_id"])
         if not user:
             raise Exception("User not found")
 
-        user_id = user_model.update_user(cursor, user["id"], status=True)
+        user_id = user_model.update_user(cursor, user.id, status=True)
         if not user_id:
             raise Exception("Failed to activate user.")
 
         connection.commit()
 
-        auth_token = create_jwt(
-            {"uuid": user["uuid"], "auth_id": user["auth_id"]}, auth_secret
+        expire_time = datetime.utcnow() + timedelta(hours=24)
+
+        token = create_jwt(
+            {"uuid": user.uuid, "auth_id": user.auth_id, "exp": expire_time},
+            access_secret,
         )
 
-        active_register_connections[payload["auth_id"]].send_json(
+        auth_connection = active_auth_connections.get(payload["auth_id"])
+
+        if not auth_connection:
+            return HTTPException(
+                status_code=400, detail="No active connection found for user"
+            )
+
+        await auth_connection.send_json(
             {
                 "success": True,
-                "auth_token": auth_token,
+                "token": token,
+                "message": "User authenticated successfully",
             }
         )
 
-        # Send the JWT to the user waiting on the websocket
-
         return {"success": True}
 
-    except jwt.ExpiredSignatureError:
-        return HTTPException(status_code=401, detail="Expired token")
-    except jwt.InvalidTokenError:
-        return HTTPException(status_code=401, detail="Invalid token")
+    except jwt.ExpiredSignatureError as e:
+        logger.error(e)
+        return HTTPException(
+            status_code=401, detail="The token has expired, please try again."
+        )
+    except jwt.InvalidTokenError as e:
+        logger.error(e)
+        return HTTPException(
+            status_code=401, detail="Your token is invalid, please try again."
+        )
     except Exception as e:
+        logger.error(e)
         return HTTPException(status_code=500, detail=f"Error decoding token: {e}")
