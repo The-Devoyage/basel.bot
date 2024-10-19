@@ -61,6 +61,26 @@ class UserModel:
             logger.error(f"Failed to create user object: {e}")
             raise
 
+    def get_user_by_uuid(self, cursor, user_uuid) -> Optional[User]:
+        """Retrieve a user by their UUID."""
+        cursor.execute(
+            """
+            SELECT * FROM user WHERE uuid = ?
+        """,
+            (user_uuid,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        columns = [column[0] for column in cursor.description]
+        data = dict(zip(columns, row))
+
+        try:
+            return User(**data)
+        except Exception as e:
+            logger.error(f"Failed to create user object: {e}")
+            raise
+
     def get_user_by_email(self, cursor, email) -> Optional[User]:
         """Retrieve a user by their email."""
         cursor.execute(

@@ -128,7 +128,7 @@ async def auth_finish(auth_finish: AuthFinish):
         expire_time = datetime.utcnow() + timedelta(hours=24)
 
         token = create_jwt(
-            {"uuid": user.uuid, "auth_id": user.auth_id, "exp": expire_time},
+            {"user_uuid": user.uuid, "auth_id": user.auth_id, "exp": expire_time},
             ACCESS_SECRET,
         )
 

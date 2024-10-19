@@ -1,10 +1,15 @@
 import os
 import logging
 from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, WebSocket
+from fastapi.param_functions import Depends
+from classes.user_claims import UserClaims
 from database.message import MessageModel
 import google.generativeai as genai
 from classes.message import Message
+from database.user import UserModel
+from utils.jwt import handle_decode_token, require_auth
 
 router = APIRouter()
 
@@ -12,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Database
 message_model = MessageModel("basel.db")
+user_model = UserModel("basel.db")
 
 # Initialize the generative model
 google_api_key = os.getenv("GOOGLE_API_KEY")
@@ -20,29 +26,46 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, token: str):
     await websocket.accept()
+    user = None
+    if token:
+        user_claims = handle_decode_token(token)
+        conn = user_model._get_connection()
+        cursor = conn.cursor()
+        user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
+        conn.close()
+    else:
+        raise Exception("Not authorized to access this resource.")
+
+    logger.info(f"User: {user}")
+
     chat = model.start_chat(
         history=[
             {
                 "role": "model",
                 "parts": [
-                    """
-                                A new user has connected to this job search platform that you manage called Basel's.
-                                You are Basel!
+                    f"""
+                            A new user has connected to this job search platform that you manage called Basel's.
+                            You are Basel!
 
-                                Personality:
-                                - Friendly
-                                - Professional
-                                - Hip
-                                - Helpful
-                                - Inspirational
-                                - Generation Alpha (do not lay it on too thick, but be aware of the generation)
-                                 
-                                Help users with the following:
-                                - Job search
-                                - Job application
-                                """
+                            Personality:
+                            - Friendly
+                            - Professional
+                            - Hip
+                            - Helpful
+                            - Inspirational
+                            - Generation Alpha (do not lay it on too thick, but be aware of the generation)
+                             
+                            Help users with the following:
+                            - Job search
+                            - Job application
+
+                            User Details:
+                            - First Name - {user.first_name if user else "Unknown"}
+                            - Last Name - {user.last_name if user else "Unknown"}
+                            - Email - {user.email if user else "Unknown"}
+                            """
                 ],
             }
         ]

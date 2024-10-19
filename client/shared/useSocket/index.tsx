@@ -15,7 +15,10 @@ export interface SocketClient<Send, Receive> {
 
 export const useSocket = <Send, Receive>(
   url: string,
-  options?: { handleReceive?: (s: Receive) => void },
+  options?: {
+    handleReceive?: (s: Receive) => void;
+    handleError?: (e: Event) => void;
+  },
 ) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [loading, setLoading] = useState(false);
@@ -53,13 +56,12 @@ export const useSocket = <Send, Receive>(
 
     ws.onerror = (error) => {
       console.error("WebSocket Error:", error);
+      options?.handleError?.(error);
     };
   };
 
   const handleClose = () => {
-    console.log("PRECLOSE");
     if (connected) {
-      console.log("CLOSING");
       socket?.close();
     }
   };

@@ -8,7 +8,7 @@ import { Message } from "@/types";
 
 export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
-  const { client } = useContext(GlobalContext);
+  const { client, token } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasConnected = useRef<boolean>(false);
 
@@ -26,6 +26,7 @@ export const ChatInput = () => {
   useEffect(() => {
     inputRef.current?.focus();
     if (hasConnected.current) return;
+    if (!token) return;
     client?.handleConnect();
     hasConnected.current = true;
 
@@ -33,7 +34,7 @@ export const ChatInput = () => {
       client?.handleClose();
       hasConnected.current = false;
     };
-  }, []);
+  }, [token]);
 
   return (
     <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">

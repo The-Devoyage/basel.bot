@@ -6,10 +6,8 @@ import { useSocket } from "@/shared/useSocket";
 import { GlobalContext } from "@/app/provider";
 import { v4 } from "uuid";
 import { Loader } from "@/shared/loader";
-import { useRouter } from "next/navigation";
 
-export const Auth = () => {
-  const router = useRouter();
+export const AuthButton = () => {
   const [awaitAuth, setAwaitAuth] = useState(false);
   const [form, setForm] = useState({
     values: {
@@ -41,7 +39,6 @@ export const Auth = () => {
           },
         });
         handleClose();
-        router.push("/abcdefg");
       }
 
       if (!message?.success) {

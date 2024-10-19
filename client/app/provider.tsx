@@ -11,6 +11,7 @@ import {
 } from "react";
 import { Message } from "@/types";
 import { Notification } from "@/shared/toaster";
+import { v4 } from "uuid";
 
 interface GlobalContext {
   token: string | null;
@@ -34,7 +35,6 @@ interface GlobalProviderProps {
 }
 
 export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
-  const client = useSocket<Message, Message>("ws://localhost:8000/ws");
   const [token, setToken] = useState<string | null>(null);
   const [{ toasts }, dispatch] = useReducer(
     (
@@ -59,6 +59,21 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
       }
     },
     { toasts: [] },
+  );
+  const client = useSocket<Message, Message>(
+    `ws://localhost:8000/ws?token=${token}`,
+    {
+      handleError: (_) => {
+        dispatch({
+          type: "ADD_TOAST",
+          payload: {
+            uuid: v4(),
+            type: "error",
+            description: "An error occurred, please try again later.",
+          },
+        });
+      },
+    },
   );
 
   useEffect(() => {

@@ -9,7 +9,7 @@ import {
 } from "flowbite-react";
 import { useContext } from "react";
 import { useWindowSize } from "../useWindowSize";
-import { Auth } from "./components";
+import { AuthButton } from "./components";
 import { GlobalContext } from "@/app/provider";
 import { BiSolidLeaf } from "react-icons/bi";
 
@@ -81,13 +81,13 @@ export const Nav = () => {
               >
                 {themeMode.mode === "dark" ? "Light" : "Dark"}
               </Navbar.Link>
-              <Auth />
+              <AuthButton />
             </Navbar.Collapse>
           ) : (
             <div className="flex">
               <DarkThemeToggle className="mr-2" />
               <div className="flex flex-row">
-                <Auth />
+                <AuthButton />
               </div>
             </div>
           )}
