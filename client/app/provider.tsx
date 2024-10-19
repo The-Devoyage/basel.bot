@@ -64,9 +64,6 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   useEffect(() => {
     const t = window.localStorage.getItem("token");
     setToken(t);
-    return () => {
-      client.handleClose();
-    };
   }, []);
 
   const value = useMemo(

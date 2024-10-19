@@ -1,4 +1,5 @@
 "use client";
+
 import { useContext, useState, useEffect, useRef } from "react";
 import { Button, Textarea } from "flowbite-react";
 import { TbShoppingCartSearch } from "react-icons/tb";
@@ -9,6 +10,7 @@ export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
   const { client } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const hasConnected = useRef<boolean>(false);
 
   const handleMessage = () => {
     if (!messageText) return;
@@ -23,13 +25,21 @@ export const ChatInput = () => {
 
   useEffect(() => {
     inputRef.current?.focus();
+    if (hasConnected.current) return;
+    client?.handleConnect();
+    hasConnected.current = true;
+
+    return () => {
+      client?.handleClose();
+      hasConnected.current = false;
+    };
   }, []);
 
   return (
     <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
       <Textarea
         placeholder="Your last interview starts here..."
-        className="w-full focus:border-green-400 focus:ring-green-400 dark:bg-slate-900 dark:text-white"
+        className="w-full focus:border-green-400 focus:ring-green-400 dark:bg-slate-950 dark:text-white"
         color="info"
         theme={{
           colors: {

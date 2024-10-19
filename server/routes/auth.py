@@ -9,16 +9,17 @@ from database.role import RoleModel
 from database.user import UserModel
 from utils.environment import get_env_var
 from utils.jwt import create_jwt
+from utils.mailer import send_email
 
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
 # Environment variables
-auth_secret = get_env_var("AUTH_SECRET")
-access_secret = get_env_var("ACCESS_SECRET")
-jwt_algorithm = get_env_var("JWT_ALGORITHM")
-client_url = get_env_var("CLIENT_URL")
+AUTH_SECRET = get_env_var("AUTH_SECRET")
+ACCESS_SECRET = get_env_var("ACCESS_SECRET")
+JWT_ALGO = get_env_var("JWT_ALGORITHM")
+CLIENT_URL = get_env_var("CLIENT_URL")
 
 # Database
 role_model = RoleModel("basel.db")
@@ -73,13 +74,20 @@ async def auth_start(websocket: WebSocket):
             token = create_jwt(
                 {"uuid": user.uuid, "auth_id": user.auth_id, "exp": expire_time}, secret
             )
-            magic_link = f"{client_url}/auth/{token}"
+            magic_link = f"{CLIENT_URL}/auth/{token}"
 
             logger.debug(f"Magic link: {magic_link}")
 
             connection.commit()
 
             active_auth_connections[user.auth_id] = websocket
+
+            send_email(
+                user.email,
+                "Magic Link - Click and Authenticate",
+                "d-647b376beee74b30aff1b669af7a7392",
+                {"magic_link": magic_link},
+            )
 
             await websocket.send_json(
                 {
@@ -104,7 +112,7 @@ async def auth_finish(auth_finish: AuthFinish):
     if not auth_finish.token or auth_finish.token is None:
         return HTTPException(status_code=400, detail="Token is required")
     try:
-        payload = jwt.decode(auth_finish.token, auth_secret, algorithms=[jwt_algorithm])
+        payload = jwt.decode(auth_finish.token, AUTH_SECRET, algorithms=[JWT_ALGO])
         connection = user_model._get_connection()
         cursor = connection.cursor()
         user = user_model.get_user_by_auth_id(cursor, payload["auth_id"])
@@ -121,7 +129,7 @@ async def auth_finish(auth_finish: AuthFinish):
 
         token = create_jwt(
             {"uuid": user.uuid, "auth_id": user.auth_id, "exp": expire_time},
-            access_secret,
+            ACCESS_SECRET,
         )
 
         auth_connection = active_auth_connections.get(payload["auth_id"])

@@ -7,26 +7,25 @@ import {
   Navbar,
   useThemeMode,
 } from "flowbite-react";
-import Logo from "../../public/logo.svg";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { useWindowSize } from "../useWindowSize";
 import { Auth } from "./components";
 import { GlobalContext } from "@/app/provider";
+import { BiSolidLeaf } from "react-icons/bi";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
-  const [fill, setFill] = useState("#0E9F6E");
   const windowSize = useWindowSize();
   const { token } = useContext(GlobalContext);
 
-  useEffect(() => {
-    setFill(themeMode.mode === "dark" ? "#31C48D" : "#0E9F6E");
-  }, [themeMode]);
-
   return (
     <Navbar className="fixed left-0 right-0 top-0 z-10 border-b dark:bg-slate-950">
-      <Navbar.Brand href="/" className="text-2xl font-bold dark:text-white">
-        <Logo style={{ fill, height: "3rem" }} />
+      <Navbar.Brand
+        href="/"
+        className="space-x-2 text-2xl font-bold dark:text-white"
+      >
+        <BiSolidLeaf className="text-green-400" />
+        <span className="text-green-400">basel.bot</span>
       </Navbar.Brand>
       <Navbar.Toggle />
       {token ? (

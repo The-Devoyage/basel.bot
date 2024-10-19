@@ -57,7 +57,9 @@ export const useSocket = <Send, Receive>(
   };
 
   const handleClose = () => {
+    console.log("PRECLOSE");
     if (connected) {
+      console.log("CLOSING");
       socket?.close();
     }
   };

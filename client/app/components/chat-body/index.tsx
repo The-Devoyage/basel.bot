@@ -4,7 +4,6 @@ import { useContext, useEffect, useRef } from "react";
 import { GlobalContext } from "@/app/provider";
 import { ChatCard } from "@/shared/chat-card";
 import { Loader } from "@/shared/loader";
-import { Button } from "flowbite-react";
 
 export const ChatBody = () => {
   const { client } = useContext(GlobalContext);
@@ -20,12 +19,16 @@ export const ChatBody = () => {
     }
   }, [ref.current, client?.messages]);
 
-  if (!client?.connected) {
+  if (!client?.messages?.length && !client?.initializing) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Button onClick={client?.handleConnect} color="green">
-          Hello Basil!
-        </Button>
+      <div className="mx-auto flex h-full items-center justify-center">
+        <ChatCard
+          message={{
+            text: "Hello there! I'm Basel, your personal career assistant. How can I help you today?",
+            sender: "bot",
+            timestamp: new Date(),
+          }}
+        />
       </div>
     );
   }
@@ -35,7 +38,7 @@ export const ChatBody = () => {
   }
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="mx-auto flex w-full flex-col space-y-4">
       {client?.messages.map((m, index) => (
         <ChatCard
           key={m.timestamp?.toString()}

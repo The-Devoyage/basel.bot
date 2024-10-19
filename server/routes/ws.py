@@ -22,10 +22,12 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    chat = model.start_chat()
-
-    response = chat.send_message(
-        """
+    chat = model.start_chat(
+        history=[
+            {
+                "role": "model",
+                "parts": [
+                    """
                                 A new user has connected to this job search platform that you manage called Basel's.
                                 You are Basel!
 
@@ -41,15 +43,17 @@ async def websocket_endpoint(websocket: WebSocket):
                                 - Job search
                                 - Job application
                                 """
+                ],
+            }
+        ]
     )
-    response = Message(text=response.text, timestamp=datetime.now(), sender="bot")
-    await websocket.send_text(response.json())
 
     while True:
         data = await websocket.receive_text()
 
         conn = message_model._get_connection()
         cursor = conn.cursor()
+
         try:
             logger.info(f"Received: {data}")
             message = Message.parse_raw(data)
