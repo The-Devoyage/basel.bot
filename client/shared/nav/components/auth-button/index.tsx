@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { Alert, Button, Label, Modal, TextInput } from "flowbite-react";
 import { useSocket } from "@/shared/useSocket";
 import { GlobalContext } from "@/app/provider";
@@ -15,6 +15,7 @@ export const AuthButton = () => {
     },
   });
   const { dispatch, token, setToken } = useContext(GlobalContext);
+  const emailInput = useRef<HTMLInputElement>(null);
 
   const {
     handleSend,
@@ -81,7 +82,13 @@ export const AuthButton = () => {
 
   return (
     <>
-      <Modal show={connected} size="md" popup onClose={handleCloseModal}>
+      <Modal
+        show={connected}
+        size="md"
+        popup
+        onClose={handleCloseModal}
+        initialFocus={emailInput}
+      >
         <Modal.Header />
         <Modal.Body>
           {awaitAuth ? (
@@ -121,6 +128,7 @@ export const AuthButton = () => {
                 <Label>Your Email</Label>
                 <TextInput
                   type="email"
+                  ref={emailInput}
                   placeholder="example@email.com"
                   className="col-span-3"
                   value={form.values.email}

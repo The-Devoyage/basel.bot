@@ -61,3 +61,5 @@ DROP TABLE IF EXISTS role;
 DROP TABLE IF EXISTS application_status;
 DROP TABLE IF EXISTS skill;
 
+-- Drop Token Session
+DROP TABLE IF EXISTS token_session;

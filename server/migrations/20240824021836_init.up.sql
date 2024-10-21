@@ -615,6 +615,17 @@ BEGIN
   SELECT NEW.id, NEW.uuid, NEW.user_profile_id, NEW.skill_id, NEW.created_at, NEW.updated_at, NEW.created_by, NEW.updated_by, NEW.deleted_at, NEW.deleted_by;
 END;
 
+CREATE TABLE token_session
+(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uuid TEXT NOT NULL UNIQUE,
+  user_id INTEGER NOT NULL,
+  status BOOLEAN NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES user(id)
+);
+
+
 -- REFERENCE TABLES
 ----------------------------------------------
 

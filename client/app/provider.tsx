@@ -12,6 +12,7 @@ import {
 import { Message } from "@/types";
 import { Notification } from "@/shared/toaster";
 import { v4 } from "uuid";
+import { useVerifyLogin } from "@/shared/useVerifyLogin";
 
 interface GlobalContext {
   token: string | null;
@@ -61,6 +62,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
     },
     { toasts: [] },
   );
+  useVerifyLogin(dispatch, setToken);
   const client = useSocket<Message, Message>(
     `ws://localhost:8000/ws?token=${token}`,
     {

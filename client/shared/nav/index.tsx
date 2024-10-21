@@ -12,11 +12,50 @@ import { useWindowSize } from "../useWindowSize";
 import { AuthButton } from "./components";
 import { GlobalContext } from "@/app/provider";
 import { BiSolidLeaf } from "react-icons/bi";
+import { v4 } from "uuid";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
   const windowSize = useWindowSize();
-  const { token } = useContext(GlobalContext);
+  const { token, setToken, dispatch } = useContext(GlobalContext);
+
+  const handleSignout = async () => {
+    try {
+      localStorage.removeItem("token");
+      setToken?.(null);
+      const res = await fetch("http://localhost:8000/logout", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ContentType: "application/json",
+        },
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || data.detail);
+      }
+
+      dispatch?.({
+        type: "ADD_TOAST",
+        payload: {
+          uuid: v4(),
+          type: "success",
+          description: "Successfully signed out.",
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      dispatch?.({
+        type: "ADD_TOAST",
+        payload: {
+          uuid: v4(),
+          type: "error",
+          description: "An error occurred while signing out.",
+        },
+      });
+    }
+  };
 
   return (
     <Navbar className="fixed left-0 right-0 top-0 z-10 border-b dark:bg-slate-950">
@@ -56,14 +95,7 @@ export const Nav = () => {
               {themeMode.mode === "dark" ? "Light" : "Dark"}
             </Dropdown.Item>
             <Dropdown.Divider />
-            <Dropdown.Item
-              onClick={() => {
-                window.localStorage.removeItem("token");
-                window.location.reload();
-              }}
-            >
-              Sign out
-            </Dropdown.Item>
+            <Dropdown.Item onClick={handleSignout}>Sign out</Dropdown.Item>
           </Dropdown>
         </div>
       ) : (

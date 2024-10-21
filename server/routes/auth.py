@@ -1,14 +1,16 @@
 from datetime import datetime, timedelta
 import os
 import logging
-from fastapi import APIRouter, HTTPException, WebSocket
+from fastapi import APIRouter, Depends, HTTPException, WebSocket
 import jwt
 from pydantic import BaseModel
+from classes.user_claims import UserClaims
 
 from database.role import RoleModel
+from database.token_session import TokenSessionModel
 from database.user import UserModel
 from utils.environment import get_env_var
-from utils.jwt import create_jwt
+from utils.jwt import create_jwt, require_auth
 from utils.mailer import send_email
 
 router = APIRouter()
@@ -24,13 +26,48 @@ CLIENT_URL = get_env_var("CLIENT_URL")
 # Database
 role_model = RoleModel("basel.db")
 user_model = UserModel("basel.db")
+token_session_model = TokenSessionModel("basel.db")
 
 active_auth_connections = {}
 
 
+@router.get("/verify")
+def verify(user_claims: UserClaims = Depends(require_auth)):
+    connection = token_session_model._get_connection()
+    cursor = connection.cursor()
+    try:
+        token_session = token_session_model.get_token_session_by_uuid(
+            cursor, user_claims.token_session_uuid
+        )
+        if not token_session:
+            raise Exception("Token session not found")
+
+        return {"success": True}
+    except Exception as e:
+        logger.error(e)
+        return HTTPException(status_code=401, detail="Invalid token")
+
+
 @router.post("/logout")
-def logout():
-    pass
+def logout(user_claims: UserClaims = Depends(require_auth)):
+    try:
+        connection = user_model._get_connection()
+        cursor = connection.cursor()
+
+        logger.debug(f"User claims: {user_claims}")
+
+        invalidated = token_session_model.invalidate_token_session(
+            cursor, user_claims.token_session_uuid
+        )
+
+        if not invalidated:
+            raise Exception("Failed to invalidate token session.")
+
+        connection.commit()
+        return {"success": True}
+    except Exception as e:
+        logger.error(e)
+        return HTTPException(status_code=500, detail="Failed to logout user")
 
 
 class AuthStart(BaseModel):
@@ -111,10 +148,12 @@ async def auth_finish(auth_finish: AuthFinish):
     # Decode the token
     if not auth_finish.token or auth_finish.token is None:
         return HTTPException(status_code=400, detail="Token is required")
+
+    connection = user_model._get_connection()
+    cursor = connection.cursor()
+
     try:
         payload = jwt.decode(auth_finish.token, AUTH_SECRET, algorithms=[JWT_ALGO])
-        connection = user_model._get_connection()
-        cursor = connection.cursor()
         user = user_model.get_user_by_auth_id(cursor, payload["auth_id"])
         if not user:
             raise Exception("User not found")
@@ -123,12 +162,28 @@ async def auth_finish(auth_finish: AuthFinish):
         if not user_id:
             raise Exception("Failed to activate user.")
 
+        token_session_id = token_session_model.create_token_session(cursor, user.id)
+        if not token_session_id:
+            raise Exception("Failed to create token session")
+
+        token_session = token_session_model.get_token_session_by_id(
+            cursor, token_session_id
+        )
+
+        if not token_session:
+            raise Exception("Failed to get token session")
+
         connection.commit()
 
         expire_time = datetime.utcnow() + timedelta(hours=24)
 
         token = create_jwt(
-            {"user_uuid": user.uuid, "auth_id": user.auth_id, "exp": expire_time},
+            {
+                "user_uuid": user.uuid,
+                "auth_id": user.auth_id,
+                "exp": expire_time,
+                "token_session_uuid": token_session.uuid,
+            },
             ACCESS_SECRET,
         )
 
@@ -161,4 +216,5 @@ async def auth_finish(auth_finish: AuthFinish):
         )
     except Exception as e:
         logger.error(e)
+        connection.rollback()
         return HTTPException(status_code=500, detail=f"Error decoding token: {e}")

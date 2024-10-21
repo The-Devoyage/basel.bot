@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import logging
 
 from classes.user_claims import UserClaims
+from database.token_session import TokenSessionModel
 from utils.environment import get_env_var
 
 load_dotenv()
@@ -28,6 +29,9 @@ def create_jwt(payload: dict, secret: str) -> str:
 
 oauth2scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+# Database
+token_session_model = TokenSessionModel("basel.db")
+
 
 def handle_decode_token(token: str) -> UserClaims:
     """Decode a JWT token."""
@@ -43,6 +47,28 @@ def handle_decode_token(token: str) -> UserClaims:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
+def verify_token_session(token_session_uuid: str) -> bool:
+    """Verify a token session."""
+    connection = token_session_model._get_connection()
+    cursor = connection.cursor()
+    try:
+        token_session = token_session_model.get_token_session_by_uuid(
+            cursor, token_session_uuid
+        )
+        logger.debug(f"Token session: {token_session}")
+
+        if not token_session:
+            raise HTTPException(status_code=401, detail="Token session not found")
+        if token_session.status is False:
+            raise HTTPException(status_code=401, detail="Token session is invalid")
+        return True
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
 def require_auth(token: str = Depends(oauth2scheme)) -> UserClaims:
     """Verify a JWT token."""
-    return handle_decode_token(token)
+    user_claims = handle_decode_token(token)
+    verify_token_session(user_claims.token_session_uuid)
+    return user_claims

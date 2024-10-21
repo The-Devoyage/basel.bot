@@ -9,12 +9,14 @@ import "./module.styles.css";
 
 interface ChatCardProps {
   message: Message;
+  icon?: React.ReactNode;
 }
 
 export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
-  ({ message }, ref) => {
+  ({ message, icon }, ref) => {
     const isBot = message.sender === "bot";
     const getIcon = () => {
+      if (icon) return icon;
       switch (message.sender) {
         case "bot":
           return <BiSolidLeaf className="h-6 w-6 text-green-400" />;
@@ -24,7 +26,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
     };
 
     return (
-      <div ref={ref}>
+      <div ref={ref} className="w-full">
         <Card
           style={{
             borderLeft: isBot ? "4px solid #34D399" : "4px solid #3B82F6",

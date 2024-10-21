@@ -1,12 +1,12 @@
 import os
 import logging
 from datetime import datetime
-from fastapi import APIRouter, WebSocket
+from fastapi import APIRouter, WebSocket, WebSocketException, status
 from database.message import MessageModel
 import google.generativeai as genai
 from classes.message import Message
 from database.user import UserModel
-from utils.jwt import handle_decode_token
+from utils.jwt import handle_decode_token, verify_token_session
 
 router = APIRouter()
 
@@ -24,18 +24,23 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket, token: str):
-    await websocket.accept()
     user = None
-    if token:
-        user_claims = handle_decode_token(token)
-        conn = user_model._get_connection()
-        cursor = conn.cursor()
-        user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
-        conn.close()
-    else:
-        raise Exception("Not authorized to access this resource.")
 
-    logger.info(f"User: {user}")
+    try:
+        if token:
+            user_claims = handle_decode_token(token)
+            verify_token_session(user_claims.token_session_uuid)
+            conn = user_model._get_connection()
+            cursor = conn.cursor()
+            user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
+            conn.close()
+        else:
+            raise Exception("Not authorized to access this resource.")
+    except Exception as e:
+        logger.error(e)
+        return WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+
+    await websocket.accept()
 
     chat = model.start_chat(
         history=[
