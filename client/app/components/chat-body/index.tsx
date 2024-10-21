@@ -24,7 +24,9 @@ export const ChatBody = () => {
       <div className="mx-auto flex h-full items-center justify-center">
         <ChatCard
           message={{
-            text: "Hello there! I'm Basel, your personal career assistant. How can I help you today?",
+            text: `Hello there! I'm Basel, your personal career assistant. I am 
+                   ready to help you find jobs, prepare for interviews, and keep 
+                   your dynamic resume up to date. **How can I help you today?**`,
             sender: "bot",
             timestamp: new Date(),
           }}

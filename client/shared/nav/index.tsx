@@ -27,7 +27,6 @@ export const Nav = () => {
         <BiSolidLeaf className="text-green-400" />
         <span className="text-green-400">basel.bot</span>
       </Navbar.Brand>
-      <Navbar.Toggle />
       {token ? (
         <div className="flex md:order-2">
           <Dropdown

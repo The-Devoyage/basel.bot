@@ -1,15 +1,12 @@
 import os
 import logging
 from datetime import datetime
-from typing import Optional
 from fastapi import APIRouter, WebSocket
-from fastapi.param_functions import Depends
-from classes.user_claims import UserClaims
 from database.message import MessageModel
 import google.generativeai as genai
 from classes.message import Message
 from database.user import UserModel
-from utils.jwt import handle_decode_token, require_auth
+from utils.jwt import handle_decode_token
 
 router = APIRouter()
 

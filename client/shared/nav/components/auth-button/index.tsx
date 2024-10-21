@@ -14,7 +14,7 @@ export const AuthButton = () => {
       email: "",
     },
   });
-  const { dispatch, token } = useContext(GlobalContext);
+  const { dispatch, token, setToken } = useContext(GlobalContext);
 
   const {
     handleSend,
@@ -30,6 +30,7 @@ export const AuthButton = () => {
     handleReceive: (message) => {
       if (message?.token) {
         localStorage.setItem("token", message.token);
+        setToken?.(message.token);
         dispatch?.({
           type: "ADD_TOAST",
           payload: {
@@ -93,7 +94,7 @@ export const AuthButton = () => {
                 <p className="text-sm">
                   We have sent you a magic link to your email. Click the link
                   from any device in order to continue here.{" "}
-                  <strong>Do not close this window.</strong>
+                  <strong>Do not close this prompt.</strong>
                 </p>
               </Alert>
               <div className="rounded-md border border-gray-200 p-4 dark:text-white">
@@ -139,7 +140,12 @@ export const AuthButton = () => {
                   here.
                 </p>
               </Alert>
-              <Button color="green" isProcessing={loading} onClick={handleAuth}>
+              <Button
+                color="green"
+                isProcessing={loading}
+                onClick={handleAuth}
+                className="w-full"
+              >
                 Submit
               </Button>
             </form>

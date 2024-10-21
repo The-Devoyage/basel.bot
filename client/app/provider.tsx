@@ -15,6 +15,7 @@ import { v4 } from "uuid";
 
 interface GlobalContext {
   token: string | null;
+  setToken?: React.Dispatch<React.SetStateAction<string | null>>;
   client: SocketClient<Message, Message> | null;
   toasts: Notification[];
   dispatch: React.Dispatch<{
@@ -79,10 +80,21 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   useEffect(() => {
     const t = window.localStorage.getItem("token");
     setToken(t);
+
+    const handleStorageChange = () => {
+      const t = window.localStorage.getItem("token");
+      setToken(t);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const value = useMemo(
-    () => ({ client, toasts, dispatch, token }),
+    () => ({ client, toasts, dispatch, token, setToken }),
     [
       client.socket,
       client.messages,

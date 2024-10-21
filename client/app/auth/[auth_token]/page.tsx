@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Alert } from "flowbite-react";
+import { useContext, useEffect, useRef, useState } from "react";
+import { Alert, Button } from "flowbite-react";
 import { BiSolidLeaf } from "react-icons/bi";
+import { GlobalContext } from "@/app/provider";
+import {useRouter} from "next/navigation"
 
 export default function Page({ params }: { params: { auth_token: string } }) {
+  const router = useRouter();
+  const { token } = useContext(GlobalContext);
   const [message, setMessage] = useState<{
     type: "error" | "success";
     message: string;
   } | null>(null);
+  const hasVerified = useRef(false);
 
   useEffect(() => {
+    if (hasVerified.current) return;
+    hasVerified.current = true;
     const verifyAccount = async () => {
       try {
         const res = await fetch("http://localhost:8000/auth-finish", {
@@ -21,7 +28,7 @@ export default function Page({ params }: { params: { auth_token: string } }) {
           body: JSON.stringify({ token: params.auth_token }),
         });
         const data = await res.json();
-        if (data.error || data.status_code !== 200) {
+        if (!data.success) {
           setMessage({ type: "error", message: data.error || data.detail });
           return;
         }
@@ -31,7 +38,6 @@ export default function Page({ params }: { params: { auth_token: string } }) {
             "Account verified! Continue from your original tab or device.",
         });
       } catch (error) {
-        console.error(error);
         setMessage({
           type: "error",
           message: "An error occurred, please try again.",
@@ -65,6 +71,17 @@ export default function Page({ params }: { params: { auth_token: string } }) {
           >
             {message.message}
           </p>
+        )}
+        {!!token && (
+          <Button
+            color="green"
+            className="mt-2 w-full"
+            onClick={() => {
+              router.push("/");
+            }}
+          >
+            Continue
+          </Button>
         )}
       </Alert>
     </div>
