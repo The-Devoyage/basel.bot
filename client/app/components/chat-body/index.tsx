@@ -4,8 +4,6 @@ import { useContext, useEffect, useRef } from "react";
 import { GlobalContext } from "@/app/provider";
 import { ChatCard } from "@/shared/chat-card";
 import { Loader } from "@/shared/loader";
-import { TbInfoHexagonFilled } from "react-icons/tb";
-import { Card, Tooltip } from "flowbite-react";
 
 export const ChatBody = () => {
   const { client } = useContext(GlobalContext);

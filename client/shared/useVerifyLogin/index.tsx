@@ -1,12 +1,9 @@
-import { useEffect, useRef } from "react";
+import { Dispatch, useEffect, useRef } from "react";
 import { v4 } from "uuid";
-import { Notification } from "@/shared/toaster";
+import { AppAction } from "../useStore";
 
 export const useVerifyLogin = (
-  dispatch: React.Dispatch<{
-    type: "ADD_TOAST" | "REMOVE_TOAST";
-    payload: Notification;
-  }> | null,
+  dispatch: Dispatch<AppAction>,
   setToken?: React.Dispatch<React.SetStateAction<string | null>>,
 ) => {
   const isVerified = useRef(false);
@@ -32,9 +29,11 @@ export const useVerifyLogin = (
           dispatch?.({
             type: "ADD_TOAST",
             payload: {
-              uuid: v4(),
-              type: "error",
-              description: "You have been signed out. Please sign in again.",
+              notification: {
+                uuid: v4(),
+                type: "error",
+                description: "You have been signed out. Please sign in again.",
+              },
             },
           });
         }

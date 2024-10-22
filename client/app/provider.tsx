@@ -1,35 +1,25 @@
 "use client";
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
-import {
-  FC,
-  createContext,
-  useMemo,
-  useEffect,
-  useReducer,
-  useState,
-} from "react";
+import { FC, createContext, useMemo, useEffect, useState } from "react";
 import { Message } from "@/types";
-import { Notification } from "@/shared/toaster";
 import { v4 } from "uuid";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
+import { useStore } from "@/shared/useStore";
 
 interface GlobalContext {
   token: string | null;
   setToken?: React.Dispatch<React.SetStateAction<string | null>>;
   client: SocketClient<Message, Message> | null;
-  toasts: Notification[];
-  dispatch: React.Dispatch<{
-    type: "ADD_TOAST" | "REMOVE_TOAST";
-    payload: Notification;
-  }> | null;
+  store: ReturnType<typeof useStore>[0];
+  dispatch: ReturnType<typeof useStore>[1];
 }
 
 export const GlobalContext = createContext<GlobalContext>({
   token: null,
   client: null,
-  toasts: [],
-  dispatch: null,
+  store: { toasts: [], token: null },
+  dispatch: () => {},
 });
 
 interface GlobalProviderProps {
@@ -38,41 +28,22 @@ interface GlobalProviderProps {
 
 export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
-  const [{ toasts }, dispatch] = useReducer(
-    (
-      state: { toasts: Notification[] },
-      action: { type: string; payload: Notification },
-    ) => {
-      switch (action.type) {
-        case "ADD_TOAST":
-          return {
-            ...state,
-            toasts: [...state.toasts, action.payload], // Correctly update the `toasts` array
-          };
-        case "REMOVE_TOAST":
-          return {
-            ...state,
-            toasts: state.toasts.filter(
-              (toast) => toast.uuid !== action.payload.uuid, // Filter the toasts array
-            ),
-          };
-        default:
-          return state; // Return the current state if action type is unknown
-      }
-    },
-    { toasts: [] },
-  );
-  useVerifyLogin(dispatch, setToken);
+  const store = useStore();
+
+  useVerifyLogin(store[1], setToken);
+
   const client = useSocket<Message, Message>(
     `ws://localhost:8000/ws?token=${token}`,
     {
       handleError: (_) => {
-        dispatch({
+        store[1]({
           type: "ADD_TOAST",
           payload: {
-            uuid: v4(),
-            type: "error",
-            description: "An error occurred, please try again later.",
+            notification: {
+              uuid: v4(),
+              type: "error",
+              description: "An error occurred, please try again later.",
+            },
           },
         });
       },
@@ -96,15 +67,15 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   }, []);
 
   const value = useMemo(
-    () => ({ client, toasts, dispatch, token, setToken }),
+    () => ({ client, store: store[0], token, setToken, dispatch: store[1] }),
     [
       client.socket,
       client.messages,
       client.handleSend,
       client.loading,
-      toasts,
-      dispatch,
       token,
+      store[0],
+      store[1],
     ],
   );
 

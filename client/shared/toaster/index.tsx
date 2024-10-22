@@ -13,14 +13,18 @@ export interface Notification {
 }
 
 export const Toaster = () => {
-  const { toasts, dispatch } = useContext(GlobalContext);
+  const {
+    store: { toasts },
+    dispatch,
+  } = useContext(GlobalContext);
 
-  // dispatch  remove toast
   useEffect(() => {
     const timeout = setTimeout(() => {
-      dispatch?.({
+      dispatch({
         type: "REMOVE_TOAST",
-        payload: toasts[0],
+        payload: {
+          notification: toasts[0],
+        },
       });
     }, 3000);
 

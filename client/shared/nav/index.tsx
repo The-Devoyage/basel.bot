@@ -36,22 +36,26 @@ export const Nav = () => {
         throw new Error(data.error || data.detail);
       }
 
-      dispatch?.({
+      dispatch({
         type: "ADD_TOAST",
         payload: {
-          uuid: v4(),
-          type: "success",
-          description: "Successfully signed out.",
+          notification: {
+            uuid: v4(),
+            type: "success",
+            description: "Successfully signed out.",
+          },
         },
       });
     } catch (error) {
       console.error(error);
-      dispatch?.({
+      dispatch({
         type: "ADD_TOAST",
         payload: {
-          uuid: v4(),
-          type: "error",
-          description: "An error occurred while signing out.",
+          notification: {
+            uuid: v4(),
+            type: "error",
+            description: "An error occurred while signing out.",
+          },
         },
       });
     }
@@ -85,14 +89,14 @@ export const Nav = () => {
                 name@flowbite.com
               </span>
             </Dropdown.Header>
-            <Dropdown.Item>Dashboard</Dropdown.Item>
-            <Dropdown.Item>Settings</Dropdown.Item>
+            <Dropdown.Item href="/my-basel">My Basel</Dropdown.Item>
+            <Dropdown.Item href="/account">Settings</Dropdown.Item>
             <Dropdown.Item
               onClick={() =>
                 themeMode.setMode(themeMode.mode === "dark" ? "light" : "dark")
               }
             >
-              {themeMode.mode === "dark" ? "Light" : "Dark"}
+              {themeMode.mode === "dark" ? "Light Mode" : "Dark Mode"}
             </Dropdown.Item>
             <Dropdown.Divider />
             <Dropdown.Item onClick={handleSignout}>Sign out</Dropdown.Item>
