@@ -13,11 +13,13 @@ import { AuthButton } from "./components";
 import { GlobalContext } from "@/app/provider";
 import { BiSolidLeaf } from "react-icons/bi";
 import { v4 } from "uuid";
+import { useGetUser } from "@/api";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
   const windowSize = useWindowSize();
-  const { token, setToken, dispatch } = useContext(GlobalContext);
+  const { token, setToken, dispatch, store } = useContext(GlobalContext);
+  useGetUser();
 
   const handleSignout = async () => {
     try {
@@ -86,7 +88,7 @@ export const Nav = () => {
             <Dropdown.Header>
               <span className="block text-sm">Bonnie Green</span>
               <span className="block truncate text-sm font-medium">
-                name@flowbite.com
+                {store.me?.email}
               </span>
             </Dropdown.Header>
             <Dropdown.Item href="/my-basel">My Basel</Dropdown.Item>

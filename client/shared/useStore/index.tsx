@@ -8,6 +8,7 @@ import { Action as AuthAction, authReducer, State as AuthState } from "./auth";
 
 export type AppAction = ToastAction | AuthAction;
 export type AppState = ToastState & AuthState;
+export type AppStore = [AppState, React.Dispatch<AppAction>];
 
 export const useStore = () => {
   const store = useReducer<Reducer<AppState, AppAction>>(
@@ -23,6 +24,7 @@ export const useStore = () => {
     {
       toasts: [],
       token: null,
+      me: null,
     },
   );
 

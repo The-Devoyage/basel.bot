@@ -6,6 +6,7 @@ import { Message } from "@/types";
 import { v4 } from "uuid";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
+import { useGetUser } from "@/api";
 
 interface GlobalContext {
   token: string | null;
@@ -18,7 +19,7 @@ interface GlobalContext {
 export const GlobalContext = createContext<GlobalContext>({
   token: null,
   client: null,
-  store: { toasts: [], token: null },
+  store: { toasts: [], token: null, me: null },
   dispatch: () => {},
 });
 
@@ -29,7 +30,6 @@ interface GlobalProviderProps {
 export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const store = useStore();
-
   useVerifyLogin(store[1], setToken);
 
   const client = useSocket<Message, Message>(
