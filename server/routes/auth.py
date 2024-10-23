@@ -48,6 +48,21 @@ def verify(user_claims: UserClaims = Depends(require_auth)):
         return HTTPException(status_code=401, detail="Invalid token")
 
 
+@router.get("/me")
+def me(user_claims: UserClaims = Depends(require_auth)):
+    connection = user_model._get_connection()
+    cursor = connection.cursor()
+    try:
+        user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
+        if not user:
+            raise Exception("User not found")
+
+        return {"success": True, "data": user.dict()}
+    except Exception as e:
+        logger.error(e)
+        return HTTPException(status_code=401, detail="Invalid token")
+
+
 @router.post("/logout")
 def logout(user_claims: UserClaims = Depends(require_auth)):
     try:

@@ -217,6 +217,7 @@ python-dateutil==2.8.2
 python-debian==0.1.43+ubuntu1.1
 python-dotenv==1.0.1
 python-gnupg==0.4.8
+python-http-client==3.3.7
 python-Levenshtein==0.12.2
 python-multipart==0.0.12
 python-xlib==0.29
@@ -237,6 +238,7 @@ roundrobin==0.0.4
 rsa==4.9
 SecretStorage==3.3.1
 selenium==4.21.0
+sendgrid==6.11.0
 sessioninstaller==0.0.0
 sgmllib3k==1.0.0
 shapely==2.0.4
@@ -249,6 +251,7 @@ spinners==0.0.24
 SQLAlchemy==1.4.47
 ssh-import-id==5.11
 stack-data==0.6.2
+starkbank-ecdsa==2.2.0
 starlette==0.39.2
 system76driver==20.4.95
 systemd-python==234
@@ -272,6 +275,7 @@ tzdata==2023.3
 ubuntu-drivers-common==0.0.0
 ufw==0.36.1
 ulauncher==5.14.0
+unitest==1.4.34
 uritemplate==4.1.1
 urllib3==1.26.5
 userpath==1.8.0
