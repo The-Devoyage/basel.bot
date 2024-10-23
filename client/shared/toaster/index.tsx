@@ -4,6 +4,7 @@ import { GlobalContext } from "@/app/provider";
 import { Toast } from "flowbite-react";
 import { useContext, useEffect } from "react";
 import { Typography } from "../typography";
+import { removeToast } from "../useStore/toast";
 
 export interface Notification {
   uuid: string;
@@ -20,12 +21,7 @@ export const Toaster = () => {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      dispatch({
-        type: "REMOVE_TOAST",
-        payload: {
-          notification: toasts[0],
-        },
-      });
+      dispatch(removeToast(toasts[0]));
     }, 3000);
 
     return () => clearTimeout(timeout);

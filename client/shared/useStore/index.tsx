@@ -24,7 +24,6 @@ export const useStore = () => {
     {
       toasts: [],
       token: null,
-      me: null,
     },
   );
 

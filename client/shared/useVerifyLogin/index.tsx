@@ -1,51 +1,65 @@
 import { Dispatch, useEffect, useRef } from "react";
-import { v4 } from "uuid";
-import { AppAction } from "../useStore";
+import { AppAction, AppState } from "../useStore";
+import { addToken, removeToken } from "../useStore/auth";
+import { addToast } from "../useStore/toast";
 
 export const useVerifyLogin = (
+  store: AppState,
   dispatch: Dispatch<AppAction>,
-  setToken?: React.Dispatch<React.SetStateAction<string | null>>,
 ) => {
-  const isVerified = useRef(false);
+  const attemptVerify = useRef(false);
+
+  useEffect(() => {
+    const t = window.localStorage.getItem("token");
+    if (!t) return;
+
+    dispatch(addToken(t));
+
+    const handleStorageChange = () => {
+      const t = window.localStorage.getItem("token");
+      if (!t) {
+        dispatch(removeToken());
+        return;
+      }
+      dispatch(addToken(t));
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
+
   useEffect(() => {
     const watchToken = async () => {
-      const token = localStorage.getItem("token");
+      if (attemptVerify.current || !store.token) return;
 
-      if (isVerified.current || !token) return;
-
-      if (token) {
-        isVerified.current = true;
+      if (store.token) {
+        attemptVerify.current = true;
+        window.localStorage.setItem("token", store.token);
 
         const res = await fetch("http://localhost:8000/verify", {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${store.token}`,
             ContentType: "application/json",
           },
         });
         const data = await res.json();
+
         if (!data.success) {
           localStorage.removeItem("token");
-          setToken?.(null);
-          dispatch?.({
-            type: "ADD_TOAST",
-            payload: {
-              notification: {
-                uuid: v4(),
-                type: "error",
-                description: "You have been signed out. Please sign in again.",
-              },
-            },
-          });
+          dispatch(removeToken());
+          dispatch(
+            addToast({
+              type: "error",
+              description: "You have been signed out. Please sign in again.",
+            }),
+          );
         }
       }
     };
 
     watchToken();
-
-    window.addEventListener("storage", watchToken);
-
-    return () => {
-      window.removeEventListener("storage", watchToken);
-    };
-  }, []);
+  }, [store.token]);
 };

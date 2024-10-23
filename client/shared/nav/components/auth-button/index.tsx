@@ -4,8 +4,9 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { Alert, Button, Label, Modal, TextInput } from "flowbite-react";
 import { useSocket } from "@/shared/useSocket";
 import { GlobalContext } from "@/app/provider";
-import { v4 } from "uuid";
 import { Loader } from "@/shared/loader";
+import { addToken } from "@/shared/useStore/auth";
+import { addToast } from "@/shared/useStore/toast";
 
 export const AuthButton = () => {
   const [awaitAuth, setAwaitAuth] = useState(false);
@@ -14,7 +15,10 @@ export const AuthButton = () => {
       email: "",
     },
   });
-  const { dispatch, token, setToken } = useContext(GlobalContext);
+  const {
+    dispatch,
+    store: { token },
+  } = useContext(GlobalContext);
   const emailInput = useRef<HTMLInputElement>(null);
 
   const {
@@ -30,28 +34,18 @@ export const AuthButton = () => {
   >("ws://localhost:8000/auth-start", {
     handleReceive: (message) => {
       if (message?.token) {
-        localStorage.setItem("token", message.token);
-        setToken?.(message.token);
-        dispatch?.({
-          type: "ADD_TOAST",
-          payload: {
-            uuid: v4(),
+        dispatch(addToken(message.token));
+        dispatch(
+          addToast({
             type: "success",
             description: message?.message,
-          },
-        });
+          }),
+        );
         handleClose();
       }
 
       if (!message?.success) {
-        dispatch?.({
-          type: "ADD_TOAST",
-          payload: {
-            uuid: v4(),
-            type: "error",
-            description: message?.message,
-          },
-        });
+        dispatch(addToast({ type: "error", description: message?.message }));
       } else {
         setAwaitAuth(true);
       }

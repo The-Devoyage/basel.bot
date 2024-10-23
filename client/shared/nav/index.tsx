@@ -12,19 +12,21 @@ import { useWindowSize } from "../useWindowSize";
 import { AuthButton } from "./components";
 import { GlobalContext } from "@/app/provider";
 import { BiSolidLeaf } from "react-icons/bi";
-import { v4 } from "uuid";
-import { useGetUser } from "@/api";
+import { addToast } from "../useStore/toast";
+import { removeToken } from "../useStore/auth";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
   const windowSize = useWindowSize();
-  const { token, setToken, dispatch, store } = useContext(GlobalContext);
-  useGetUser();
+  const {
+    store: { token },
+    dispatch,
+  } = useContext(GlobalContext);
 
   const handleSignout = async () => {
     try {
       localStorage.removeItem("token");
-      setToken?.(null);
+      dispatch(removeToken());
       const res = await fetch("http://localhost:8000/logout", {
         method: "POST",
         headers: {
@@ -38,28 +40,20 @@ export const Nav = () => {
         throw new Error(data.error || data.detail);
       }
 
-      dispatch({
-        type: "ADD_TOAST",
-        payload: {
-          notification: {
-            uuid: v4(),
-            type: "success",
-            description: "Successfully signed out.",
-          },
-        },
-      });
+      dispatch(
+        addToast({
+          type: "success",
+          description: "Successfully signed out.",
+        }),
+      );
     } catch (error) {
       console.error(error);
-      dispatch({
-        type: "ADD_TOAST",
-        payload: {
-          notification: {
-            uuid: v4(),
-            type: "error",
-            description: "An error occurred while signing out.",
-          },
-        },
-      });
+      dispatch(
+        addToast({
+          type: "error",
+          description: "An error occurred while signing out.",
+        }),
+      );
     }
   };
 
@@ -88,7 +82,7 @@ export const Nav = () => {
             <Dropdown.Header>
               <span className="block text-sm">Bonnie Green</span>
               <span className="block truncate text-sm font-medium">
-                {store.me?.email}
+                myemail@here.com
               </span>
             </Dropdown.Header>
             <Dropdown.Item href="/my-basel">My Basel</Dropdown.Item>

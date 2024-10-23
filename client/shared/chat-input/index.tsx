@@ -8,7 +8,10 @@ import { Message } from "@/types";
 
 export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
-  const { client, token } = useContext(GlobalContext);
+  const {
+    client,
+    store: { token },
+  } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasConnected = useRef<boolean>(false);
   const [textareaHeight, setTextareaHeight] = useState<number | undefined>(
