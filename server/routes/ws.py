@@ -1,7 +1,7 @@
 import os
 import logging
 from datetime import datetime
-from fastapi import APIRouter, WebSocket, WebSocketException, status
+from fastapi import APIRouter, Cookie, WebSocket, WebSocketException, status
 from database.message import MessageModel
 import google.generativeai as genai
 from classes.message import Message
@@ -23,7 +23,7 @@ model = genai.GenerativeModel(model_name="gemini-1.5-flash")
 
 
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket, token: str):
+async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
     user = None
 
     try:

@@ -1,5 +1,6 @@
 import os
-from typing import Optional, cast
+from typing import cast
+from fastapi import Cookie
 from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -67,8 +68,9 @@ def verify_token_session(token_session_uuid: str) -> bool:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-def require_auth(token: str = Depends(oauth2scheme)) -> UserClaims:
+def require_auth(token: str = Cookie(None)) -> UserClaims:
     """Verify a JWT token."""
+    logger.debug(f"Token: {token}")
     user_claims = handle_decode_token(token)
     verify_token_session(user_claims.token_session_uuid)
     return user_claims
