@@ -4,11 +4,13 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Alert, Button } from "flowbite-react";
 import { BiSolidLeaf } from "react-icons/bi";
 import { GlobalContext } from "@/app/provider";
-import {useRouter} from "next/navigation"
+import { useRouter } from "next/navigation";
 
 export default function Page({ params }: { params: { auth_token: string } }) {
   const router = useRouter();
-  const { token } = useContext(GlobalContext);
+  const {
+    store: { isAuthenticated },
+  } = useContext(GlobalContext);
   const [message, setMessage] = useState<{
     type: "error" | "success";
     message: string;
@@ -72,7 +74,7 @@ export default function Page({ params }: { params: { auth_token: string } }) {
             {message.message}
           </p>
         )}
-        {!!token && (
+        {isAuthenticated && (
           <Button
             color="green"
             className="mt-2 w-full"

@@ -12,7 +12,6 @@ export const ChatBody = () => {
   useEffect(() => {
     if (ref.current) {
       const top = ref.current.getBoundingClientRect().top;
-      console.log(top);
       if (top > 0) {
         window.scrollTo(0, window.scrollY + top - 74);
       }

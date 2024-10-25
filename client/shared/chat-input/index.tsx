@@ -10,7 +10,7 @@ export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
   const {
     client,
-    store: { token },
+    store: { isAuthenticated },
   } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const hasConnected = useRef<boolean>(false);
@@ -32,7 +32,7 @@ export const ChatInput = () => {
   useEffect(() => {
     inputRef.current?.focus();
     if (hasConnected.current) return;
-    if (!token) return;
+    if (!isAuthenticated) return;
     client?.handleConnect();
     hasConnected.current = true;
 
@@ -40,7 +40,7 @@ export const ChatInput = () => {
       client?.handleClose();
       hasConnected.current = false;
     };
-  }, [token]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -54,12 +54,12 @@ export const ChatInput = () => {
     <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
       <Textarea
         placeholder={
-          token
+          isAuthenticated
             ? "Your last interview starts here..."
             : "Login to start chatting"
         }
         className="w-full focus:border-green-400 focus:ring-green-400 dark:bg-slate-950 dark:text-white"
-        disabled={!token}
+        disabled={!isAuthenticated}
         color="info"
         theme={{
           colors: {

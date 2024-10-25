@@ -5,8 +5,9 @@ import { Alert, Button, Label, Modal, TextInput } from "flowbite-react";
 import { useSocket } from "@/shared/useSocket";
 import { GlobalContext } from "@/app/provider";
 import { Loader } from "@/shared/loader";
-import { addToken } from "@/shared/useStore/auth";
 import { addToast } from "@/shared/useStore/toast";
+import { setAuthToken } from "@/api/auth";
+import { setAuthenticated } from "@/shared/useStore/auth";
 
 export const AuthButton = () => {
   const [awaitAuth, setAwaitAuth] = useState(false);
@@ -17,7 +18,7 @@ export const AuthButton = () => {
   });
   const {
     dispatch,
-    store: { token },
+    store: { isAuthenticated },
   } = useContext(GlobalContext);
   const emailInput = useRef<HTMLInputElement>(null);
 
@@ -32,9 +33,10 @@ export const AuthButton = () => {
     { email: string },
     { success: boolean; message: string; token: string }
   >("ws://localhost:8000/auth-start", {
-    handleReceive: (message) => {
+    handleReceive: async (message) => {
       if (message?.token) {
-        dispatch(addToken(message.token));
+        await setAuthToken(message.token);
+        dispatch(setAuthenticated(true));
         dispatch(
           addToast({
             type: "success",
@@ -46,6 +48,7 @@ export const AuthButton = () => {
 
       if (!message?.success) {
         dispatch(addToast({ type: "error", description: message?.message }));
+        dispatch(setAuthenticated(false));
       } else {
         setAwaitAuth(true);
       }
@@ -72,7 +75,7 @@ export const AuthButton = () => {
     }
   };
 
-  if (token) return null;
+  if (isAuthenticated) return null;
 
   return (
     <>

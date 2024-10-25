@@ -14,16 +14,17 @@ export const useStore = () => {
   const store = useReducer<Reducer<AppState, AppAction>>(
     (state, action) => {
       const reducers = [toastReducer, authReducer];
-      let updated = state;
+      let updated = { ...state };
       for (const reducer of reducers) {
-        const newState = reducer(state, action as any);
-        updated = { ...state, ...newState };
+        const newState = reducer(updated, action as any);
+        updated = { ...updated, ...newState };
       }
       return updated;
     },
     {
       toasts: [],
-      token: null,
+      isAuthenticated: false,
+      me: null,
     },
   );
 

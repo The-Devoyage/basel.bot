@@ -20,6 +20,7 @@ export const Toaster = () => {
   } = useContext(GlobalContext);
 
   useEffect(() => {
+    if (toasts.length === 0) return;
     const timeout = setTimeout(() => {
       dispatch(removeToast(toasts[0]));
     }, 3000);

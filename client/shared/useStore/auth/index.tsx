@@ -1,47 +1,48 @@
+import { User } from "@/types/user";
 import { Reducer } from "react";
 
-export const ADD_TOKEN = "ADD_TOKEN";
-export const REMOVE_TOKEN = "REMOVE_TOKEN";
+export const SET_AUTHENTICATED = "SET_AUTHENTICATED";
+export const SET_ME = "SET_ME";
 
-export type AddTokenAction = {
-  type: typeof ADD_TOKEN;
+export type SetAuthenticatedAction = {
+  type: typeof SET_AUTHENTICATED;
   payload: {
-    token: string;
+    isAuthenticated: boolean;
   };
 };
-export type RemoveTokenAction = {
-  type: typeof REMOVE_TOKEN;
+export type SetMeAction = {
+  type: typeof SET_ME;
+  payload: {
+    me: User;
+  };
 };
 
-export type Action = AddTokenAction | RemoveTokenAction;
-export type State = { token: string | null };
+export type Action = SetAuthenticatedAction | SetMeAction;
+export type State = { isAuthenticated: boolean; me: User | null };
 
 export const authReducer: Reducer<State, Action> = (
   state: State,
   action: Action,
 ): State => {
   switch (action.type) {
-    case ADD_TOKEN:
-      return {
-        ...state,
-        token: action.payload.token,
-      };
-    case REMOVE_TOKEN:
-      return {
-        ...state,
-        token: null,
-      };
+    case SET_AUTHENTICATED:
+      return { ...state, isAuthenticated: action.payload.isAuthenticated };
+    case SET_ME:
+      return { ...state, me: action.payload.me };
     default:
-      return state;
+      return { ...state };
   }
 };
 
 // Actions
-export const addToken = (token: string): AddTokenAction => ({
-  type: ADD_TOKEN,
-  payload: { token },
+export const setAuthenticated = (
+  isAuthenticated: boolean,
+): SetAuthenticatedAction => ({
+  type: SET_AUTHENTICATED,
+  payload: { isAuthenticated },
 });
 
-export const removeToken = (): RemoveTokenAction => ({
-  type: REMOVE_TOKEN,
+export const setMe = (me: User): SetMeAction => ({
+  type: SET_ME,
+  payload: { me },
 });

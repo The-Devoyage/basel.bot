@@ -13,31 +13,22 @@ import { AuthButton } from "./components";
 import { GlobalContext } from "@/app/provider";
 import { BiSolidLeaf } from "react-icons/bi";
 import { addToast } from "../useStore/toast";
-import { removeToken } from "../useStore/auth";
+import { removeAuthToken } from "@/api/auth";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
   const windowSize = useWindowSize();
   const {
-    store: { token },
     dispatch,
+    store: { isAuthenticated, me },
   } = useContext(GlobalContext);
 
   const handleSignout = async () => {
     try {
-      localStorage.removeItem("token");
-      dispatch(removeToken());
-      const res = await fetch("http://localhost:8000/logout", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          ContentType: "application/json",
-        },
-      });
-      const data = await res.json();
+      const success = await removeAuthToken();
 
-      if (!data.success) {
-        throw new Error(data.error || data.detail);
+      if (!success) {
+        throw new Error("Failed to sign out.");
       }
 
       dispatch(
@@ -66,7 +57,7 @@ export const Nav = () => {
         <BiSolidLeaf className="text-green-400" />
         <span className="text-green-400">basel.bot</span>
       </Navbar.Brand>
-      {token ? (
+      {isAuthenticated ? (
         <div className="flex md:order-2">
           <Dropdown
             arrowIcon={false}
@@ -80,13 +71,15 @@ export const Nav = () => {
             }
           >
             <Dropdown.Header>
-              <span className="block text-sm">Bonnie Green</span>
+              <span className="block text-sm">
+                {me?.first_name} {me?.last_name}
+              </span>
               <span className="block truncate text-sm font-medium">
-                myemail@here.com
+                {me?.email}
               </span>
             </Dropdown.Header>
             <Dropdown.Item href="/my-basel">My Basel</Dropdown.Item>
-            <Dropdown.Item href="/account">Settings</Dropdown.Item>
+            <Dropdown.Item href="/account">Account</Dropdown.Item>
             <Dropdown.Item
               onClick={() =>
                 themeMode.setMode(themeMode.mode === "dark" ? "light" : "dark")
@@ -101,19 +94,22 @@ export const Nav = () => {
       ) : (
         <>
           {windowSize.isMobile ? (
-            <Navbar.Collapse>
-              <Navbar.Link
-                href="#"
-                onClick={() =>
-                  themeMode.setMode(
-                    themeMode.mode === "dark" ? "light" : "dark",
-                  )
-                }
-              >
-                {themeMode.mode === "dark" ? "Light" : "Dark"}
-              </Navbar.Link>
-              <AuthButton />
-            </Navbar.Collapse>
+            <>
+              <Navbar.Toggle />
+              <Navbar.Collapse>
+                <Navbar.Link
+                  href="#"
+                  onClick={() =>
+                    themeMode.setMode(
+                      themeMode.mode === "dark" ? "light" : "dark",
+                    )
+                  }
+                >
+                  {themeMode.mode === "dark" ? "Light" : "Dark"}
+                </Navbar.Link>
+                <AuthButton />
+              </Navbar.Collapse>
+            </>
           ) : (
             <div className="flex">
               <DarkThemeToggle className="mr-2" />

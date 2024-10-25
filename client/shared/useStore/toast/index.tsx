@@ -29,10 +29,12 @@ export const toastReducer: Reducer<State, Action> = (
   switch (action.type) {
     case ADD_TOAST:
       return {
+        ...state,
         toasts: [...state.toasts, action.payload.notification],
       };
     case REMOVE_TOAST:
       return {
+        ...state,
         toasts: state.toasts.filter(
           (toast) => toast.uuid !== action.payload.notification.uuid,
         ),

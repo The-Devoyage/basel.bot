@@ -1,11 +1,13 @@
 "use client";
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
-import { FC, createContext, useMemo, useEffect, useState } from "react";
+import { FC, createContext, useEffect, useMemo } from "react";
 import { Message } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
 import { addToast } from "@/shared/useStore/toast";
+import { fetchMe } from "@/api";
+import { setMe } from "@/shared/useStore/auth";
 
 interface GlobalContext {
   client: SocketClient<Message, Message> | null;
@@ -15,7 +17,7 @@ interface GlobalContext {
 
 export const GlobalContext = createContext<GlobalContext>({
   client: null,
-  store: { toasts: [], token: null },
+  store: { toasts: [], isAuthenticated: false, me: null },
   dispatch: () => {},
 });
 
@@ -25,21 +27,43 @@ interface GlobalProviderProps {
 
 export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const [store, dispatch] = useStore();
-  useVerifyLogin(store, dispatch);
+  useVerifyLogin(dispatch);
 
-  const client = useSocket<Message, Message>(
-    `ws://localhost:8000/ws?token=${store.token}`,
-    {
-      handleError: (_) => {
+  const client = useSocket<Message, Message>(`ws://localhost:8000/ws`, {
+    handleError: (_) => {
+      dispatch(
+        addToast({
+          type: "error",
+          description: "An error occurred, please try again later.",
+        }),
+      );
+    },
+  });
+
+  useEffect(() => {
+    if (!store.isAuthenticated || store.me) return;
+
+    const handleFetchMe = async () => {
+      try {
+        const me = await fetchMe();
+        if (!me.success || !me.data) {
+          throw new Error("Failed to fetch user.");
+        }
+        console.log("ME", me.data);
+        dispatch(setMe(me.data));
+      } catch (error) {
+        console.error(error);
         dispatch(
           addToast({
             type: "error",
-            description: "An error occurred, please try again later.",
+            description: "An error occurred while fetching user.",
           }),
         );
-      },
-    },
-  );
+      }
+    };
+
+    handleFetchMe();
+  }, [store.isAuthenticated]);
 
   const value = useMemo(
     () => ({ client, store, dispatch }),
