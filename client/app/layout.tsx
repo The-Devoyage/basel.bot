@@ -41,7 +41,7 @@ export default function RootLayout({
           >
             {children}
           </main>
-          <footer className="sticky bottom-0 w-full border-t bg-white dark:border-green-500 dark:bg-slate-950">
+          <footer className="sticky bottom-0 w-full border-t bg-white dark:border-slate-500 dark:bg-slate-950">
             <ChatInput />
           </footer>
         </body>
