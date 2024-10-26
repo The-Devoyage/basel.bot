@@ -124,24 +124,26 @@ class UserModel:
     def update_user(
         self,
         cursor,
-        user_id,
+        user_id: int,
+        current_user: User,
         email=None,
         first_name=None,
         last_name=None,
         phone=None,
         role_id=None,
-        updated_by=None,
         status=None,
         image=None,
+        auth_id=None,
     ) -> int:
         """Update a user's information."""
+        logger.debug(f"Updating user {user_id}")
 
         query = """
             UPDATE user
             SET updated_by = ?, updated_at = ?
         """
 
-        bindings = (updated_by, datetime.now())
+        bindings = (current_user.id, datetime.now())
 
         if email is not None:
             query += ", email = ?"
@@ -164,6 +166,9 @@ class UserModel:
         if image is not None:
             query += ", image = ?"
             bindings += (image,)
+        if auth_id is not None:
+            query += ", auth_id = ?"
+            bindings += (auth_id,)
 
         query += " WHERE id = ?"
 

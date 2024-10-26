@@ -47,7 +47,16 @@ export const ChatBody = () => {
           ref={index === client?.messages.length - 1 ? ref : undefined}
         />
       ))}
-      {client?.loading && <Loader />}
+      {client?.loading && (
+        <ChatCard
+          message={{
+            text: "",
+            sender: "bot",
+            timestamp: new Date(),
+          }}
+          loading
+        />
+      )}
     </div>
   );
 };

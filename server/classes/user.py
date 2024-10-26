@@ -20,3 +20,6 @@ class User(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime]
+
+    def to_public_dict(self) -> dict:
+        return self.dict(exclude={"auth_id", "id"})

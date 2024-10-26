@@ -6,6 +6,8 @@ from database.message import MessageModel
 import google.generativeai as genai
 from classes.message import Message
 from database.user import UserModel
+
+from utils.indexing import get_documents
 from utils.jwt import handle_decode_token, verify_token_session
 
 router = APIRouter()
@@ -33,12 +35,16 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
             conn = user_model._get_connection()
             cursor = conn.cursor()
             user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
+            if not user:
+                raise Exception("User not found")
             conn.close()
         else:
             raise Exception("Not authorized to access this resource.")
     except Exception as e:
         logger.error(e)
         return WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
+
+    # documents = get_documents()
 
     await websocket.accept()
 
@@ -86,9 +92,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
                 cursor=cursor,
                 text=message.text,
                 sender=message.sender,
-                created_by=1,
-                updated_by=1,
-                user_id=1,
+                created_by=user.id,
+                updated_by=user.id,
+                user_id=user.id,
             )
             conn.commit()
 
@@ -149,9 +155,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
                         cursor=cursor,
                         text=response.text,
                         sender="bot",
-                        created_by=1,
-                        updated_by=1,
-                        user_id=1,
+                        created_by=user.id,
+                        updated_by=user.id,
+                        user_id=user.id,
                     )
                     conn.commit()
         except Exception as e:

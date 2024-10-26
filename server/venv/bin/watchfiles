@@ -1,4 +1,4 @@
-#!/home/nickisyourfan/Desktop/DEV/chat_marketplace/venv/bin/python3
+#!/home/nickisyourfan/Desktop/DEV/chat_marketplace/server/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

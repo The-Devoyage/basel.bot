@@ -3,6 +3,7 @@ import os
 import logging
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
 import jwt
+import uuid
 from pydantic import BaseModel
 from classes.user_claims import UserClaims
 
@@ -57,7 +58,7 @@ def me(user_claims: UserClaims = Depends(require_auth)):
         if not user:
             raise Exception("User not found")
 
-        return {"success": True, "data": user.dict()}
+        return {"success": True, "data": user.to_public_dict()}
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=401, detail="Invalid token")
@@ -104,27 +105,44 @@ async def auth_start(websocket: WebSocket):
     while True:
         try:
             data = await websocket.receive_text()
-            auth_data = AuthStart.parse_raw(data)
+            auth_data = AuthStart.model_validate_json(data)
 
             logger.debug(f"Auth data: {auth_data}")
 
             if not auth_data.email:
                 raise ValueError("Email is required")
 
-            user = user_model.get_user_by_email(cursor, auth_data.email)
-            if not user:
+            current_user = user_model.get_user_by_email(cursor, auth_data.email)
+            if not current_user:
+                logger.debug("User not found, creating new user")
                 user_id = user_model.create_user(
                     cursor=cursor,
                     email=auth_data.email,
                 )
-                user = user_model.get_user_by_id(cursor, user_id)
-                if not user:
+                current_user = user_model.get_user_by_id(cursor, user_id)
+                if not current_user:
                     raise ValueError("Failed to create user")
+            else:
+                logger.debug("User found, updating user")
+                user_id = user_model.update_user(
+                    cursor,
+                    current_user.id,
+                    auth_id=str(uuid.uuid4()),
+                    current_user=current_user,
+                )
+                current_user = user_model.get_user_by_id(cursor, user_id)
+                if not current_user:
+                    raise ValueError("Failed to update user")
 
             expire_time = datetime.utcnow() + timedelta(minutes=3)
 
             token = create_jwt(
-                {"uuid": user.uuid, "auth_id": user.auth_id, "exp": expire_time}, secret
+                {
+                    "uuid": current_user.uuid,
+                    "auth_id": current_user.auth_id,
+                    "exp": expire_time,
+                },
+                secret,
             )
             magic_link = f"{CLIENT_URL}/auth/{token}"
 
@@ -132,10 +150,10 @@ async def auth_start(websocket: WebSocket):
 
             connection.commit()
 
-            active_auth_connections[user.auth_id] = websocket
+            active_auth_connections[current_user.auth_id] = websocket
 
             send_email(
-                user.email,
+                current_user.email,
                 "Magic Link - Click and Authenticate",
                 "d-647b376beee74b30aff1b669af7a7392",
                 {"magic_link": magic_link},
@@ -169,15 +187,20 @@ async def auth_finish(auth_finish: AuthFinish):
 
     try:
         payload = jwt.decode(auth_finish.token, AUTH_SECRET, algorithms=[JWT_ALGO])
-        user = user_model.get_user_by_auth_id(cursor, payload["auth_id"])
-        if not user:
+        logger.debug(f"AuthID: {payload['auth_id']}")
+        current_user = user_model.get_user_by_auth_id(cursor, payload["auth_id"])
+        if not current_user:
             raise Exception("User not found")
 
-        user_id = user_model.update_user(cursor, user.id, status=True)
+        user_id = user_model.update_user(
+            cursor, current_user.id, status=True, current_user=current_user
+        )
         if not user_id:
             raise Exception("Failed to activate user.")
 
-        token_session_id = token_session_model.create_token_session(cursor, user.id)
+        token_session_id = token_session_model.create_token_session(
+            cursor, current_user.id
+        )
         if not token_session_id:
             raise Exception("Failed to create token session")
 
@@ -194,8 +217,8 @@ async def auth_finish(auth_finish: AuthFinish):
 
         token = create_jwt(
             {
-                "user_uuid": user.uuid,
-                "auth_id": user.auth_id,
+                "user_uuid": current_user.uuid,
+                "auth_id": current_user.auth_id,
                 "exp": expire_time,
                 "token_session_uuid": token_session.uuid,
             },

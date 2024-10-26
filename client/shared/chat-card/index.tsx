@@ -10,10 +10,11 @@ import "./module.styles.css";
 interface ChatCardProps {
   message: Message;
   icon?: React.ReactNode;
+  loading?: boolean;
 }
 
 export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
-  ({ message, icon }, ref) => {
+  ({ message, icon, loading }, ref) => {
     const isBot = message.sender === "bot";
     const getIcon = () => {
       if (icon) return icon;
@@ -38,9 +39,19 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
               {isBot ? "Basel" : "You"}
             </Typography.Heading>
           </div>
-          <Markdown className="prose w-full break-words dark:text-slate-300">
-            {message.text}
-          </Markdown>
+          {!loading ? (
+            <Markdown className="prose w-full break-words dark:text-slate-300">
+              {message.text}
+            </Markdown>
+          ) : (
+            Array.from({ length: 1 }).map((_, index) => (
+              <div key={index} className="w-full animate-pulse">
+                <div className="mb-2 h-4 rounded bg-gray-200 dark:bg-slate-500" />
+                <div className="mb-2 h-4 rounded bg-gray-200 dark:bg-slate-500" />
+                <div className="mb-2 h-4 rounded bg-gray-200 dark:bg-slate-500" />
+              </div>
+            ))
+          )}
         </Card>
       </div>
     );

@@ -5,6 +5,7 @@ import { Button, Textarea } from "flowbite-react";
 import { TbShoppingCartSearch } from "react-icons/tb";
 import { GlobalContext } from "@/app/provider";
 import { Message } from "@/types";
+import { useRouter, usePathname } from "next/navigation";
 
 export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
@@ -17,8 +18,11 @@ export const ChatInput = () => {
   const [textareaHeight, setTextareaHeight] = useState<number | undefined>(
     undefined,
   );
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleMessage = () => {
+    if (pathname !== "/") router.push("/");
     if (!messageText) return;
     const message: Message = {
       text: messageText,

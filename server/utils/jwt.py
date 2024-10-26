@@ -5,14 +5,12 @@ from fastapi.exceptions import HTTPException
 from fastapi.param_functions import Depends
 from fastapi.security import OAuth2PasswordBearer
 import jwt
-from dotenv import load_dotenv
 import logging
 
 from classes.user_claims import UserClaims
 from database.token_session import TokenSessionModel
 from utils.environment import get_env_var
 
-load_dotenv()
 logger = logging.getLogger(__name__)
 
 ACCESS_SECRET = get_env_var("ACCESS_SECRET")
