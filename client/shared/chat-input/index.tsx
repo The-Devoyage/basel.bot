@@ -35,6 +35,9 @@ export const ChatInput = () => {
 
   useEffect(() => {
     inputRef.current?.focus();
+  }, [inputRef.current]);
+
+  useEffect(() => {
     if (hasConnected.current) return;
     if (!isAuthenticated) return;
     client?.handleConnect();
@@ -59,11 +62,11 @@ export const ChatInput = () => {
       <Textarea
         placeholder={
           isAuthenticated
-            ? "Your last interview starts here..."
+            ? "Ask something to get started..."
             : "Login to start chatting"
         }
         className="w-full focus:border-green-400 focus:ring-green-400 dark:bg-slate-950 dark:text-white"
-        disabled={!isAuthenticated}
+        disabled={!isAuthenticated || client?.initializing}
         color="info"
         theme={{
           colors: {

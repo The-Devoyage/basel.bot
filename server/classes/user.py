@@ -12,7 +12,7 @@ class User(BaseModel):
     phone: Optional[str]
     role_id: int
     status: bool
-    file: Optional[int]
+    profile_image: Optional[int]
     auth_id: str
     created_by: Optional[int]
     updated_by: Optional[int]
@@ -22,4 +22,6 @@ class User(BaseModel):
     deleted_at: Optional[datetime]
 
     def to_public_dict(self) -> dict:
-        return self.dict(exclude={"auth_id", "id"})
+        return self.model_dump(
+            exclude={"auth_id", "id", "created_by", "updated_by", "deleted_by"}
+        )

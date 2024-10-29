@@ -34,7 +34,7 @@ export const ChatBody = () => {
     );
   }
 
-  if (client?.loading && !client?.messages.length) {
+  if ((client?.loading && !client?.messages.length) || client?.initializing) {
     return <Loader />;
   }
 
