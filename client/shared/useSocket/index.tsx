@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface SocketClient<Send, Receive> {
   socket: WebSocket | null;
