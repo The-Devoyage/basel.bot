@@ -1,12 +1,12 @@
 import logging
 
 from llama_index.core import VectorStoreIndex, Settings
-from llama_index.core.chat_engine.types import BaseChatEngine
+from llama_index.core.tools.query_engine import QueryEngineTool
+from llama_index.core.tools.types import ToolMetadata
 from llama_index.readers.database import DatabaseReader
-from llama_index.embeddings.gemini import GeminiEmbedding
-from llama_index.llms.gemini import Gemini
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
+from llama_index.agent.openai import OpenAIAgent
 
 from utils.environment import get_env_var
 
@@ -18,15 +18,6 @@ OPENAI_API_KEY = get_env_var("OPENAI_API_KEY")
 
 logger.debug(f"OPENAIKEY: {OPENAI_API_KEY}")
 
-gemini_embedding_model = GeminiEmbedding(
-    model_name="models/embedding-001", api_key=GOOGLE_API_KEY
-)
-llm = Gemini(
-    model_name="models/gemini-1.5-flash-latest",
-)
-
-# Settings.llm = llm
-# Settings.embed_model = gemini_embedding_model
 Settings.chunk_size = 512
 Settings.chunk_overlap = 64
 Settings.llm = OpenAI(model="gpt-3.5-turbo", api_key=OPENAI_API_KEY)
@@ -41,29 +32,49 @@ def get_documents(user_id):
 
     # Load data from the database using a query
     documents = reader.load_data(
-        query=f"SELECT data, created_at FROM user_meta WHERE user_id = {user_id};"
+        # query=f"SELECT data, created_at FROM user_meta WHERE user_id = {user_id};"
+        # query=f"""
+        #     SELECT ''|| sender ||' said "' || text || '" on ' || strftime('%Y-%m-%d', created_at) AS sentence
+        #     FROM message WHERE user_id = {user_id};
+        # """
+        query=f"""
+        SELECT 'Summary: '|| data ||'" on ' || strftime('%Y-%m-%d', created_at) AS sentence
+            FROM user_meta WHERE user_id = {user_id};
+        """
     )
 
     logger.info(f"GET DOCS: {documents}")
     return documents
 
 
-def get_query_engine(documents) -> BaseChatEngine:
+def get_agent(documents) -> OpenAIAgent:
     index = VectorStoreIndex.from_documents(
         documents,
     )
-    return index.as_chat_engine(verbose=True)
+    tool = QueryEngineTool(
+        query_engine=index.as_query_engine(similarity_top_k=5),
+        metadata=ToolMetadata(
+            name="candidate_profile",
+            description="Provides information about you, the bot representing the candiate. Useful to answer questions about the candidate's career, job search, etc.",
+        ),
+    )
+    agent = OpenAIAgent.from_tools(
+        [tool],
+        verbose=True,
+        system_prompt="""
+           You are a bot representing the candidate.
 
+           You are currently conversting with the candidate that you represent.
 
-def query_candidate_profile(prompt: str, query_engine: BaseChatEngine):
-    """
-    This function allows you to ask the users bot questions about their career, job search, etc.
+           Your name is Basel, you are respectful, professional, helpful, and friendly.
+           You help match candidates with employers by learning about the candidates skills, career goals, personal life and hobbies.
+           Your personality is a warm extrovert. Slightly gen alpha.
 
-    args:
-        prompt: str
-            The prompt to ask the bot representing the user you are chatting with.
-    """
-    logger.info(f"Prompt: {prompt}")
-    response = query_engine.chat(prompt)
-    logger.info(f"Response: {response}")
-    return response.response
+           Your job is to ask questions about the candidate to learn about their skills, career goals, 
+           and personal life/hobbies. As you progress through the conversation, try to ask more technical questions
+           to get an idea of the users skill level.
+
+           Call the candidate_profile tool to get historical information about the candidate.
+           """,
+    )
+    return agent

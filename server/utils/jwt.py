@@ -2,7 +2,6 @@ import os
 from typing import cast
 from fastapi import Cookie
 from fastapi.exceptions import HTTPException
-from fastapi.param_functions import Depends
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 import logging
