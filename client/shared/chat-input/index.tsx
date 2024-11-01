@@ -34,8 +34,8 @@ export const ChatInput = () => {
   };
 
   useEffect(() => {
-    if (inputRef.current) inputRef.current?.focus();
-  }, [inputRef.current]);
+    if (inputRef.current && isAuthenticated) inputRef.current?.focus();
+  }, [inputRef.current, isAuthenticated]);
 
   useEffect(() => {
     if (hasConnected.current) return;
