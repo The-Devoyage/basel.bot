@@ -34,7 +34,7 @@ export const ChatInput = () => {
   };
 
   useEffect(() => {
-    inputRef.current?.focus();
+    if (inputRef.current) inputRef.current?.focus();
   }, [inputRef.current]);
 
   useEffect(() => {
@@ -66,7 +66,6 @@ export const ChatInput = () => {
             : "Login to start chatting"
         }
         className="w-full focus:border-green-400 focus:ring-green-400 dark:bg-slate-950 dark:text-white"
-        disabled={!isAuthenticated || client?.initializing}
         color="info"
         theme={{
           colors: {
