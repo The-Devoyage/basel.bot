@@ -95,3 +95,6 @@ when the chat is started or we might just have 1 massive vectorized database to 
 3. Create a GET route to get a signed link to access file. The signed link includes a JWT or Encrypted Token.
 4. Create a final GET route to get the file using the signed link. Files should not be exposed to the public. 
 
+
+- [ ] Add suspense boundary to the clientside app to prevent crash/show error
+- [ ] Update the email layout for logging in.
