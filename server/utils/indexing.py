@@ -13,7 +13,6 @@ from utils.environment import get_env_var
 logger = logging.getLogger(__name__)
 
 DATABASE_URL = get_env_var("DATABASE_URL")
-GOOGLE_API_KEY = get_env_var("GOOGLE_API_KEY")
 OPENAI_API_KEY = get_env_var("OPENAI_API_KEY")
 
 logger.debug(f"OPENAIKEY: {OPENAI_API_KEY}")

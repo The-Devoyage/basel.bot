@@ -31,8 +31,8 @@ user_model = UserModel("basel.db")
 user_meta_model = UserMetaModel("basel.db")
 
 # Gemini Generative AI
-google_api_key = os.getenv("GOOGLE_API_KEY")
-genai.configure(api_key=google_api_key)
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+genai.configure(api_key=GOOGLE_API_KEY)
 
 
 @router.websocket("/ws")
@@ -129,8 +129,6 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
                         If there are no updates to the chat logs, respond with None.
                     """,
             )
-
-            logger.info(f"CHAT START TIME: {chat_start_time}")
 
             logs = message_model.get_messages_by_user_id(
                 cursor, user.id, chat_start_time
