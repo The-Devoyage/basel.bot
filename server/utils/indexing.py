@@ -20,7 +20,7 @@ logger.debug(f"OPENAIKEY: {OPENAI_API_KEY}")
 
 Settings.chunk_size = 512
 Settings.chunk_overlap = 64
-Settings.llm = OpenAI(model="gpt-3.5-turbo", api_key=OPENAI_API_KEY)
+Settings.llm = OpenAI(model="gpt-4o", api_key=OPENAI_API_KEY)
 Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
 

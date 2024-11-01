@@ -64,10 +64,8 @@ recruiters/interviewers access to talk with the user's "Basel".
 
 - [x] Chat with Basel (Gemini). Currently it is blocked by a button so that it does not automatically load
 each render. This is subject to change.
-- [ ] Create login logic in the backend. This is mostly done. We need to set up email/text to send the link.
+- [x] Create login logic in the backend. This is mostly done. We need to set up email/text to send the link.
 I also need to test to see if it actually works. The code is written but not ever used yet.
-- [ ] Create a nicer login page or experience. In progress. It currently is a modal. We need to handle the experience
-a bit more. 
 
 1. User clicks login and the websocket connection starts.
 2. If successful connection is established, the modal opens. The user enters their email.
@@ -84,11 +82,16 @@ a bit more.
 be something link clicks or if the user clicks it and signs up to the platform. Whatever we think the more attractive workflow is.
 3. We do want to try to track who the user that clicks the link is. 
 
-- [ ] Create a logout functionality. We most likely will need to track the issued token in the database and invalidate it on logout. Create a wait to expire all user sessions.
+- [x] Create a logout functionality. We most likely will need to track the issued token in the database and invalidate it on logout. Create a wait to expire all user sessions.
 - [ ] Create a list of common interview questions for the AI to use. 
 - [ ] Create a list of common technical questions per coding language for the AI to use.
-- [ ] We store all user information in a structured table - user_profile or user_profile_education... create associated tables to store more information.
 - [ ] HARD - Create a way to let the AI use all unstructured data as context to represent the user. This might need to be a vectorized database that is dynamically created 
 when the chat is started or we might just have 1 massive vectorized database to hold it all. Undermined.
-- [ ] Add your own todos here...
+
+
+- [ ] Create a file uploading API/file manager. Start with profile pictures. 
+1. Create a POST route in the python API to handle uploading multipart form data (files).
+2. Save the file to disk. 
+3. Create a GET route to get a signed link to access file. The signed link includes a JWT or Encrypted Token.
+4. Create a final GET route to get the file using the signed link. Files should not be exposed to the public. 
 
