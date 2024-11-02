@@ -49,7 +49,6 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
         if (!me.success || !me.data) {
           throw new Error("Failed to fetch user.");
         }
-        console.log("ME", me.data);
         dispatch(setMe(me.data));
       } catch (error) {
         console.error(error);

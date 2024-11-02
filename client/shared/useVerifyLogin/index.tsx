@@ -9,7 +9,6 @@ export const useVerifyLogin = (dispatch: Dispatch<AppAction>) => {
     const handleVerifyAuthToken = async () => {
       if (hasChecked.current) return;
       hasChecked.current = true;
-      console.log("CHECKING AUTH");
       const isAuth = await verifyAuthToken();
       dispatch(setAuthenticated(isAuth.success));
     };

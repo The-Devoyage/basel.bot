@@ -7,9 +7,6 @@ export interface User {
   role_id: number;
   status: boolean;
   file: number;
-  created_by: number;
-  updated_by: number;
-  deleted_by: number;
   created_at: string;
   updated_at: string;
   deleted_at: string;
