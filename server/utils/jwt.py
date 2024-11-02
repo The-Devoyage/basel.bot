@@ -8,6 +8,7 @@ import logging
 
 from classes.user_claims import UserClaims
 from database.token_session import TokenSessionModel
+from database.user import UserModel
 from utils.environment import get_env_var
 
 logger = logging.getLogger(__name__)
@@ -29,12 +30,19 @@ oauth2scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Database
 token_session_model = TokenSessionModel("basel.db")
+user_model = UserModel("basel.db")
 
 
 def handle_decode_token(token: str) -> UserClaims:
     """Decode a JWT token."""
     try:
         decoded_token = jwt.decode(token, ACCESS_SECRET, algorithms=[algorithm])
+        conn = user_model._get_connection()
+        cursor = conn.cursor()
+        user = user_model.get_user_by_uuid(cursor, decoded_token["user_uuid"])
+        if not user:
+            raise Exception("User not found")
+        decoded_token["user"] = user
         return cast(UserClaims, UserClaims(**decoded_token))
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")

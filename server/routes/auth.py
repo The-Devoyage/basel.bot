@@ -13,6 +13,7 @@ from database.user import UserModel
 from utils.environment import get_env_var
 from utils.jwt import create_jwt, require_auth
 from utils.mailer import send_email
+from utils.responses import create_response
 
 router = APIRouter()
 
@@ -43,7 +44,7 @@ def verify(user_claims: UserClaims = Depends(require_auth)):
         if not token_session:
             raise Exception("Token session not found")
 
-        return {"success": True}
+        return create_response(success=True, data=None)
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=401, detail="Invalid token")
@@ -57,8 +58,7 @@ def me(user_claims: UserClaims = Depends(require_auth)):
         user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
         if not user:
             raise Exception("User not found")
-
-        return {"success": True, "data": user.to_public_dict()}
+        return create_response(success=True, data=user.to_public_dict())
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=401, detail="Invalid token")
@@ -80,7 +80,7 @@ def logout(user_claims: UserClaims = Depends(require_auth)):
             raise Exception("Failed to invalidate token session.")
 
         connection.commit()
-        return {"success": True}
+        return create_response(success=True, data=None)
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail="Failed to logout user")
@@ -240,7 +240,7 @@ async def auth_finish(auth_finish: AuthFinish):
             }
         )
 
-        return {"success": True}
+        return create_response(success=True, data=None)
 
     except jwt.ExpiredSignatureError as e:
         logger.error(e)

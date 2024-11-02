@@ -21,6 +21,7 @@ export const Nav = () => {
   const {
     dispatch,
     store: { isAuthenticated, me },
+    client,
   } = useContext(GlobalContext);
 
   const handleSignout = async () => {
@@ -30,6 +31,8 @@ export const Nav = () => {
       if (!success) {
         throw new Error("Failed to sign out.");
       }
+
+      client?.handleClose();
 
       dispatch(
         addToast({
