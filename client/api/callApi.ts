@@ -3,13 +3,12 @@
 import { cookies } from "next/headers";
 import { ApiAction, Endpoint, EndpointResponse, Response } from ".";
 import qs from "qs";
+import { revalidatePath } from "next/cache";
 
-export const callApi = async <E extends Endpoint>({
-  endpoint,
-  method = "GET",
-  query,
-  body,
-}: ApiAction<E>): Promise<Response<EndpointResponse[E]>> => {
+export const callApi = async <E extends Endpoint>(
+  { endpoint, method = "GET", query, body }: ApiAction<E>,
+  revalidationPath?: Endpoint,
+): Promise<Response<EndpointResponse[E]>> => {
   const cookieStore = cookies();
   const queryString = query ? "?" + qs.stringify(query) : "";
   const token = cookieStore.get("token")?.value;
@@ -35,11 +34,17 @@ export const callApi = async <E extends Endpoint>({
     });
 
     if (!res.ok) {
-      console.log("res: ", res);
+      console.info("Network Error: ", res);
       throw new Error("Failed to call api.");
     }
 
     const data = await res.json();
+
+    console.info("API Call Successful: ", data);
+
+    if (revalidationPath) {
+      revalidatePath(revalidationPath);
+    }
 
     return data;
   } catch (err) {

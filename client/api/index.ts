@@ -21,7 +21,10 @@ type ShareableLinksQuery = { limit?: number; offset?: number };
 
 interface EndpointParams {
   [Endpoint.ShareableLinks]: { query: ShareableLinksQuery; body: undefined };
-  [Endpoint.CreateShareableLink]: { query: undefined; body: undefined };
+  [Endpoint.CreateShareableLink]: {
+    query: undefined;
+    body: { tag: string };
+  };
   [Endpoint.Me]: { query: undefined; body: undefined };
   [Endpoint.Logout]: { query: undefined; body: undefined };
   [Endpoint.Verify]: { query: undefined; body: undefined };

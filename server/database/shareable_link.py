@@ -1,6 +1,6 @@
 import sqlite3
-from typing import Optional, Union
 import uuid
+from typing import Optional, Union
 from classes.shareable_link import ShareableLink
 
 
@@ -50,14 +50,14 @@ class ShareableLinkModel:
         columns = [column[0] for column in cursor.description]
         return [ShareableLink(**dict(zip(columns, row))) for row in cursor.fetchall()]
 
-    def create_shareable_link(self, cursor, user_id) -> int:
+    def create_shareable_link(self, cursor: sqlite3.Cursor, user_id: int, tag: str):
         shareable_link_uuid = str(uuid.uuid4())
         cursor.execute(
             """
-            INSERT INTO shareable_link (uuid,  created_by, updated_by)
-            VALUES (?, ?, ?)
+            INSERT INTO shareable_link (uuid, tag, created_by, updated_by)
+            VALUES (?, ?, ?, ?)
             """,
-            (shareable_link_uuid, user_id, user_id),
+            (shareable_link_uuid, tag, user_id, user_id),
         )
         return cursor.lastrowid
 

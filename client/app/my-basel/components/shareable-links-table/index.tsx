@@ -12,6 +12,10 @@ interface ShareableLinksTableProps {
 export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
   shareableLinks = [],
 }) => {
+  if (!shareableLinks?.length) {
+    return null;
+  }
+
   return (
     <Table striped>
       <ShareableLinksTableHead />

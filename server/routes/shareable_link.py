@@ -5,6 +5,7 @@ from fastapi.param_functions import Depends
 from classes.user_claims import UserClaims
 from database.shareable_link import ShareableLinkModel
 from utils.environment import get_env_var
+from pydantic import BaseModel
 
 from utils.jwt import create_jwt, require_auth
 from utils.responses import create_response
@@ -20,16 +21,26 @@ shareable_link_model = ShareableLinkModel("basel.db")
 SHAREABLE_LINK_SECRET = get_env_var("SHAREABLE_LINK_SECRET")
 
 
+class CreateShareableLinkBody(BaseModel):
+    tag: str
+
+
 @router.post("/shareable-link")
-async def create_shareable_link(user_claims: UserClaims = Depends(require_auth)):
+async def create_shareable_link(
+    body: CreateShareableLinkBody, user_claims: UserClaims = Depends(require_auth)
+):
+    logger.debug("Post Creating Shareable Link")
     try:
         conn = shareable_link_model._get_connection()
         cursor = conn.cursor()
 
         # Create Shareable Link
         shareable_link_id = shareable_link_model.create_shareable_link(
-            cursor, user_claims.user.id
+            cursor, user_claims.user.id, body.tag
         )
+
+        if not shareable_link_id:
+            raise Exception("Failed to create Shareable Link")
 
         # Create the Token with Payload
         payload = {
@@ -43,11 +54,12 @@ async def create_shareable_link(user_claims: UserClaims = Depends(require_auth))
 
         # Commit
         conn.commit()
-        conn.close()
 
         shareable_link = shareable_link_model.get_shareable_link_by_id(
             cursor, shareable_link_id, user_claims.user.id
         )
+
+        conn.close()
 
         if not shareable_link:
             raise Exception("Shareable link not found")

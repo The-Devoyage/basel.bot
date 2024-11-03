@@ -1,8 +1,7 @@
 import { PageHeader } from "@/shared/layout/page-header";
-import { ShareableLinksTable } from "./components";
+import { CreateShareableLinkButton, ShareableLinksTable } from "./components";
 import { Typography } from "@/shared/typography";
-import { Alert, Button } from "flowbite-react";
-import { BsPlusLg } from "react-icons/bs";
+import { Alert } from "flowbite-react";
 import { Endpoint, callApi } from "@/api";
 
 const MyBaselPage = async () => {
@@ -15,10 +14,6 @@ const MyBaselPage = async () => {
     body: null,
   });
 
-  const handleCreateLink = async () => {
-    // await callApi()
-  };
-
   return (
     <section className="flex w-full flex-col">
       <PageHeader title="My Basel" />
@@ -26,15 +21,13 @@ const MyBaselPage = async () => {
         <Typography.Heading className="text-2xl">
           Shareable Links
         </Typography.Heading>
-        <Button color="success">
-          <BsPlusLg />
-        </Button>
+        <CreateShareableLinkButton />
       </div>
       <Alert color="info" className="mb-3">
-        <Typography.Heading className="text-lg dark:text-slate-900">
+        <Typography.Heading className="text-lg dark:!text-slate-900">
           Getting Noticed
         </Typography.Heading>
-        <Typography.Paragraph className="dark:text-slate-600">
+        <Typography.Paragraph className="dark:text-slate-700">
           Share your bot with others by simply sharing a link. Employers and
           recruiters can converse with your bot about you, allowing them to
           quickly match your skills to a position that is perfect for you.
