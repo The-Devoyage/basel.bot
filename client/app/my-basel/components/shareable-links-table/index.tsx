@@ -1,41 +1,29 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import { Table } from "flowbite-react";
-import { getShareableLinks } from "@/api/shareable-links";
+import { ShareableLinksTableHead } from "./components/shareable-links-table-head";
 import { ShareableLink } from "@/types/shareable-link";
-import { RiChatForwardFill } from "react-icons/ri";
+import { FC } from "react";
+import { LinkCell } from "./components";
 
-export const ShareableLinksTable = () => {
-  const [shareableLinks, setShareableLinks] = useState<ShareableLink[]>([]);
+interface ShareableLinksTableProps {
+  shareableLinks: ShareableLink[] | null;
+}
 
-  useEffect(() => {
-    const handleFetch = async () => {
-      const response = await getShareableLinks();
-      if (response.success && response.data) {
-        setShareableLinks(response.data);
-      }
-    };
-    handleFetch();
-  }, []);
-
+export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
+  shareableLinks = [],
+}) => {
   return (
     <Table striped>
-      <Table.Head>
-        <Table.HeadCell>Tag</Table.HeadCell>
-        <Table.HeadCell>Link</Table.HeadCell>
-        <Table.HeadCell>Status</Table.HeadCell>
-        <Table.HeadCell>Created At</Table.HeadCell>
-      </Table.Head>
+      <ShareableLinksTableHead />
       <Table.Body className="divide-y">
-        {shareableLinks.map((sl) => (
+        {shareableLinks?.map((sl) => (
           <Table.Row key={sl.uuid}>
             <Table.Cell>{sl.tag || "--"}</Table.Cell>
-            <Table.Cell>
-              <RiChatForwardFill />
-            </Table.Cell>
             <Table.Cell>{sl.status ? "Active" : "Inactive"}</Table.Cell>
             <Table.Cell>{sl.created_at}</Table.Cell>
+            <Table.Cell>
+              <LinkCell shareableLink={sl} />
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table.Body>

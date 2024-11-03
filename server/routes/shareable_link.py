@@ -79,8 +79,8 @@ async def get_shareable_link(id: int, user_claims: UserClaims = Depends(require_
 
 @router.get("/shareable-links")
 async def get_shareable_links(
-    limit: Optional[int],
-    offset: Optional[int],
+    limit: Optional[int] = 10,
+    offset: Optional[int] = 0,
     user_claims: UserClaims = Depends(require_auth),
 ):
     try:

@@ -5,6 +5,7 @@ import { Alert, Button } from "flowbite-react";
 import { BiSolidLeaf } from "react-icons/bi";
 import { GlobalContext } from "@/app/provider";
 import { useRouter } from "next/navigation";
+import { Endpoint, callApi } from "@/api";
 
 export default function Page({ params }: { params: { auth_token: string } }) {
   const router = useRouter();
@@ -20,18 +21,17 @@ export default function Page({ params }: { params: { auth_token: string } }) {
   useEffect(() => {
     if (hasVerified.current) return;
     hasVerified.current = true;
-    const verifyAccount = async () => {
+
+    const finishAuth = async () => {
       try {
-        const res = await fetch("http://localhost:8000/auth-finish", {
+        const res = await callApi({
+          endpoint: Endpoint.AuthFinish,
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ token: params.auth_token }),
+          query: null,
+          body: { token: params.auth_token },
         });
-        const data = await res.json();
-        if (!data.success) {
-          setMessage({ type: "error", message: data.error || data.detail });
+        if (!res.success) {
+          setMessage({ type: "error", message: "Failed to login." });
           return;
         }
         setMessage({
@@ -47,7 +47,7 @@ export default function Page({ params }: { params: { auth_token: string } }) {
       }
     };
 
-    verifyAccount();
+    finishAuth();
   }, [params.auth_token]);
 
   return (

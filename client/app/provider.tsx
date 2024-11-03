@@ -6,8 +6,8 @@ import { Message } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
 import { addToast } from "@/shared/useStore/toast";
-import { fetchMe } from "@/api";
 import { setMe } from "@/shared/useStore/auth";
+import { Endpoint, callApi } from "@/api";
 
 interface GlobalContext {
   client: SocketClient<Message, Message> | null;
@@ -45,7 +45,11 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
 
     const handleFetchMe = async () => {
       try {
-        const me = await fetchMe();
+        const me = await callApi({
+          endpoint: Endpoint.Me,
+          query: null,
+          body: null,
+        });
         if (!me.success || !me.data) {
           throw new Error("Failed to fetch user.");
         }

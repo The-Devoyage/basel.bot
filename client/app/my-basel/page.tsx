@@ -3,8 +3,22 @@ import { ShareableLinksTable } from "./components";
 import { Typography } from "@/shared/typography";
 import { Alert, Button } from "flowbite-react";
 import { BsPlusLg } from "react-icons/bs";
+import { Endpoint, callApi } from "@/api";
 
-const MyBaselPage = () => {
+const MyBaselPage = async () => {
+  const shareableLinks = await callApi({
+    endpoint: Endpoint.ShareableLinks,
+    query: {
+      limit: 10,
+      offset: 0,
+    },
+    body: null,
+  });
+
+  const handleCreateLink = async () => {
+    // await callApi()
+  };
+
   return (
     <section className="flex w-full flex-col">
       <PageHeader title="My Basel" />
@@ -17,16 +31,16 @@ const MyBaselPage = () => {
         </Button>
       </div>
       <Alert color="info" className="mb-3">
-        <Typography.Heading className="text-lg dark:text-slate-800">
+        <Typography.Heading className="text-lg dark:text-slate-900">
           Getting Noticed
         </Typography.Heading>
-        <Typography.Paragraph className="dark:text-slate-500">
+        <Typography.Paragraph className="dark:text-slate-600">
           Share your bot with others by simply sharing a link. Employers and
           recruiters can converse with your bot about you, allowing them to
           quickly match your skills to a position that is perfect for you.
         </Typography.Paragraph>
       </Alert>
-      <ShareableLinksTable />
+      <ShareableLinksTable shareableLinks={shareableLinks.data} />
     </section>
   );
 };

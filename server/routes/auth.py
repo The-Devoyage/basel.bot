@@ -178,6 +178,7 @@ class AuthFinish(BaseModel):
 
 @router.post("/auth-finish")
 async def auth_finish(auth_finish: AuthFinish):
+    logger.debug(f"Auth Finish: {auth_finish}")
     # Decode the token
     if not auth_finish.token or auth_finish.token is None:
         return HTTPException(status_code=400, detail="Token is required")

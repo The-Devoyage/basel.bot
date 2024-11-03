@@ -14,6 +14,8 @@ import { GlobalContext } from "@/app/provider";
 import { BiSolidLeaf } from "react-icons/bi";
 import { addToast } from "../useStore/toast";
 import { removeAuthToken } from "@/api/auth";
+import { Endpoint, callApi } from "@/api";
+import { setAuthenticated } from "../useStore/auth";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
@@ -26,11 +28,18 @@ export const Nav = () => {
 
   const handleSignout = async () => {
     try {
-      const success = await removeAuthToken();
+      const response = await callApi({
+        endpoint: Endpoint.Logout,
+        method: "POST",
+        query: null,
+        body: null,
+      });
 
-      if (!success) {
+      if (!response.success) {
         throw new Error("Failed to sign out.");
       }
+
+      await removeAuthToken();
 
       client?.handleClose();
 
@@ -40,6 +49,7 @@ export const Nav = () => {
           description: "Successfully signed out.",
         }),
       );
+      dispatch(setAuthenticated(false));
     } catch (error) {
       console.error(error);
       dispatch(
