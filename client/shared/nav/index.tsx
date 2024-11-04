@@ -14,6 +14,8 @@ import { GlobalContext } from "@/app/provider";
 import { BiSolidLeaf } from "react-icons/bi";
 import { addToast } from "../useStore/toast";
 import { removeAuthToken } from "@/api/auth";
+import { Endpoint, callApi } from "@/api";
+import { setAuthenticated } from "../useStore/auth";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
@@ -21,15 +23,26 @@ export const Nav = () => {
   const {
     dispatch,
     store: { isAuthenticated, me },
+    client,
   } = useContext(GlobalContext);
 
   const handleSignout = async () => {
     try {
-      const success = await removeAuthToken();
+      const response = await callApi({
+        endpoint: Endpoint.Logout,
+        method: "POST",
+        query: null,
+        body: null,
+        path: null,
+      });
 
-      if (!success) {
+      if (!response.success) {
         throw new Error("Failed to sign out.");
       }
+
+      await removeAuthToken();
+
+      client?.handleClose();
 
       dispatch(
         addToast({
@@ -37,6 +50,7 @@ export const Nav = () => {
           description: "Successfully signed out.",
         }),
       );
+      dispatch(setAuthenticated(false));
     } catch (error) {
       console.error(error);
       dispatch(
@@ -49,7 +63,7 @@ export const Nav = () => {
   };
 
   return (
-    <Navbar className="fixed left-0 right-0 top-0 z-10 border-b dark:bg-slate-950">
+    <Navbar className="fixed left-0 right-0 top-0 z-20 border-b dark:bg-slate-950">
       <Navbar.Brand
         href="/"
         className="space-x-2 text-2xl font-bold dark:text-white"

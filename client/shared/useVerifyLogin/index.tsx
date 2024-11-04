@@ -1,6 +1,6 @@
 import { Dispatch, useEffect, useRef } from "react";
 import { AppAction } from "../useStore";
-import { verifyAuthToken } from "@/api/auth";
+import { Endpoint, callApi } from "@/api";
 import { setAuthenticated } from "../useStore/auth";
 
 export const useVerifyLogin = (dispatch: Dispatch<AppAction>) => {
@@ -9,8 +9,12 @@ export const useVerifyLogin = (dispatch: Dispatch<AppAction>) => {
     const handleVerifyAuthToken = async () => {
       if (hasChecked.current) return;
       hasChecked.current = true;
-      console.log("CHECKING AUTH");
-      const isAuth = await verifyAuthToken();
+      const isAuth = await callApi({
+        endpoint: Endpoint.Verify,
+        query: null,
+        body: null,
+        path: null,
+      });
       dispatch(setAuthenticated(isAuth.success));
     };
 
