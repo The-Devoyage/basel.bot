@@ -11,6 +11,7 @@ export interface Response<T> {
 export enum Endpoint {
   ShareableLinks = "/shareable-links",
   CreateShareableLink = "/shareable-link",
+  UpdateShareableLink = "/shareable-link/:uuid",
   Me = "/me",
   AuthFinish = "/auth-finish",
   Logout = "/logout",
@@ -20,15 +21,29 @@ export enum Endpoint {
 type ShareableLinksQuery = { limit?: number; offset?: number };
 
 interface EndpointParams {
-  [Endpoint.ShareableLinks]: { query: ShareableLinksQuery; body: undefined };
+  [Endpoint.ShareableLinks]: {
+    query: ShareableLinksQuery;
+    body: undefined;
+    path: undefined;
+  };
   [Endpoint.CreateShareableLink]: {
     query: undefined;
     body: { tag: string };
+    path: undefined;
   };
-  [Endpoint.Me]: { query: undefined; body: undefined };
-  [Endpoint.Logout]: { query: undefined; body: undefined };
-  [Endpoint.Verify]: { query: undefined; body: undefined };
-  [Endpoint.AuthFinish]: { query: undefined; body: { token: string } };
+  [Endpoint.UpdateShareableLink]: {
+    query: undefined;
+    body: { tag?: string; status?: boolean };
+    path: { uuid: string };
+  };
+  [Endpoint.Me]: { query: undefined; body: undefined; path: undefined };
+  [Endpoint.Logout]: { query: undefined; body: undefined; path: undefined };
+  [Endpoint.Verify]: { query: undefined; body: undefined; path: undefined };
+  [Endpoint.AuthFinish]: {
+    query: undefined;
+    body: { token: string };
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -38,6 +53,7 @@ export interface EndpointResponse {
   [Endpoint.Logout]: null;
   [Endpoint.Verify]: null;
   [Endpoint.AuthFinish]: null;
+  [Endpoint.UpdateShareableLink]: ShareableLink;
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams
@@ -48,9 +64,14 @@ type BodyType<E extends Endpoint> = E extends keyof EndpointParams
   ? EndpointParams[E]["body"]
   : never;
 
+type PathType<E extends Endpoint> = E extends keyof EndpointParams
+  ? EndpointParams[E]["path"]
+  : never;
+
 export interface ApiAction<E extends Endpoint> {
   endpoint: E;
-  method?: "GET" | "POST";
+  method?: "GET" | "POST" | "PATCH";
   query: QueryType<E> extends undefined ? null : QueryType<E>;
-  body: BodyType<E> extends undefined ? null : Required<BodyType<E>>;
+  body: BodyType<E> extends undefined ? null : BodyType<E>;
+  path: PathType<E> extends undefined ? null : PathType<E>;
 }

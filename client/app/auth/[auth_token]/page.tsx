@@ -29,6 +29,7 @@ export default function Page({ params }: { params: { auth_token: string } }) {
           method: "POST",
           query: null,
           body: { token: params.auth_token },
+          path: null,
         });
         if (!res.success) {
           setMessage({ type: "error", message: "Failed to login." });

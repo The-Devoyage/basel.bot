@@ -49,6 +49,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
           endpoint: Endpoint.Me,
           query: null,
           body: null,
+          path: null,
         });
         if (!me.success || !me.data) {
           throw new Error("Failed to fetch user.");

@@ -21,11 +21,16 @@ export const LinkCell: FC<LinkCellProps> = ({ shareableLink }) => {
 
   return (
     <span className="flex space-x-1">
-      <TextInput readOnly value={shareableLink.link} className="w-full" />
+      <TextInput
+        readOnly
+        value={shareableLink.link}
+        className="hidden w-full md:block"
+      />
       <Tooltip content="Copied!" trigger="click">
         <Button
           onClick={() => handleCopy(shareableLink.link)}
           className="h-full"
+          outline
         >
           <BiSolidCopy />
         </Button>

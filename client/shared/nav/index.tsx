@@ -33,6 +33,7 @@ export const Nav = () => {
         method: "POST",
         query: null,
         body: null,
+        path: null,
       });
 
       if (!response.success) {
@@ -62,7 +63,7 @@ export const Nav = () => {
   };
 
   return (
-    <Navbar className="fixed left-0 right-0 top-0 z-10 border-b dark:bg-slate-950">
+    <Navbar className="fixed left-0 right-0 top-0 z-20 border-b dark:bg-slate-950">
       <Navbar.Brand
         href="/"
         className="space-x-2 text-2xl font-bold dark:text-white"

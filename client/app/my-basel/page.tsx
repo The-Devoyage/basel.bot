@@ -8,10 +8,11 @@ const MyBaselPage = async () => {
   const shareableLinks = await callApi({
     endpoint: Endpoint.ShareableLinks,
     query: {
-      limit: 10,
+      limit: 100,
       offset: 0,
     },
     body: null,
+    path: null,
   });
 
   return (

@@ -13,6 +13,7 @@ export const useVerifyLogin = (dispatch: Dispatch<AppAction>) => {
         endpoint: Endpoint.Verify,
         query: null,
         body: null,
+        path: null,
       });
       dispatch(setAuthenticated(isAuth.success));
     };

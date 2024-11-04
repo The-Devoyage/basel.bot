@@ -42,7 +42,6 @@ export const useCallApi = <E extends Endpoint>(
     } catch (err) {
       console.error(err);
       setLoading(false);
-
       dispatch(
         addToast({
           type: "error",

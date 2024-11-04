@@ -39,7 +39,7 @@ async def create_shareable_link(
             cursor, user_claims.user.id, body.tag
         )
 
-        if not shareable_link_id:
+        if shareable_link_id is None:
             raise Exception("Failed to create Shareable Link")
 
         # Create the Token with Payload
@@ -50,7 +50,15 @@ async def create_shareable_link(
         token = create_jwt(payload, SHAREABLE_LINK_SECRET)
 
         # Save The Token
-        shareable_link_model.update_shareable_link(cursor, shareable_link_id, token)
+        shareable_link_id = shareable_link_model.update_shareable_link(
+            cursor,
+            shareable_link_id=shareable_link_id,
+            token=token,
+            current_user=user_claims.user,
+        )
+
+        if shareable_link_id is None:
+            raise Exception("Unable to update sharebale link")
 
         # Commit
         conn.commit()
@@ -66,6 +74,52 @@ async def create_shareable_link(
 
         return create_response(success=True, data=shareable_link.to_public_dict())
 
+    except Exception as e:
+        logger.error(e)
+        return HTTPException(status_code=500, detail="Something went wrong...")
+
+
+class UpdateShareableLinkBody(BaseModel):
+    status: Optional[bool] = None
+    tag: Optional[str] = None
+
+
+@router.patch("/shareable-link/{uuid}")
+async def update_shareable_link(
+    uuid: str,
+    body: UpdateShareableLinkBody,
+    user_claims: UserClaims = Depends(require_auth),
+):
+    logger.debug("Updating Shareable Link")
+    try:
+        conn = shareable_link_model._get_connection()
+        cursor = conn.cursor()
+        shareable_link = shareable_link_model.get_shareable_link_by_uuid(cursor, uuid)
+
+        if shareable_link is None:
+            raise Exception("Failed to find shareable link.")
+
+        update_count = shareable_link_model.update_shareable_link(
+            cursor,
+            shareable_link_id=shareable_link.id,
+            status=body.status,
+            tag=body.tag,
+            current_user=user_claims.user,
+        )
+
+        if not update_count:
+            raise Exception("Failed to update shareable link")
+
+        conn.commit()
+
+        shareable_link = shareable_link_model.get_shareable_link_by_id(
+            cursor, shareable_link.id, user_claims.user.id
+        )
+
+        if not shareable_link:
+            raise Exception("Shareable link not found")
+
+        return create_response(success=True, data=shareable_link.to_public_dict())
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail="Something went wrong...")
