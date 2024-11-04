@@ -2,6 +2,7 @@ import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from routes.ws import router as ws_router
 from routes.role import router as role_router
 from routes.auth import router as auth_router
