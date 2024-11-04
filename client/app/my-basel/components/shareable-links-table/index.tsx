@@ -6,6 +6,8 @@ import { ShareableLink } from "@/types/shareable-link";
 import { FC } from "react";
 import { LinkCell, StatusCell, TagCell } from "./components";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+dayjs.extend(utc);
 
 interface ShareableLinksTableProps {
   shareableLinks: ShareableLink[] | null;
@@ -18,8 +20,10 @@ export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
     return null;
   }
 
+  console.log(shareableLinks);
+
   return (
-    <Table striped>
+    <Table>
       <ShareableLinksTableHead />
       <Table.Body className="divide-y">
         {shareableLinks?.map((sl) => (
@@ -31,7 +35,7 @@ export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
               <StatusCell shareableLink={sl} />
             </Table.Cell>
             <Table.Cell className="hidden md:table-cell">
-              {dayjs(sl.created_at).format("MMM D, YYYY")}
+              {dayjs.utc(sl.created_at).local().format("MMM D, YYYY")}
             </Table.Cell>
             <Table.Cell>
               <LinkCell shareableLink={sl} />
