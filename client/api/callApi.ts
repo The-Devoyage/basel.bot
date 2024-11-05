@@ -44,7 +44,7 @@ export const callApi = async <E extends Endpoint>(
       formattedEndpoint,
     });
     const res = await fetch(
-      `http://localhost:8000${formattedEndpoint}${queryString}`,
+      `${process.env.API_URL}${formattedEndpoint}${queryString}`,
       {
         method,
         body: body ? JSON.stringify(body) : undefined,

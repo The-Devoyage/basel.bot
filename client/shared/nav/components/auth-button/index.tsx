@@ -32,7 +32,7 @@ export const AuthButton = () => {
   } = useSocket<
     { email: string },
     { success: boolean; message: string; token: string }
-  >("ws://localhost:8000/auth-start", {
+  >(`${process.env.NEXT_PUBLIC_SOCKET_URL}/auth-start`, {
     handleReceive: async (message) => {
       if (message?.token) {
         await setAuthToken(message.token);

@@ -8,6 +8,7 @@ import { useStore } from "@/shared/useStore";
 import { addToast } from "@/shared/useStore/toast";
 import { setMe } from "@/shared/useStore/auth";
 import { Endpoint, callApi } from "@/api";
+import { useSearchParams } from "next/navigation";
 
 interface GlobalContext {
   client: SocketClient<Message, Message> | null;
@@ -27,18 +28,23 @@ interface GlobalProviderProps {
 
 export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const [store, dispatch] = useStore();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("sl_token");
   useVerifyLogin(dispatch);
 
-  const client = useSocket<Message, Message>(`ws://localhost:8000/ws`, {
-    handleError: (_) => {
-      dispatch(
-        addToast({
-          type: "error",
-          description: "An error occurred, please try again later.",
-        }),
-      );
+  const client = useSocket<Message, Message>(
+    `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${token ? "?sl_token=" + token : ""}`,
+    {
+      handleError: (_) => {
+        dispatch(
+          addToast({
+            type: "error",
+            description: "An error occurred, please try again later.",
+          }),
+        );
+      },
     },
-  });
+  );
 
   useEffect(() => {
     if (!store.isAuthenticated || store.me) return;

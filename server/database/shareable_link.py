@@ -18,22 +18,20 @@ class ShareableLinkModel:
         return sqlite3.connect(self.db_path)
 
     def get_shareable_link_by_id(
-        self, cursor: Cursor, shareable_link_id: int, user_id: int
+        self, cursor: Cursor, shareable_link_id: int
     ) -> Optional[ShareableLink]:
         cursor.execute(
             """
-            SELECT * FROM shareable_link WHERE id = ? AND created_by = ?
+            SELECT * FROM shareable_link WHERE id = ?
             """,
-            (
-                shareable_link_id,
-                user_id,
-            ),
+            (shareable_link_id,),
         )
         row = cursor.fetchone()
         if not row:
             return None
         columns = [column[0] for column in cursor.description]
         data = dict(zip(columns, row))
+        logger.debug(f"SHAREABLE LINK FOUND: {data}")
         return ShareableLink(**data)
 
     def get_shareable_link_by_uuid(
@@ -73,6 +71,7 @@ class ShareableLinkModel:
         return [ShareableLink(**dict(zip(columns, row))) for row in cursor.fetchall()]
 
     def create_shareable_link(self, cursor: Cursor, user_id: int, tag: str):
+        logger.debug("CREATING NEW SHAREABLE LINK")
         shareable_link_uuid = str(uuid.uuid4())
         cursor.execute(
             """
@@ -81,6 +80,7 @@ class ShareableLinkModel:
             """,
             (shareable_link_uuid, tag, user_id, user_id),
         )
+        logger.debug(f"NEW SHAREABLE LINK CREATED: {cursor.lastrowid}")
         return cursor.lastrowid
 
     def update_shareable_link(
@@ -106,8 +106,6 @@ class ShareableLinkModel:
             bindings += (tag,)
 
         query += " WHERE id = ?"
-
-        logger.info(f"QUERY: {query}")
 
         cursor.execute(query, bindings + (shareable_link_id,))
         return cursor.rowcount
