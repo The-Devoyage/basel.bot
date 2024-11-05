@@ -1,4 +1,3 @@
-import os
 from typing import cast
 from fastapi import Cookie
 from fastapi.exceptions import HTTPException
@@ -13,18 +12,10 @@ from utils.environment import get_env_var
 
 logger = logging.getLogger(__name__)
 
+# Constants
 ACCESS_SECRET = get_env_var("ACCESS_SECRET")
 JWT_ALGO = get_env_var("JWT_ALGORITHM")
-
-algorithm = os.getenv("JWT_ALGORITHM")
-if not algorithm:
-    raise ValueError("JWT_ALGORITHM environment variable not set")
-
-
-def create_jwt(payload: dict, secret: str) -> str:
-    """Create a JWT token."""
-    return jwt.encode(payload, secret, algorithm=algorithm)
-
+ALGORITHM = get_env_var("JWT_ALGORITHM")
 
 oauth2scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -33,10 +24,15 @@ token_session_model = TokenSessionModel("basel.db")
 user_model = UserModel("basel.db")
 
 
+def create_jwt(payload: dict, secret: str) -> str:
+    """Create a JWT token."""
+    return jwt.encode(payload, secret, algorithm=ALGORITHM)
+
+
 def handle_decode_token(token: str) -> UserClaims:
     """Decode a JWT token."""
     try:
-        decoded_token = jwt.decode(token, ACCESS_SECRET, algorithms=[algorithm])
+        decoded_token = jwt.decode(token, ACCESS_SECRET, algorithms=[ALGORITHM])
         conn = user_model._get_connection()
         cursor = conn.cursor()
         user = user_model.get_user_by_uuid(cursor, decoded_token["user_uuid"])

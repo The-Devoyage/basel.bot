@@ -1,6 +1,6 @@
-import os
 import logging
 from datetime import datetime, timezone
+from typing import Optional, cast
 from fastapi import (
     APIRouter,
     Cookie,
@@ -9,11 +9,14 @@ from fastapi import (
     WebSocketException,
     status,
 )
+import jwt
+from classes.user_claims import ShareableLinkClaims
 from database.message import MessageModel
 import google.generativeai as genai
 from classes.message import Message
 from database.user import UserModel
 from database.user_meta import UserMetaModel
+from utils.environment import get_env_var
 
 from utils.indexing import (
     get_documents,
@@ -25,39 +28,67 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+# Constants
+GOOGLE_API_KEY = get_env_var("GOOGLE_API_KEY")
+SHAREABLE_LINK_SECRET = get_env_var("SHAREABLE_LINK_SECRET")
+ALGORITHM = get_env_var("JWT_ALGORITHM")
+
 # Database
 message_model = MessageModel("basel.db")
 user_model = UserModel("basel.db")
 user_meta_model = UserMetaModel("basel.db")
 
-# Gemini Generative AI
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+# Gemini Init
 genai.configure(api_key=GOOGLE_API_KEY)
 
 
 @router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
-    user = None
+async def websocket_endpoint(
+    websocket: WebSocket,
+    token: str = Cookie(None),
+    sl_token: Optional[str] = None,
+):
+    current_user = None
+    chatting_with = None
     chat_start_time = datetime.now(timezone.utc)
 
     try:
+        conn = user_model._get_connection()
+        cursor = conn.cursor()
         if token:
             user_claims = handle_decode_token(token)
             verify_token_session(user_claims.token_session_uuid)
-            conn = user_model._get_connection()
-            cursor = conn.cursor()
-            user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
-            if not user:
-                raise Exception("User not found")
-            conn.close()
-        else:
-            raise Exception("Not authorized to access this resource.")
+            current_user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
+            if not current_user:
+                raise Exception("Current user not found.")
+
+        if sl_token:
+            decoded = jwt.decode(
+                sl_token, SHAREABLE_LINK_SECRET, algorithms=[ALGORITHM]
+            )
+            sl_claims = cast(ShareableLinkClaims, ShareableLinkClaims(**decoded))
+            chatting_with = user_model.get_user_by_uuid(cursor, sl_claims.user_uuid)
+            if not chatting_with:
+                logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
+                raise Exception("Shareable Link Token User Not Found")
+
+        if not chatting_with:
+            chatting_with = current_user
+
+        conn.close()
+
     except Exception as e:
         logger.error(f"FAILED TO AUTHORIZE USER: {e}")
         return WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
 
-    documents = get_documents(user.id)
-    agent = get_agent(documents)
+    if not chatting_with:
+        raise Exception("No target to represent")
+
+    documents = get_documents(chatting_with.id)
+    is_candidate = False
+    if current_user is not None and current_user.id == chatting_with.id:
+        is_candidate = True
+    agent = get_agent(documents, is_candidate)
 
     await websocket.accept()
 
@@ -72,15 +103,16 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
                 logger.debug(f"USER MESSAGE RECEIVED: {data}")
 
                 message = Message.model_validate_json(data)
-                message_model.create_message(
-                    cursor=cursor,
-                    text=message.text,
-                    sender=message.sender,
-                    created_by=user.id,
-                    updated_by=user.id,
-                    user_id=user.id,
-                )
-                conn.commit()
+                if current_user:
+                    message_model.create_message(
+                        cursor=cursor,
+                        text=message.text,
+                        sender=message.sender,
+                        created_by=current_user.id,
+                        updated_by=current_user.id,
+                        user_id=current_user.id,
+                    )
+                    conn.commit()
 
                 chat_response = agent.chat(message.text)
 
@@ -90,15 +122,16 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
                     text=chat_response.response, timestamp=datetime.now(), sender="bot"
                 )
                 await websocket.send_text(response.model_dump_json())
-                message_model.create_message(
-                    cursor=cursor,
-                    text=response.text,
-                    sender="bot",
-                    created_by=user.id,
-                    updated_by=user.id,
-                    user_id=user.id,
-                )
-                conn.commit()
+                if current_user:
+                    message_model.create_message(
+                        cursor=cursor,
+                        text=response.text,
+                        sender="bot",
+                        created_by=current_user.id,
+                        updated_by=current_user.id,
+                        user_id=current_user.id,
+                    )
+                    conn.commit()
 
             except Exception as e:
                 logger.error(f"UNEXPECTED ERROR WHILE CONNECTED")
@@ -115,6 +148,10 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
     except WebSocketDisconnect as e:
         logger.error(f"WEBSOCKET DISCONNECT: {e}")
         try:
+            if not current_user:
+                conn.close()
+                return
+
             conn = user_meta_model._get_connection()
             cursor = conn.cursor()
             model = genai.GenerativeModel(
@@ -131,7 +168,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
             )
 
             logs = message_model.get_messages_by_user_id(
-                cursor, user.id, chat_start_time
+                cursor, current_user.id, chat_start_time
             )
 
             response = model.generate_content(
@@ -141,10 +178,10 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Cookie(None)):
             if response.text != "None":
                 user_meta_model.create_user_meta(
                     cursor=cursor,
-                    user_id=user.id,
+                    user_id=current_user.id,
                     data=response.text,
                     tags="",  # TODO: GET TAGS
-                    current_user_id=user.id,
+                    current_user_id=current_user.id,
                 )
                 conn.commit()
 

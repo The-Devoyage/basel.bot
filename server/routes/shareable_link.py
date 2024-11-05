@@ -29,42 +29,49 @@ class CreateShareableLinkBody(BaseModel):
 async def create_shareable_link(
     body: CreateShareableLinkBody, user_claims: UserClaims = Depends(require_auth)
 ):
-    logger.debug("Post Creating Shareable Link")
     try:
         conn = shareable_link_model._get_connection()
         cursor = conn.cursor()
 
         # Create Shareable Link
-        shareable_link_id = shareable_link_model.create_shareable_link(
+        updated = shareable_link_model.create_shareable_link(
             cursor, user_claims.user.id, body.tag
         )
 
-        if shareable_link_id is None:
+        conn.commit()
+
+        if updated is None:
             raise Exception("Failed to create Shareable Link")
+
+        shareable_link = shareable_link_model.get_shareable_link_by_id(cursor, updated)
+
+        if shareable_link is None:
+            raise Exception("Failed to find Shareable Link")
 
         # Create the Token with Payload
         payload = {
             "user_uuid": user_claims.user_uuid,
-            "shareable_link_id": shareable_link_id,
+            "shareable_link_uuid": shareable_link.uuid,
         }
+
         token = create_jwt(payload, SHAREABLE_LINK_SECRET)
 
         # Save The Token
-        shareable_link_id = shareable_link_model.update_shareable_link(
+        updated = shareable_link_model.update_shareable_link(
             cursor,
-            shareable_link_id=shareable_link_id,
+            shareable_link_id=updated,
             token=token,
             current_user=user_claims.user,
         )
 
-        if shareable_link_id is None:
+        if updated == 0:
             raise Exception("Unable to update sharebale link")
 
         # Commit
         conn.commit()
 
         shareable_link = shareable_link_model.get_shareable_link_by_id(
-            cursor, shareable_link_id, user_claims.user.id
+            cursor, shareable_link.id
         )
 
         conn.close()
@@ -90,7 +97,6 @@ async def update_shareable_link(
     body: UpdateShareableLinkBody,
     user_claims: UserClaims = Depends(require_auth),
 ):
-    logger.debug("Updating Shareable Link")
     try:
         conn = shareable_link_model._get_connection()
         cursor = conn.cursor()
@@ -113,7 +119,7 @@ async def update_shareable_link(
         conn.commit()
 
         shareable_link = shareable_link_model.get_shareable_link_by_id(
-            cursor, shareable_link.id, user_claims.user.id
+            cursor, shareable_link.id
         )
 
         if not shareable_link:
@@ -126,13 +132,11 @@ async def update_shareable_link(
 
 
 @router.get("/shareable-link")
-async def get_shareable_link(id: int, user_claims: UserClaims = Depends(require_auth)):
+async def get_shareable_link(id: int, _: UserClaims = Depends(require_auth)):
     try:
         conn = shareable_link_model._get_connection()
         cursor = conn.cursor()
-        shareable_link = shareable_link_model.get_shareable_link_by_id(
-            cursor, id, user_claims.user.id
-        )
+        shareable_link = shareable_link_model.get_shareable_link_by_id(cursor, id)
 
         if not shareable_link:
             raise Exception("Shareable link not found")

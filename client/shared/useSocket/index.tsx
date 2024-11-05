@@ -26,6 +26,8 @@ export const useSocket = <Send, Receive>(
   const [messages, setMessages] = useState<(Send | Receive)[]>([]);
   const [connected, setConnected] = useState(false);
 
+  console.log("URL ", url);
+
   if (!url) {
     throw new Error("URL is required");
   }

@@ -11,7 +11,7 @@ class ShareableLink(BaseModel):
     id: int
     uuid: str
     tag: Optional[str]
-    token: str
+    token: Optional[str]
     status: bool
     created_by: Optional[int]
     updated_by: Optional[int]
@@ -21,7 +21,7 @@ class ShareableLink(BaseModel):
     deleted_at: Optional[datetime]
 
     def to_public_dict(self) -> dict:
-        link = CLIENT_URL + f"token={self.token}"
+        link = CLIENT_URL + f"?sl_token={self.token}"
 
         shareable_link = self.model_dump(
             exclude={"id", "created_by", "updated_by", "deleted_by", "token"}

@@ -39,7 +39,6 @@ export const ChatInput = () => {
 
   useEffect(() => {
     if (hasConnected.current) return;
-    if (!isAuthenticated) return;
     client?.handleConnect();
     hasConnected.current = true;
 
