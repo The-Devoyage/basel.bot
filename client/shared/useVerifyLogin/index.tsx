@@ -1,23 +1,24 @@
-import { Dispatch, useEffect, useRef } from "react";
+"use client";
+
+import { Dispatch } from "react";
 import { AppAction } from "../useStore";
-import { Endpoint, callApi } from "@/api";
+import { Endpoint } from "@/api";
 import { setAuthenticated } from "../useStore/auth";
+import { useCallApi } from "../useCallApi";
 
 export const useVerifyLogin = (dispatch: Dispatch<AppAction>) => {
-  const hasChecked = useRef(false);
-  useEffect(() => {
-    const handleVerifyAuthToken = async () => {
-      if (hasChecked.current) return;
-      hasChecked.current = true;
-      const isAuth = await callApi({
-        endpoint: Endpoint.Verify,
-        query: null,
-        body: null,
-        path: null,
-      });
-      dispatch(setAuthenticated(isAuth.success));
-    };
-
-    handleVerifyAuthToken();
-  }, []);
+  useCallApi(
+    {
+      endpoint: Endpoint.Verify,
+      query: null,
+      body: null,
+      path: null,
+    },
+    {
+      callOnMount: true,
+      onSuccess: () => {
+        dispatch(setAuthenticated(true));
+      },
+    },
+  );
 };

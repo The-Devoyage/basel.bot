@@ -56,6 +56,7 @@ export const AuthButton = () => {
   });
 
   useEffect(() => {
+    if (!connected) return;
     return () => {
       handleClose();
     };

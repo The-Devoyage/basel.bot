@@ -110,7 +110,7 @@ async def websocket_endpoint(
                         sender=message.sender,
                         created_by=current_user.id,
                         updated_by=current_user.id,
-                        user_id=current_user.id,
+                        user_id=chatting_with.id,
                     )
                     conn.commit()
 
@@ -129,7 +129,7 @@ async def websocket_endpoint(
                         sender="bot",
                         created_by=current_user.id,
                         updated_by=current_user.id,
-                        user_id=current_user.id,
+                        user_id=chatting_with.id,
                     )
                     conn.commit()
 

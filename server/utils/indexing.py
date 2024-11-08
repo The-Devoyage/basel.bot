@@ -15,8 +15,6 @@ logger = logging.getLogger(__name__)
 DATABASE_URL = get_env_var("DATABASE_URL")
 OPENAI_API_KEY = get_env_var("OPENAI_API_KEY")
 
-logger.debug(f"OPENAIKEY: {OPENAI_API_KEY}")
-
 Settings.chunk_size = 512
 Settings.chunk_overlap = 64
 Settings.llm = OpenAI(model="gpt-4o", api_key=OPENAI_API_KEY)
@@ -41,7 +39,7 @@ def get_documents(user_id: int | None):
         # """
         query=f"""
         SELECT 'Summary: '|| data ||'" on ' || strftime('%Y-%m-%d', created_at) AS sentence
-            FROM user_meta WHERE user_id = {user_id};
+            FROM user_meta WHERE user_id = {user_id} AND created_by = {user_id};
         """
     )
 

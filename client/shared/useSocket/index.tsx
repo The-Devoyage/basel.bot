@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useRef, MutableRefObject } from "react";
 
 export interface SocketClient<Send, Receive> {
-  socket: WebSocket | null;
+  socket: MutableRefObject<WebSocket | null>;
   messages: Send[] | Receive[];
   handleSend: (message: Send) => void;
   handleClose: () => void;
-  handleConnect: () => Promise<void>;
+  handleConnect: () => void;
   loading: boolean;
   initializing: boolean;
   connected: boolean;
@@ -18,29 +18,35 @@ export const useSocket = <Send, Receive>(
   options?: {
     handleReceive?: (s: Receive) => void;
     handleError?: (e: Event) => void;
+    handleRetryFailed?: () => void;
+    connectOnMount?: boolean;
   },
 ) => {
-  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const socket = useRef<WebSocket | null>(null);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(false);
   const [messages, setMessages] = useState<(Send | Receive)[]>([]);
-  const [connected, setConnected] = useState(false);
+  const connected = useRef(false);
+  const reconnectTimeout = useRef(1000);
+  const closed = useRef(false);
 
-  console.log("URL ", url);
+  const retryConnection = () => {
+    if (closed?.current) return;
+    setTimeout(() => {
+      options?.handleRetryFailed?.();
+      handleConnect();
+      reconnectTimeout.current = Math.min(reconnectTimeout.current * 2, 30000); // Exponential backoff up to 30 seconds
+    }, reconnectTimeout.current);
+  };
 
-  if (!url) {
-    throw new Error("URL is required");
-  }
-
-  const handleConnect = async () => {
+  const handleConnect = () => {
     setInitializing(true);
     const ws = new WebSocket(url);
-    setSocket(ws);
 
     ws.onopen = (e) => {
       setLoading(false);
       setInitializing(false);
-      setConnected(true);
+      connected.current = true;
       console.log("Connected to server", e);
     };
 
@@ -53,25 +59,31 @@ export const useSocket = <Send, Receive>(
 
     ws.onclose = () => {
       console.log("Disconnected from server");
-      setConnected(false);
+      connected.current = false;
+      retryConnection();
     };
 
     ws.onerror = (error) => {
       console.error("WebSocket Error:", error);
       options?.handleError?.(error);
     };
+
+    socket.current = ws;
+
+    return ws;
   };
 
   const handleClose = () => {
-    if (connected) {
-      socket?.close();
-    }
+    closed.current = true;
+    socket?.current?.close();
+    setMessages([]);
   };
 
   const handleSend = (message: Send) => {
+    if (!connected) return;
     setLoading(true);
     setMessages((prev) => [...prev, message]);
-    socket?.send(JSON.stringify(message));
+    socket?.current?.send(JSON.stringify(message));
   };
 
   return {
@@ -82,6 +94,6 @@ export const useSocket = <Send, Receive>(
     handleConnect,
     loading,
     initializing,
-    connected,
+    connected: connected?.current,
   } as SocketClient<Send, Receive>;
 };

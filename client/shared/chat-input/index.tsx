@@ -5,7 +5,7 @@ import { Button, Textarea } from "flowbite-react";
 import { TbShoppingCartSearch } from "react-icons/tb";
 import { GlobalContext } from "@/app/provider";
 import { Message } from "@/types";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
@@ -13,13 +13,32 @@ export const ChatInput = () => {
     client,
     store: { isAuthenticated },
   } = useContext(GlobalContext);
+  const searchParams = useSearchParams();
+  const token = searchParams.get("sl_token");
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const hasConnected = useRef<boolean>(false);
   const [textareaHeight, setTextareaHeight] = useState<number | undefined>(
     undefined,
   );
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (inputRef.current && isAuthenticated) inputRef.current?.focus();
+  }, [inputRef.current, isAuthenticated]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
+      setTextareaHeight(inputRef.current.scrollHeight);
+    }
+  }, [messageText]);
+
+  const handleFocus = () => {
+    if (client && !client?.connected && (isAuthenticated || token)) {
+      client.handleConnect();
+    }
+  };
 
   const handleMessage = () => {
     if (pathname !== "/") router.push("/");
@@ -32,29 +51,6 @@ export const ChatInput = () => {
     client?.handleSend(message);
     setMessageText("");
   };
-
-  useEffect(() => {
-    if (inputRef.current && isAuthenticated) inputRef.current?.focus();
-  }, [inputRef.current, isAuthenticated]);
-
-  useEffect(() => {
-    if (hasConnected.current) return;
-    client?.handleConnect();
-    hasConnected.current = true;
-
-    return () => {
-      client?.handleClose();
-      hasConnected.current = false;
-    };
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.style.height = "auto";
-      inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
-      setTextareaHeight(inputRef.current.scrollHeight);
-    }
-  }, [messageText]);
 
   return (
     <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
@@ -84,6 +80,7 @@ export const ChatInput = () => {
           }
         }}
         value={messageText}
+        onFocus={handleFocus}
       />
       <Button color="green" onClick={handleMessage} disabled={!messageText}>
         <TbShoppingCartSearch className="h-6 w-6" />

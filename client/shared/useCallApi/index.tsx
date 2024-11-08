@@ -6,18 +6,21 @@ import {
   EndpointResponse,
 } from "@/api";
 import { GlobalContext } from "@/app/provider";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { addToast } from "../useStore/toast";
 
-interface UseCallApiOptions {
+interface UseCallApiOptions<E extends Endpoint> {
   successMessage?: string;
   errorMessage?: string;
   revalidationPath?: Endpoint;
+  onSuccess?: (response: Response<EndpointResponse[E]>) => void;
+  onError?: (error: unknown) => void;
+  callOnMount?: boolean;
 }
 
 export const useCallApi = <E extends Endpoint>(
   apiAction: ApiAction<E>,
-  options?: UseCallApiOptions,
+  options?: UseCallApiOptions<E>,
 ) => {
   const [loading, setLoading] = useState(false);
   const [res, setRes] = useState<Response<EndpointResponse[E]> | null>(null);
@@ -39,9 +42,11 @@ export const useCallApi = <E extends Endpoint>(
         }),
       );
       setLoading(false);
+      options?.onSuccess?.(res);
     } catch (err) {
       console.error(err);
       setLoading(false);
+      options?.onError?.(err);
       dispatch(
         addToast({
           type: "error",
@@ -50,6 +55,10 @@ export const useCallApi = <E extends Endpoint>(
       );
     }
   };
+
+  useEffect(() => {
+    if (options?.callOnMount) call();
+  }, []);
 
   return { call, res, loading };
 };

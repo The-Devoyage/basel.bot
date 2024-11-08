@@ -35,6 +35,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${token ? "?sl_token=" + token : ""}`,
     {
+      connectOnMount: true,
       handleError: (_) => {
         dispatch(
           addToast({
@@ -77,7 +78,14 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
 
   const value = useMemo(
     () => ({ client, store, dispatch }),
-    [client.socket, client.messages, client.handleSend, client.loading, store],
+    [
+      client.socket,
+      client.messages,
+      client.handleSend,
+      client.loading,
+      client.connected,
+      store,
+    ],
   );
 
   return (
