@@ -1,3 +1,5 @@
+"client";
+
 import type { Metadata } from "next";
 import { Space_Mono } from "next/font/google";
 import { ThemeModeScript } from "flowbite-react";
@@ -6,6 +8,7 @@ import { ChatInput } from "@/shared/chat-input";
 import { Nav } from "@/shared/nav";
 import { Toaster } from "@/shared/toaster";
 import "./globals.css";
+import { Suspense } from "react";
 
 const spaceMono = Space_Mono({
   weight: "400",
@@ -27,25 +30,27 @@ export default function RootLayout({
       <head>
         <ThemeModeScript />
       </head>
-      <GlobalProvider>
-        <body
-          className={`h-screen w-full bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
-        >
-          <Toaster />
-          <Nav />
-          <main
-            className="container relative top-16 mx-auto mb-16 flex p-4 dark:bg-slate-900"
-            style={{
-              minHeight: "calc(100vh - 148px)",
-            }}
+      <Suspense>
+        <GlobalProvider>
+          <body
+            className={`h-screen w-full bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
           >
-            {children}
-          </main>
-          <footer className="sticky bottom-0 w-full border-t bg-white dark:border-slate-500 dark:bg-slate-950">
-            <ChatInput />
-          </footer>
-        </body>
-      </GlobalProvider>
+            <Toaster />
+            <Nav />
+            <main
+              className="container relative top-16 mx-auto mb-16 flex p-4 dark:bg-slate-900"
+              style={{
+                minHeight: "calc(100vh - 148px)",
+              }}
+            >
+              {children}
+            </main>
+            <footer className="sticky bottom-0 w-full border-t bg-white dark:border-slate-500 dark:bg-slate-950">
+              <ChatInput />
+            </footer>
+          </body>
+        </GlobalProvider>
+      </Suspense>
     </html>
   );
 }

@@ -20,8 +20,6 @@ export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
     return null;
   }
 
-  console.log(shareableLinks);
-
   return (
     <Table>
       <ShareableLinksTableHead />
