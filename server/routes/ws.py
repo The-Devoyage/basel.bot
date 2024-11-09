@@ -10,15 +10,18 @@ from fastapi import (
     status,
 )
 import jwt
+import json
+
 from classes.user_claims import ShareableLinkClaims
 from database.message import MessageModel
 import google.generativeai as genai
-from classes.message import Message
+from classes.socket_message import SocketMessage
 from database.user import UserModel
 from database.user_meta import UserMetaModel
 from utils.environment import get_env_var
 
 from utils.indexing import (
+    create_index,
     get_documents,
     get_agent,
 )
@@ -84,11 +87,13 @@ async def websocket_endpoint(
     if not chatting_with:
         raise Exception("No target to represent")
 
-    documents = get_documents(chatting_with.id)
     is_candidate = False
     if current_user is not None and current_user.id == chatting_with.id:
         is_candidate = True
-    agent = get_agent(documents, is_candidate)
+
+    agent = get_agent(
+        is_candidate, chatting_with.id, current_user.id if current_user else None
+    )
 
     await websocket.accept()
 
@@ -102,7 +107,7 @@ async def websocket_endpoint(
             try:
                 logger.debug(f"USER MESSAGE RECEIVED: {data}")
 
-                message = Message.model_validate_json(data)
+                message = SocketMessage.model_validate_json(data)
                 if current_user:
                     message_model.create_message(
                         cursor=cursor,
@@ -118,7 +123,7 @@ async def websocket_endpoint(
 
                 logger.debug(f"CHAT RESPONSE: {chat_response}")
 
-                response = Message(
+                response = SocketMessage(
                     text=chat_response.response, timestamp=datetime.now(), sender="bot"
                 )
                 await websocket.send_text(response.model_dump_json())
@@ -135,7 +140,7 @@ async def websocket_endpoint(
 
             except Exception as e:
                 logger.error(f"UNEXPECTED ERROR WHILE CONNECTED")
-                response = Message(
+                response = SocketMessage(
                     text="Sorry, I am having some trouble with that. Let's try again.",
                     timestamp=datetime.now(),
                     sender="bot",
@@ -146,9 +151,11 @@ async def websocket_endpoint(
                 cursor.close()
                 conn.close()
     except WebSocketDisconnect as e:
-        logger.error(f"WEBSOCKET DISCONNECT: {e}")
+        logger.debug(f"WEBSOCKET DISCONNECT: {e}")
+
+        # If the user is the candidate, save the summary
         try:
-            if not current_user:
+            if not current_user or current_user.id != chatting_with.id:
                 conn.close()
                 return
 
@@ -157,13 +164,21 @@ async def websocket_endpoint(
             model = genai.GenerativeModel(
                 model_name="gemini-1.5-flash",
                 system_instruction=f"""
-                        Summerize the following chat logs by extracting information relevant to the users career that 
-                        would help them to find or maintan a job. This can include professional skills, day to day tasks,
-                        personal hobbies, and general knowledge about the candidate.
+                   Summarize the following chat logs by extracting only *new* information that the user has shared today
+                        that could help them find or maintain a job. Relevant information includes:
+                        - Professional skills or competencies
+                        - Day-to-day tasks
+                        - Personal hobbies (if relevant to their career)
+                        - General knowledge about the user’s career aspirations or goals
 
-                        Never include skills inferred by the bot, only skills that are explicitly stated by the user.
+                        Rules:
+                        - Only include new facts that the user shared today.
+                        - Exclude information that the bot brought up or that appears redundant or already known by the bot.
+                        - If there are no updates in today’s logs, respond with "None".
 
-                        If there are no updates to the chat logs, respond with None.
+                        Format response as JSON:
+                            UserMeta = {{'user_meta': str | None}}
+                            return UserMeta
                     """,
             )
 
@@ -171,21 +186,48 @@ async def websocket_endpoint(
                 cursor, current_user.id, chat_start_time
             )
 
-            response = model.generate_content(
-                f"Summerize the following chat logs as instructed: {logs}"
+            logger.debug(f"{logs}")
+
+            logs_story = "\n".join(
+                f"{message.sender}: {message.text}" for message in logs
             )
 
-            if response.text != "None":
+            response = model.generate_content(
+                f"Summerize the following chat logs as instructed: {logs_story}",
+                generation_config=genai.GenerationConfig(
+                    response_mime_type="application/json",
+                ),
+            )
+
+            logger.debug(f"RESPOSNE: {response}")
+
+            # Parse the JSON response from the model
+            try:
+                logger.debug("Updating Index")
+                parsed_response = json.loads(
+                    response.text
+                )  # Assuming response.text contains JSON
+
+                user_meta = parsed_response.get("user_meta")
+            except json.JSONDecodeError:
+                logger.debug("Failed to decode JSON from response.")
+                user_meta = None
+
+            if user_meta and user_meta != "None":
                 user_meta_model.create_user_meta(
                     cursor=cursor,
                     user_id=current_user.id,
-                    data=response.text,
-                    tags="",  # TODO: GET TAGS
+                    data=user_meta,
+                    tags="",  # TODO: Populate tags if available
                     current_user_id=current_user.id,
                 )
                 conn.commit()
 
             conn.close()
+
+            # Create Index
+            documents = get_documents(current_user.id)
+            create_index(documents, current_user.id)
         except Exception as e:
             logger.error(f"FAILED TO SAVE SUMMARY: {e}")
     except Exception as e:

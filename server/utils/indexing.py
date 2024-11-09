@@ -1,6 +1,13 @@
+import os
 import logging
+from typing import Optional
 
-from llama_index.core import VectorStoreIndex, Settings
+from llama_index.core import (
+    StorageContext,
+    VectorStoreIndex,
+    Settings,
+    load_index_from_storage,
+)
 from llama_index.core.tools.query_engine import QueryEngineTool
 from llama_index.core.tools.types import ToolMetadata
 from llama_index.readers.database import DatabaseReader
@@ -14,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = get_env_var("DATABASE_URL")
 OPENAI_API_KEY = get_env_var("OPENAI_API_KEY")
+PERSIST_DIR = get_env_var("PERSIST_DIR")
 
 Settings.chunk_size = 512
 Settings.chunk_overlap = 64
@@ -22,6 +30,7 @@ Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
 
 def get_documents(user_id: int | None):
+    logger.debug("GETTING DOCUMENTS")
     if not user_id:
         return
 
@@ -43,14 +52,51 @@ def get_documents(user_id: int | None):
         """
     )
 
-    logger.info(f"GET DOCS: {documents}")
+    logger.debug(f"DOCS: {documents}")
     return documents
 
 
-def get_agent(documents, is_candidate) -> OpenAIAgent:
-    index = VectorStoreIndex.from_documents(
-        documents,
-    )
+def create_index(documents, current_user_id):
+    logger.debug("CREATING INDEX")
+    index = VectorStoreIndex.from_documents(documents, show_progress=True)
+    index.set_index_id(current_user_id)
+    index.storage_context.persist(PERSIST_DIR)
+
+
+def get_agent(
+    is_candidate, chatting_with_id: int, current_user_id: Optional[int]
+) -> OpenAIAgent:
+    logger.debug("GETTING AGENT")
+    logger.info(f"PERSIST DIR {PERSIST_DIR}")
+    logger.info("TEST")
+    # Load or create index
+    tool = None
+    index = None
+
+    # Get index
+    if os.path.exists(PERSIST_DIR + "/docstore.json"):
+        logger.info("TEST2")
+        logger.debug(f"LOADING INDEX FOR USER: {chatting_with_id}")
+        storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+        index = load_index_from_storage(
+            persist_dir=PERSIST_DIR,
+            storage_context=storage_context,
+            index_id=str(chatting_with_id),
+        )
+    else:
+        logger.info("TEST3")
+        logger.info(f"CREATING NEW INDEX FOR USER: {current_user_id}")
+        if not current_user_id:
+            raise Exception("No user found when creating new index.")
+        documents = get_documents(current_user_id)
+        create_index(documents, current_user_id)
+        storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+        index = load_index_from_storage(
+            persist_dir=PERSIST_DIR,
+            storage_context=storage_context,
+            index_id=str(chatting_with_id),
+        )
+
     tool = QueryEngineTool(
         query_engine=index.as_query_engine(similarity_top_k=5),
         metadata=ToolMetadata(

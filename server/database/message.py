@@ -1,6 +1,8 @@
 import sqlite3
+from typing import List
 import uuid
 from datetime import datetime
+from classes.message import Message
 
 
 class MessageModel:
@@ -32,7 +34,7 @@ class MessageModel:
         )
         return cursor.fetchone()
 
-    def get_messages_by_user_id(self, cursor, user_id, created_at):
+    def get_messages_by_user_id(self, cursor, user_id, created_at) -> List[Message]:
         """Retrieve all messages by a user using the provided cursor."""
         cursor.execute(
             """
@@ -40,7 +42,8 @@ class MessageModel:
         """,
             (user_id, created_at),
         )
-        return cursor.fetchall()
+        columns = [column[0] for column in cursor.description]
+        return [Message(**dict(zip(columns, row))) for row in cursor.fetchall()]
 
     def update_message(self, cursor, message_id, text, updated_by):
         """Update a message's text using the provided cursor."""

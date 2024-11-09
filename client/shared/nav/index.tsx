@@ -79,8 +79,8 @@ export const Nav = () => {
             label={
               <Avatar
                 alt="User settings"
-                img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
                 rounded
+                placeholderInitials={me?.email.at(0)?.toUpperCase()}
               />
             }
           >
@@ -93,7 +93,7 @@ export const Nav = () => {
               </span>
             </Dropdown.Header>
             <Dropdown.Item href="/my-basel">My Basel</Dropdown.Item>
-            <Dropdown.Item href="/account">Account</Dropdown.Item>
+            {/* <Dropdown.Item href="/account">Account</Dropdown.Item> */}
             <Dropdown.Item
               onClick={() =>
                 themeMode.setMode(themeMode.mode === "dark" ? "light" : "dark")
