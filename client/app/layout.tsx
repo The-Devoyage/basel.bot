@@ -27,6 +27,12 @@ export default async function RootLayout({
   return (
     <html lang="en" id="root" className="scroll-smooth">
       <head>
+        <link rel="icon" href="/logo.svg" sizes="any" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover"
+        />
+
         <ThemeModeScript />
       </head>
       <body
