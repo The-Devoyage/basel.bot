@@ -20,12 +20,12 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PROD }}
           script: |
-            cd /basel
+            cd /basel.bot
             git pull
             # Client
-            cd /basel/client
-            npm i
-            npm run build
-            cd /basel/server
-            sqlx migrate run
-            pm2 restart all
+            cd /basel.bot/client
+            /root/.nvm/versions/node/v22.11.0/bin/npm i
+            /root/.nvm/versions/node/v22.11.0/bin/npm run build
+            cd /basel.bot/server
+            /root/.cargo/bin/sqlx migrate run
+            /root/.nvm/versions/node/v22.11.0/bin/pm2 restart all
