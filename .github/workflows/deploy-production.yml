@@ -18,7 +18,7 @@ jobs:
         with:
           host: 108.61.224.32
           username: root
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PROD }}
           script: |
             cd /basel
             git pull
