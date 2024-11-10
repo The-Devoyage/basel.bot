@@ -11,9 +11,9 @@ export const setAuthToken = async (token: string) => {
     value: token,
     httpOnly: true,
     path: "/",
-    domain: ".basel.bot",
-    secure: true,
-    sameSite: "none",
+    domain: process.env.NODE_ENV === "production" ? ".basel.bot" : undefined,
+    secure: process.env.NODE_ENV === "production" ? true : undefined,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : undefined,
     expires: new Date(Date.now() + 1000 * 60 * 60 * 24),
   });
 };

@@ -35,7 +35,6 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${token ? "?sl_token=" + token : ""}`,
     {
-      connectOnMount: true,
       handleError: (_) => {
         dispatch(
           addToast({

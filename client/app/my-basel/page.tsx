@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import { PageHeader } from "@/shared/layout/page-header";
 import { CreateShareableLinkButton, ShareableLinksTable } from "./components";
 import { Typography } from "@/shared/typography";
 import { Alert } from "flowbite-react";
 import { Endpoint, callApi } from "@/api";
+import { Loader } from "@/shared/loader";
 
 const MyBaselPage = async () => {
   const shareableLinks = await callApi({

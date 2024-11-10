@@ -1,5 +1,3 @@
-"client";
-
 import type { Metadata } from "next";
 import { Space_Mono } from "next/font/google";
 import { ThemeModeScript } from "flowbite-react";
@@ -9,6 +7,7 @@ import { Nav } from "@/shared/nav";
 import { Toaster } from "@/shared/toaster";
 import "./globals.css";
 import { Suspense } from "react";
+import { Loader } from "@/shared/loader";
 
 const spaceMono = Space_Mono({
   weight: "400",
@@ -20,7 +19,7 @@ export const metadata: Metadata = {
   description: "Basel's here to help you find and watch products and services.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -30,11 +29,15 @@ export default function RootLayout({
       <head>
         <ThemeModeScript />
       </head>
-      <Suspense>
-        <GlobalProvider>
-          <body
-            className={`h-screen w-full bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
-          >
+      <body
+        className={`h-screen w-full bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
+      >
+        <Suspense
+          fallback={
+            <Loader message="Your last interview just got that much easier." />
+          }
+        >
+          <GlobalProvider>
             <Toaster />
             <Nav />
             <main
@@ -48,9 +51,9 @@ export default function RootLayout({
             <footer className="sticky bottom-0 w-full border-t bg-white dark:border-slate-500 dark:bg-slate-950">
               <ChatInput />
             </footer>
-          </body>
-        </GlobalProvider>
-      </Suspense>
+          </GlobalProvider>
+        </Suspense>
+      </body>
     </html>
   );
 }

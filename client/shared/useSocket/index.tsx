@@ -19,7 +19,6 @@ export const useSocket = <Send, Receive>(
     handleReceive?: (s: Receive) => void;
     handleError?: (e: Event) => void;
     handleRetryFailed?: () => void;
-    connectOnMount?: boolean;
   },
 ) => {
   const socket = useRef<WebSocket | null>(null);
