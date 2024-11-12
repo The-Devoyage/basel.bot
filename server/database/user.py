@@ -177,7 +177,7 @@ class UserModel:
             bindings + (user_id,),
         )
 
-        return cursor.rowcount  # Return the number of rows updated
+        return cursor.rowcount
 
     def delete_user(self, cursor, user_id, deleted_by) -> int:
         """Soft delete a user."""
