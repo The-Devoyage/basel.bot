@@ -130,7 +130,7 @@ async def auth_start(websocket: WebSocket):
                     auth_id=str(uuid.uuid4()),
                     current_user=current_user,
                 )
-                current_user = user_model.get_user_by_id(cursor, user_id)
+                current_user = user_model.get_user_by_id(cursor, current_user.id)
                 if not current_user:
                     raise ValueError("Failed to update user")
 
