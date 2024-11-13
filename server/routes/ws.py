@@ -188,6 +188,9 @@ async def websocket_endpoint(
 
             logger.debug(f"{logs}")
 
+            if not logs:
+                return
+
             logs_story = "\n".join(
                 f"{message.sender}: {message.text}" for message in logs
             )

@@ -41,11 +41,6 @@ def get_documents(user_id: int | None):
 
     # Load data from the database using a query
     documents = reader.load_data(
-        # query=f"SELECT data, created_at FROM user_meta WHERE user_id = {user_id};"
-        # query=f"""
-        #     SELECT ''|| sender ||' said "' || text || '" on ' || strftime('%Y-%m-%d', created_at) AS sentence
-        #     FROM message WHERE user_id = {user_id};
-        # """
         query=f"""
         SELECT 'Summary: '|| data ||'" on ' || strftime('%Y-%m-%d', created_at) AS sentence
             FROM user_meta WHERE user_id = {user_id} AND created_by = {user_id};
@@ -75,17 +70,29 @@ def get_agent(
 
     # Get index
     if os.path.exists(PERSIST_DIR + "/docstore.json"):
-        logger.info("TEST2")
-        logger.debug(f"LOADING INDEX FOR USER: {chatting_with_id}")
-        storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-        index = load_index_from_storage(
-            persist_dir=PERSIST_DIR,
-            storage_context=storage_context,
-            index_id=str(chatting_with_id),
-        )
+        logger.debug(f"LOADING INDEX")
+        try:
+            storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+            index = load_index_from_storage(
+                persist_dir=PERSIST_DIR,
+                storage_context=storage_context,
+                index_id=str(chatting_with_id),
+            )
+        except Exception as e:
+            logger.warn(
+                f"Index does not exist. Creating new index for user {chatting_with_id}."
+            )
+            logger.warn(e)
+            documents = get_documents(current_user_id)
+            create_index(documents, current_user_id)
+            storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+            index = load_index_from_storage(
+                persist_dir=PERSIST_DIR,
+                storage_context=storage_context,
+                index_id=str(chatting_with_id),
+            )
     else:
-        logger.info("TEST3")
-        logger.info(f"CREATING NEW INDEX FOR USER: {current_user_id}")
+        logger.debug(f"CREATING NEW INDEX IF NONE EXISTS")
         if not current_user_id:
             raise Exception("No user found when creating new index.")
         documents = get_documents(current_user_id)

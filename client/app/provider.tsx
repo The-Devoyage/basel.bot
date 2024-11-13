@@ -34,16 +34,6 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
 
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${token ? "?sl_token=" + token : ""}`,
-    {
-      handleError: (_) => {
-        dispatch(
-          addToast({
-            type: "error",
-            description: "An error occurred, please try again later.",
-          }),
-        );
-      },
-    },
   );
 
   useEffect(() => {
