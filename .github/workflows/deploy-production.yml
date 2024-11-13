@@ -28,4 +28,6 @@ jobs:
             /root/.nvm/versions/node/v22.11.0/bin/npm run build
             cd /root/basel.bot/server
             /root/.cargo/bin/sqlx migrate run
+            source /root/basel.bot/server/venv/bin/activate
+            pip install -r /root/basel.bot/server/requirements.txt
             /root/.nvm/versions/node/v22.11.0/bin/pm2 restart all
