@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request
 from fastapi.param_functions import Depends
 from classes.user_claims import UserClaims
 from database.subscription import SubscriptionModel
@@ -27,8 +27,22 @@ stripe.api_key = STRIPE_API_KEY
 
 
 @router.get("/subscribe-start")
-async def subscribe_start(_: UserClaims = Depends(require_auth)):
+async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
     try:
+        conn = subscription_model._get_connection()
+        cursor = conn.cursor()
+
+        # Users may have one subscription
+        subscriptions = subscription_model.get_subscriptions_by_user_id(
+            cursor, user_claims.user.id
+        )
+        if subscriptions:
+            return create_response(
+                success=False,
+                message="User is already subscribed.",
+                status=403,
+            )
+
         checkout_session = stripe.checkout.Session.create(
             line_items=[
                 {
@@ -37,9 +51,14 @@ async def subscribe_start(_: UserClaims = Depends(require_auth)):
                 },
             ],
             mode="subscription",
-            success_url=CLIENT_URL + "/order?success=true",
-            cancel_url=CLIENT_URL + "/order?canceled=true",
+            success_url=CLIENT_URL,
+            cancel_url=CLIENT_URL,
         )
+        subscription_model.create_subscription(
+            cursor, user_id=user_claims.user.id, checkout_session_id=checkout_session.id
+        )
+        conn.commit()
+        conn.close()
         return create_response(success=True, data=checkout_session)
     except Exception as e:
         logger.error(e)
@@ -48,10 +67,11 @@ async def subscribe_start(_: UserClaims = Depends(require_auth)):
 
 @router.post("/subscribe-finish")
 async def subscribe_finish(
-    payload: dict,
-    user_claims: UserClaims = Depends(require_auth),
+    request: Request,
     stripe_signature: str = Header(None),
 ):
+    """Webhook from stripe to activate the subscription."""
+    payload = await request.body()
     try:
         event = stripe.Webhook.construct_event(
             payload, stripe_signature, STRIPE_ENDPOINT_SECRET
@@ -68,16 +88,31 @@ async def subscribe_finish(
                 # Create subscription
                 conn = subscription_model._get_connection()
                 cursor = conn.cursor()
-                subscription_id = subscription_model.create_subscription(
-                    cursor, user_claims.user.id
+                subscription = (
+                    subscription_model.get_subscription_by_checkout_session_id(
+                        cursor, checkout_session.id
+                    )
+                )
+
+                if not subscription:
+                    raise Exception("Subscription not found.")
+
+                updated_count = subscription_model.update_subscription(
+                    cursor, status=True, checkout_session_id=checkout_session.id
                 )
                 conn.commit()
-                if not subscription_id:
-                    raise Exception("Failed to create subscription.")
+
                 subscription = subscription_model.get_subscription_by_id(
-                    cursor, subscription_id
+                    cursor, subscription.id
                 )
+
                 if not subscription:
+                    raise Exception(
+                        "Failed to retrieve updated subscription information."
+                    )
+
+                conn.close()
+                if not updated_count:
                     raise Exception("Failed to find subscription.")
                 return create_response(success=True, data=subscription.to_public_dict())
             else:

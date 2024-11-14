@@ -26,6 +26,7 @@ from utils.indexing import (
     get_agent,
 )
 from utils.jwt import handle_decode_token, verify_token_session
+from utils.subscription import verify_subscription
 
 router = APIRouter()
 
@@ -54,6 +55,7 @@ async def websocket_endpoint(
     current_user = None
     chatting_with = None
     chat_start_time = datetime.now(timezone.utc)
+    subscribed = None
 
     try:
         conn = user_model._get_connection()
@@ -64,6 +66,7 @@ async def websocket_endpoint(
             current_user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
             if not current_user:
                 raise Exception("Current user not found.")
+            subscribed = verify_subscription(current_user.id, current_user.created_at)
 
         if sl_token:
             decoded = jwt.decode(
@@ -81,7 +84,7 @@ async def websocket_endpoint(
         conn.close()
 
     except Exception as e:
-        logger.error(f"FAILED TO AUTHORIZE USER: {e}")
+        logger.error(f"{e}")
         return WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
 
     if not chatting_with:
@@ -92,7 +95,10 @@ async def websocket_endpoint(
         is_candidate = True
 
     agent = get_agent(
-        is_candidate, chatting_with.id, current_user.id if current_user else None
+        is_candidate,
+        chatting_with.id,
+        current_user.id if current_user else None,
+        subscribed if subscribed else False,
     )
 
     await websocket.accept()
@@ -108,7 +114,7 @@ async def websocket_endpoint(
                 logger.debug(f"USER MESSAGE RECEIVED: {data}")
 
                 message = SocketMessage.model_validate_json(data)
-                if current_user:
+                if current_user and subscribed:
                     message_model.create_message(
                         cursor=cursor,
                         text=message.text,
@@ -127,7 +133,7 @@ async def websocket_endpoint(
                     text=chat_response.response, timestamp=datetime.now(), sender="bot"
                 )
                 await websocket.send_text(response.model_dump_json())
-                if current_user:
+                if current_user and subscribed:
                     message_model.create_message(
                         cursor=cursor,
                         text=response.text,
@@ -155,7 +161,11 @@ async def websocket_endpoint(
 
         # If the user is the candidate, save the summary
         try:
-            if not current_user or current_user.id != chatting_with.id:
+            if (
+                not current_user
+                or current_user.id != chatting_with.id
+                or not subscribed
+            ):
                 conn.close()
                 return
 
@@ -186,8 +196,6 @@ async def websocket_endpoint(
                 cursor, current_user.id, chat_start_time
             )
 
-            logger.debug(f"{logs}")
-
             if not logs:
                 return
 
@@ -201,8 +209,6 @@ async def websocket_endpoint(
                     response_mime_type="application/json",
                 ),
             )
-
-            logger.debug(f"RESPOSNE: {response}")
 
             # Parse the JSON response from the model
             try:

@@ -59,11 +59,12 @@ def create_index(documents, current_user_id):
 
 
 def get_agent(
-    is_candidate, chatting_with_id: int, current_user_id: Optional[int]
+    is_candidate,
+    chatting_with_id: int,
+    current_user_id: Optional[int],
+    subscribed: bool,
 ) -> OpenAIAgent:
-    logger.debug("GETTING AGENT")
-    logger.info(f"PERSIST DIR {PERSIST_DIR}")
-    logger.info("TEST")
+    logger.debug(f"GETTING AGENT FOR USER {chatting_with_id}")
     # Load or create index
     tool = None
     index = None
@@ -112,7 +113,7 @@ def get_agent(
         ),
     )
 
-    prompt = """
+    prompt = f"""
        You are a bot representing the candidate.
 
        You are currently conversting with the candidate that you represent.
@@ -125,8 +126,16 @@ def get_agent(
        and personal life/hobbies. As you progress through the conversation, try to ask more technical questions
        to get an idea of the users skill level.
 
-       Call the candidate_profile tool to get historical information about the candidate.
+       Call the candidate_profile tool to get historical information about the candidate.\n
     """
+
+    subscription_message = """
+        Note: This candidate is currently not subscribed to the platform. Remind them every so often 
+        that while they can interact with you as normal, nothing will be saved and their profile 
+        will not receive updates based on the current conversation.
+    """
+    if not subscribed:
+        prompt += subscription_message
 
     if is_candidate is False:
         prompt = """
