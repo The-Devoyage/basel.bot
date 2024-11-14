@@ -16,7 +16,8 @@ const spaceMono = Space_Mono({
 
 export const metadata: Metadata = {
   title: "Basel",
-  description: "Basel's here to help you find and watch products and services.",
+  description:
+    "Basel is your virtual professional you. Your probot (professional robot) is here to stand in your place for initial interviews and screenings. Drop a link and let the recuriter talk to your bot.",
 };
 
 export default async function RootLayout({
