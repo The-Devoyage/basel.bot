@@ -101,7 +101,7 @@ async def websocket_endpoint(
     agent = get_agent(
         is_candidate,
         chatting_with.id,
-        current_user.id if current_user else None,
+        current_user,
         subscription_status,
     )
 
@@ -179,12 +179,15 @@ async def websocket_endpoint(
         logger.debug(f"WEBSOCKET DISCONNECT: {e}")
 
         # If the user is the candidate, save the summary
+        logger.debug(f"{current_user, subscription_status, chatting_with}")
         try:
             if (
                 not current_user
                 or current_user.id != chatting_with.id
-                or not subscription_status.active
-                or not subscription_status.is_free_trial
+                or (
+                    not subscription_status.active
+                    and not subscription_status.is_free_trial
+                )
             ):
                 conn.close()
                 return

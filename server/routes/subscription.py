@@ -25,6 +25,9 @@ subscription_model = SubscriptionModel("basel.db")
 # Init Stripe
 stripe.api_key = STRIPE_API_KEY
 
+# @router.get("/subscriptions")
+# async def get_subscriptions():
+
 
 @router.get("/subscribe-start")
 async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
