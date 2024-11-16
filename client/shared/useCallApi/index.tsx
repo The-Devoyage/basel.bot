@@ -32,8 +32,9 @@ export const useCallApi = <E extends Endpoint>(
       const res = await callApi(apiAction, options?.revalidationPath);
       setRes(res);
       if (!res.success) {
-        console.error("Failed Response: ", res);
-        throw Error("Network error");
+        dispatch(addToast({ type: "error", description: res.message || "" }));
+        options?.onError?.(res);
+        return;
       }
       dispatch(
         addToast({

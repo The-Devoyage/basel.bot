@@ -15,7 +15,7 @@ import json
 from classes.user_claims import ShareableLinkClaims
 from database.message import MessageModel
 import google.generativeai as genai
-from classes.socket_message import SocketMessage
+from classes.socket_message import Button, ButtonAction, SocketMessage
 from database.user import UserModel
 from database.user_meta import UserMetaModel
 from utils.environment import get_env_var
@@ -26,7 +26,7 @@ from utils.indexing import (
     get_agent,
 )
 from utils.jwt import handle_decode_token, verify_token_session
-from utils.subscription import verify_subscription
+from utils.subscription import SubscriptionStatus, verify_subscription
 
 router = APIRouter()
 
@@ -55,7 +55,9 @@ async def websocket_endpoint(
     current_user = None
     chatting_with = None
     chat_start_time = datetime.now(timezone.utc)
-    subscribed = None
+    subscription_status = SubscriptionStatus(
+        active=False, subscriptions=None, is_free_trial=False
+    )
 
     try:
         conn = user_model._get_connection()
@@ -66,7 +68,9 @@ async def websocket_endpoint(
             current_user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
             if not current_user:
                 raise Exception("Current user not found.")
-            subscribed = verify_subscription(current_user.id, current_user.created_at)
+            subscription_status = verify_subscription(
+                current_user.id, current_user.created_at
+            )
 
         if sl_token:
             decoded = jwt.decode(
@@ -98,7 +102,7 @@ async def websocket_endpoint(
         is_candidate,
         chatting_with.id,
         current_user.id if current_user else None,
-        subscribed if subscribed else False,
+        subscription_status,
     )
 
     await websocket.accept()
@@ -114,7 +118,9 @@ async def websocket_endpoint(
                 logger.debug(f"USER MESSAGE RECEIVED: {data}")
 
                 message = SocketMessage.model_validate_json(data)
-                if current_user and subscribed:
+                if current_user and (
+                    subscription_status.active or subscription_status.is_free_trial
+                ):
                     message_model.create_message(
                         cursor=cursor,
                         text=message.text,
@@ -130,10 +136,23 @@ async def websocket_endpoint(
                 logger.debug(f"CHAT RESPONSE: {chat_response}")
 
                 response = SocketMessage(
-                    text=chat_response.response, timestamp=datetime.now(), sender="bot"
+                    text=chat_response.response,
+                    timestamp=datetime.now(),
+                    sender="bot",
+                    buttons=[
+                        Button(
+                            label="Subscribe - $3.99/mo",
+                            action=ButtonAction(
+                                type="call", endpoint="/subscribe-start"
+                            ),
+                        )
+                    ]
+                    if not subscription_status.active
+                    or subscription_status.is_free_trial
+                    else None,
                 )
                 await websocket.send_text(response.model_dump_json())
-                if current_user and subscribed:
+                if current_user and subscription_status:
                     message_model.create_message(
                         cursor=cursor,
                         text=response.text,
@@ -164,7 +183,8 @@ async def websocket_endpoint(
             if (
                 not current_user
                 or current_user.id != chatting_with.id
-                or not subscribed
+                or not subscription_status.active
+                or not subscription_status.is_free_trial
             ):
                 conn.close()
                 return

@@ -59,7 +59,7 @@ async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
         )
         conn.commit()
         conn.close()
-        return create_response(success=True, data=checkout_session)
+        return create_response(success=True, data={"url": checkout_session.url})
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail="Something went wrong...")

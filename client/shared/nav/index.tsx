@@ -93,7 +93,7 @@ export const Nav = () => {
               </span>
             </Dropdown.Header>
             <Dropdown.Item href="/my-basel">My Basel</Dropdown.Item>
-            {/* <Dropdown.Item href="/account">Account</Dropdown.Item> */}
+            <Dropdown.Item href="/account">Account</Dropdown.Item>
             <Dropdown.Item
               onClick={() =>
                 themeMode.setMode(themeMode.mode === "dark" ? "light" : "dark")

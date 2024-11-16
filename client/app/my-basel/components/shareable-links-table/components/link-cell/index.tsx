@@ -31,6 +31,7 @@ export const LinkCell: FC<LinkCellProps> = ({ shareableLink }) => {
           onClick={() => handleCopy(shareableLink.link)}
           className="h-full"
           outline
+          color="green"
         >
           <BiSolidCopy />
         </Button>

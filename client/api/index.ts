@@ -6,6 +6,8 @@ export * from "./callApi";
 export interface Response<T> {
   success: boolean;
   data: T | null;
+  message?: string;
+  code?: number;
 }
 
 export enum Endpoint {
@@ -16,6 +18,7 @@ export enum Endpoint {
   AuthFinish = "/auth-finish",
   Logout = "/logout",
   Verify = "/verify",
+  SubscribeStart = "/subscribe-start",
 }
 
 type ShareableLinksQuery = { limit?: number; offset?: number };
@@ -44,6 +47,11 @@ interface EndpointParams {
     body: { token: string };
     path: undefined;
   };
+  [Endpoint.SubscribeStart]: {
+    query: undefined;
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -54,6 +62,7 @@ export interface EndpointResponse {
   [Endpoint.Verify]: null;
   [Endpoint.AuthFinish]: null;
   [Endpoint.UpdateShareableLink]: ShareableLink;
+  [Endpoint.SubscribeStart]: { url: string };
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

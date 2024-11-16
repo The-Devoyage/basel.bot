@@ -16,6 +16,7 @@ from llama_index.llms.openai import OpenAI
 from llama_index.agent.openai import OpenAIAgent
 
 from utils.environment import get_env_var
+from utils.subscription import SubscriptionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ def get_agent(
     is_candidate,
     chatting_with_id: int,
     current_user_id: Optional[int],
-    subscribed: bool,
+    subscription_status: SubscriptionStatus,
 ) -> OpenAIAgent:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with_id}")
     # Load or create index
@@ -109,7 +110,7 @@ def get_agent(
         query_engine=index.as_query_engine(similarity_top_k=5),
         metadata=ToolMetadata(
             name="candidate_profile",
-            description="Provides information about you, the bot representing the candiate. Useful to answer questions about the candidate's career, job search, etc.",
+            description="Provides information about the candidate that you represent. Useful to answer questions about the candidate's career, job search, etc.",
         ),
     )
 
@@ -129,13 +130,29 @@ def get_agent(
        Call the candidate_profile tool to get historical information about the candidate.\n
     """
 
-    subscription_message = """
-        Note: This candidate is currently not subscribed to the platform. Remind them every so often 
-        that while they can interact with you as normal, nothing will be saved and their profile 
-        will not receive updates based on the current conversation.
-    """
-    if not subscribed:
-        prompt += subscription_message
+    subscription_message = ""
+
+    # Membership Expired
+    if not subscription_status.active and not subscription_status.is_free_trial:
+        subscription_message += """
+            Note: This candidate is currently not subscribed to the platform and their free trial
+            has expired. Remind them every so often  that while they can interact with you as 
+            normal, nothing will be saved and their profile will not receive updates based on 
+            the current conversation.
+        """
+    # Membership Free Trial
+    elif not subscription_status.active and subscription_status.is_free_trial:
+        subscription_message += """
+            Note: This user is currently subscribed on a free trial that expires soon. Remind them
+            every so often that they are on the free plan and to subscribe for $3.99 a month in order
+            to keep ability to update the bot.
+            """
+    elif subscription_status.active and not subscription_status.is_free_trial:
+        subscription_message += """
+            Note: The user is currently subscribed to a paid subscription plan.
+        """
+
+    prompt += subscription_message
 
     if is_candidate is False:
         prompt = """
