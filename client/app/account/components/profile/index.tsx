@@ -1,7 +1,7 @@
 "use client";
 import { GlobalContext } from "@/app/provider";
 import { Typography } from "@/shared/typography";
-import { Card, Label, TextInput } from "flowbite-react";
+import { Card, Label } from "flowbite-react";
 import { useContext } from "react";
 
 export const Profile = () => {
@@ -20,7 +20,8 @@ export const Profile = () => {
         {/* </Button> */}
       </div>
       <Label>Email</Label>
-      <TextInput placeholder="email" value={me?.email} readOnly />
+      {/* <TextInput placeholder="email" value={me?.email} readOnly /> */}
+      <Typography.Paragraph>{me?.email}</Typography.Paragraph>
       {/* <Label>First Name</Label> */}
       {/* <TextInput placeholder="Jane" /> */}
       {/* <Label>Last Name</Label> */}

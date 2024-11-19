@@ -1,5 +1,6 @@
+from datetime import datetime
 import sqlite3
-from typing import List
+from typing import List, Optional
 import uuid
 from classes.subscription import Subscription
 
@@ -12,11 +13,14 @@ class SubscriptionModel:
         return sqlite3.connect(self.db_path)
 
     def create_subscription(
-        self, cursor: sqlite3.Cursor, user_id: int, checkout_session_id: str
+        self,
+        cursor: sqlite3.Cursor,
+        user_id: int,
+        checkout_session_id: str,
     ) -> int | None:
         cursor.execute(
             """
-                       INSERT INTO subscription(uuid, user_id, checkout_session_id)
+                       INSERT INTO subscription(uuid, user_id, checkout_session_id, created_by, updated_by)
                        VALUES (?, ?, ?)
                        """,
             (
@@ -25,6 +29,8 @@ class SubscriptionModel:
                 ),
                 user_id,
                 checkout_session_id,
+                user_id,
+                user_id,
             ),
         )
         return cursor.lastrowid
@@ -55,6 +61,15 @@ class SubscriptionModel:
         columns = [column[0] for column in cursor.description]
         return [Subscription(**dict(zip(columns, row))) for row in cursor.fetchall()]
 
+    def get_subscriptions_by_customer_id(
+        self, cursor: sqlite3.Cursor, customer_id: str
+    ):
+        cursor.execute(
+            "SELECT * FROM subscription WHERE customer_id = ?", (customer_id,)
+        )
+        columns = [column[0] for column in cursor.description]
+        return [Subscription(**dict(zip(columns, row))) for row in cursor.fetchall()]
+
     def get_subscription_by_checkout_session_id(
         self, cursor: sqlite3.Cursor, checkout_session_id: str
     ) -> Subscription | None:
@@ -72,15 +87,35 @@ class SubscriptionModel:
         return Subscription(**data)
 
     def update_subscription(
-        self, cursor: sqlite3.Cursor, checkout_session_id: str, status: bool
+        self,
+        cursor: sqlite3.Cursor,
+        id: int,
+        current_user_id: Optional[int] = None,
+        checkout_session_id: Optional[str] = None,
+        customer_id: Optional[str] = None,
+        status: Optional[bool] = None,
     ) -> int | None:
-        cursor.execute(
-            """
-                       UPDATE subscription SET status = ? WHERE checkout_session_id = ?
-                       """,
-            (
-                status,
-                checkout_session_id,
-            ),
-        )
+        query = "UPDATE subscription SET updated_at = ? "
+        params = (str(datetime.now()),)
+
+        if not checkout_session_id and status is None and not customer_id:
+            raise Exception("Provide at least 1 update value.")
+
+        if checkout_session_id:
+            query += ", checkout_session_id = ? "
+            params += (checkout_session_id,)
+        if status is not None:
+            query += ", status = ? "
+            params += (status,)
+        if customer_id:
+            query += ", customer_id = ? "
+            params += (customer_id,)
+        if current_user_id:
+            query += ", updated_by = ? "
+            params += (current_user_id,)
+
+        query += "WHERE id = ?"
+        params += (id,)
+
+        cursor.execute(query, params)
         return cursor.rowcount

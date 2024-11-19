@@ -1,4 +1,5 @@
 import { ShareableLink } from "@/types/shareable-link";
+import { Subscription } from "@/types/subscription";
 import { User } from "@/types/user";
 
 export * from "./callApi";
@@ -19,6 +20,7 @@ export enum Endpoint {
   Logout = "/logout",
   Verify = "/verify",
   SubscribeStart = "/subscribe-start",
+  GetSubscriptions = "/subscriptions",
 }
 
 type ShareableLinksQuery = { limit?: number; offset?: number };
@@ -52,6 +54,11 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetSubscriptions]: {
+    query: undefined;
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -63,6 +70,7 @@ export interface EndpointResponse {
   [Endpoint.AuthFinish]: null;
   [Endpoint.UpdateShareableLink]: ShareableLink;
   [Endpoint.SubscribeStart]: { url: string };
+  [Endpoint.GetSubscriptions]: Subscription[];
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams
