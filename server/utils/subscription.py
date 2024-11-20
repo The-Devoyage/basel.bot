@@ -22,7 +22,7 @@ def verify_subscription(user_id: int, user_created_at: datetime) -> Subscription
         conn = subscription_model._get_connection()
         cursor = conn.cursor()
         active_subscriptions = subscription_model.get_subscriptions_by_user_id(
-            cursor, user_id
+            cursor, user_id, status=True
         )
         logger.debug(f"USER SUBSCRIPTIONS: {active_subscriptions}")
         if active_subscriptions:

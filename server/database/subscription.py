@@ -21,7 +21,7 @@ class SubscriptionModel:
         cursor.execute(
             """
                        INSERT INTO subscription(uuid, user_id, checkout_session_id, created_by, updated_by)
-                       VALUES (?, ?, ?)
+                       VALUES (?, ?, ?, ?, ?)
                        """,
             (
                 str(
@@ -52,12 +52,16 @@ class SubscriptionModel:
         return Subscription(**data)
 
     def get_subscriptions_by_user_id(
-        self, cursor: sqlite3.Cursor, user_id: int, active: bool = True
+        self, cursor: sqlite3.Cursor, user_id: int, status: Optional[bool] = None
     ) -> List[Subscription]:
-        cursor.execute(
-            "SELECT * FROM subscription WHERE user_id = ? AND status = ?",
-            (user_id, active),
-        )
+        query = "SELECT * FROM subscription WHERE user_id = ? "
+        params = (user_id,)
+
+        if status is not None:
+            query += "AND status = ? "
+            params += (status,)
+
+        cursor.execute(query, params)
         columns = [column[0] for column in cursor.description]
         return [Subscription(**dict(zip(columns, row))) for row in cursor.fetchall()]
 

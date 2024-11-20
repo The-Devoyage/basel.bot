@@ -16,6 +16,7 @@ import { addToast } from "../useStore/toast";
 import { removeAuthToken } from "@/api/auth";
 import { Endpoint, callApi } from "@/api";
 import { setAuthenticated } from "../useStore/auth";
+import { useRouter } from "next/navigation";
 
 export const Nav = () => {
   const themeMode = useThemeMode();
@@ -25,6 +26,7 @@ export const Nav = () => {
     store: { isAuthenticated, me },
     client,
   } = useContext(GlobalContext);
+  const router = useRouter();
 
   const handleSignout = async () => {
     try {
@@ -51,6 +53,7 @@ export const Nav = () => {
         }),
       );
       dispatch(setAuthenticated(false));
+      router.push("/");
     } catch (error) {
       console.error(error);
       dispatch(

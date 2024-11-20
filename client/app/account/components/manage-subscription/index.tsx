@@ -4,15 +4,58 @@ import { Alert, Badge, Card } from "flowbite-react";
 import { SubscribeButton } from "./components";
 import { FaApplePay, FaGooglePay } from "react-icons/fa";
 import { CiCreditCard1 } from "react-icons/ci";
+import dayjs from "dayjs";
 
 export const ManageSubscription = async () => {
-  const res = await callApi({
+  const subscriptionRes = await callApi({
     endpoint: Endpoint.GetSubscriptions,
     path: null,
     body: null,
     query: null,
   });
-  const hasSubscribed = !!res?.data?.length;
+  const meRes = await callApi({
+    endpoint: Endpoint.Me,
+    path: null,
+    body: null,
+    query: null,
+  });
+  const isActive = subscriptionRes?.data?.length
+    ? subscriptionRes?.data.some((s) => s.status)
+    : null;
+  const isFreeTrial = dayjs(meRes?.data?.created_at)
+    .add(30, "d")
+    .isAfter(dayjs());
+
+  const getSubscriptionStatus = () => {
+    if (isActive === null) {
+      if (isFreeTrial) {
+        return {
+          key: "FREE_TRIAL",
+          badgeColor: "cyan",
+          label: "Free Trial",
+        };
+      } else {
+        return {
+          key: "FREE_TRIAL_ENDED",
+          badgeColor: "warning",
+          label: "Free Trial Ended",
+        };
+      }
+    }
+    if (isActive) {
+      return {
+        key: "ACTIVE",
+        badgeColor: "success",
+        label: "Active",
+      };
+    } else {
+      return {
+        key: "INACTIVE",
+        badgeColor: "failure",
+        label: "Inactive",
+      };
+    }
+  };
 
   return (
     <Card>
@@ -20,8 +63,8 @@ export const ManageSubscription = async () => {
         <Typography.Heading className="mb-2 text-2xl">
           Subscription
         </Typography.Heading>
-        <Badge color={res?.data?.length ? "success" : "warning"}>
-          {hasSubscribed ? "Active" : "Inactive"}
+        <Badge color={getSubscriptionStatus().badgeColor}>
+          {getSubscriptionStatus().label}
         </Badge>
       </div>
       <Alert>
@@ -42,28 +85,14 @@ export const ManageSubscription = async () => {
           </li>
         </ul>
       </Alert>
-      {hasSubscribed ? (
-        <span className="flex">
-          <Typography.Paragraph className="mr-3">
-            Manage your subscription through the
-          </Typography.Paragraph>
-          <Typography.Link
-            href={process.env.NEXT_PUBLIC_BILLING_PORTAL_URL}
-            className="underline"
-          >
-            Billing Portal.
-          </Typography.Link>
-        </span>
-      ) : (
-        <span className="flex items-center justify-between">
-          <div className="flex space-x-2">
-            <FaApplePay className="text-4xl dark:text-white" />
-            <FaGooglePay className="text-4xl dark:text-white" />
-            <CiCreditCard1 className="text-4xl dark:text-white" />
-          </div>
-          <SubscribeButton />
-        </span>
-      )}
+      <span className="flex items-center justify-between">
+        <div className="flex space-x-2">
+          <FaApplePay className="text-4xl dark:text-white" />
+          <FaGooglePay className="text-4xl dark:text-white" />
+          <CiCreditCard1 className="text-4xl dark:text-white" />
+        </div>
+        <SubscribeButton hasSubscribed={!!subscriptionRes?.data?.length} />
+      </span>
     </Card>
   );
 };

@@ -44,6 +44,7 @@ export const useCallApi = <E extends Endpoint>(
       );
       setLoading(false);
       options?.onSuccess?.(res);
+      return res;
     } catch (err) {
       console.error(err);
       setLoading(false);

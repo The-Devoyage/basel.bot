@@ -53,7 +53,7 @@ async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
 
         # Users may have one subscription
         subscriptions = subscription_model.get_subscriptions_by_user_id(
-            cursor, user_claims.user.id
+            cursor, user_claims.user.id, status=True
         )
         if subscriptions:
             return create_response(
@@ -72,6 +72,7 @@ async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
             mode="subscription",
             success_url=CLIENT_URL,
             cancel_url=CLIENT_URL,
+            customer_email=user_claims.user.email,
         )
 
         subscription_model.create_subscription(
@@ -87,7 +88,7 @@ async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
         return HTTPException(status_code=500, detail="Something went wrong...")
 
 
-@router.post("/subscribe-finish")
+@router.post("/subscribe-event")
 async def subscribe_finish(
     request: Request,
     stripe_signature: str = Header(None),
