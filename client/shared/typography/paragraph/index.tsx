@@ -1,7 +1,7 @@
-import { FC, HTMLAttributes } from "react";
+import { FC, HTMLAttributes, ReactNode } from "react";
 
 interface ParagraphProps extends HTMLAttributes<HTMLParagraphElement> {
-  children: string;
+  children?: ReactNode;
 }
 
 export const Paragraph: FC<ParagraphProps> = ({ children, ...props }) => {

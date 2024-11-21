@@ -5,9 +5,6 @@ from typing import Optional
 import logging
 from classes.token_session import TokenSession
 
-from classes.user import User
-
-
 logger = logging.getLogger(__name__)
 
 

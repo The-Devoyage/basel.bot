@@ -14,8 +14,10 @@ from llama_index.readers.database import DatabaseReader
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.agent.openai import OpenAIAgent
+from classes.user import User
 
 from utils.environment import get_env_var
+from utils.subscription import SubscriptionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +49,6 @@ def get_documents(user_id: int | None):
         """
     )
 
-    logger.debug(f"DOCS: {documents}")
     return documents
 
 
@@ -58,12 +59,23 @@ def create_index(documents, current_user_id):
     index.storage_context.persist(PERSIST_DIR)
 
 
+def get_index(index_id):
+    storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+    index = load_index_from_storage(
+        persist_dir=PERSIST_DIR,
+        storage_context=storage_context,
+        index_id=str(index_id),
+    )
+    return index
+
+
 def get_agent(
-    is_candidate, chatting_with_id: int, current_user_id: Optional[int]
+    is_candidate,
+    chatting_with_id: int,
+    current_user: Optional[User],
+    subscription_status: SubscriptionStatus,
 ) -> OpenAIAgent:
-    logger.debug("GETTING AGENT")
-    logger.info(f"PERSIST DIR {PERSIST_DIR}")
-    logger.info("TEST")
+    logger.debug(f"GETTING AGENT FOR USER {chatting_with_id}")
     # Load or create index
     tool = None
     index = None
@@ -72,31 +84,21 @@ def get_agent(
     if os.path.exists(PERSIST_DIR + "/docstore.json"):
         logger.debug(f"LOADING INDEX")
         try:
-            storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-            index = load_index_from_storage(
-                persist_dir=PERSIST_DIR,
-                storage_context=storage_context,
-                index_id=str(chatting_with_id),
-            )
+            index = get_index(chatting_with_id)
         except Exception as e:
             logger.warn(
                 f"Index does not exist. Creating new index for user {chatting_with_id}."
             )
             logger.warn(e)
-            documents = get_documents(current_user_id)
-            create_index(documents, current_user_id)
-            storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-            index = load_index_from_storage(
-                persist_dir=PERSIST_DIR,
-                storage_context=storage_context,
-                index_id=str(chatting_with_id),
-            )
+            documents = get_documents(current_user.id if current_user else None)
+            create_index(documents, current_user.id if current_user else None)
+            index = get_index(chatting_with_id)
     else:
         logger.debug(f"CREATING NEW INDEX IF NONE EXISTS")
-        if not current_user_id:
+        if not current_user:
             raise Exception("No user found when creating new index.")
-        documents = get_documents(current_user_id)
-        create_index(documents, current_user_id)
+        documents = get_documents(current_user.id if current_user else None)
+        create_index(documents, current_user.id if current_user else None)
         storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
         index = load_index_from_storage(
             persist_dir=PERSIST_DIR,
@@ -108,11 +110,11 @@ def get_agent(
         query_engine=index.as_query_engine(similarity_top_k=5),
         metadata=ToolMetadata(
             name="candidate_profile",
-            description="Provides information about you, the bot representing the candiate. Useful to answer questions about the candidate's career, job search, etc.",
+            description="Provides information about the candidate that you represent. Useful to answer questions about the candidate's career, job search, etc.",
         ),
     )
 
-    prompt = """
+    prompt = f"""
        You are a bot representing the candidate.
 
        You are currently conversting with the candidate that you represent.
@@ -125,8 +127,33 @@ def get_agent(
        and personal life/hobbies. As you progress through the conversation, try to ask more technical questions
        to get an idea of the users skill level.
 
-       Call the candidate_profile tool to get historical information about the candidate.
+       Call the candidate_profile tool to get historical information about the candidate.\n
     """
+
+    subscription_message = ""
+
+    # Membership Expired
+    if not subscription_status.active and not subscription_status.is_free_trial:
+        subscription_message += """
+            Note: This candidate is currently not subscribed to the platform and their free trial
+            has expired. Remind them every so often  that while they can interact with you as 
+            normal, nothing will be saved and their profile will not receive updates based on 
+            the current conversation.
+        """
+    # Membership Free Trial
+    elif not subscription_status.active and subscription_status.is_free_trial:
+        subscription_message += f"""
+            Note: This user is currently subscribed on a free trial that expires soon. Remind them
+            every so often that they are on the free plan and to subscribe for $3.99 a month in order
+            to keep ability to update the bot. The free trial last for 30 days. You started your trial on
+            {current_user.created_at if current_user else "Unknown"}
+            """
+    elif subscription_status.active and not subscription_status.is_free_trial:
+        subscription_message += """
+            Note: The user is currently subscribed to a paid subscription plan.
+        """
+
+    prompt += subscription_message
 
     if is_candidate is False:
         prompt = """

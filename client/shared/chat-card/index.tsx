@@ -6,6 +6,7 @@ import { Message } from "@/types";
 import { PiUserCircleDuotone } from "react-icons/pi";
 import Markdown from "react-markdown";
 import "./module.styles.css";
+import { FooterButtons } from "./components";
 
 interface ChatCardProps {
   message: Message;
@@ -52,6 +53,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
               </div>
             ))
           )}
+          <FooterButtons buttons={message.buttons} />
         </Card>
       </div>
     );
