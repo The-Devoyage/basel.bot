@@ -71,6 +71,7 @@ async def websocket_endpoint(
             subscription_status = verify_subscription(
                 current_user.id, current_user.created_at
             )
+            logger.debug(f"SUBSCRIPTION STATUS: {subscription_status}")
 
         if sl_token:
             decoded = jwt.decode(

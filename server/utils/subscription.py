@@ -21,13 +21,18 @@ def verify_subscription(user_id: int, user_created_at: datetime) -> Subscription
     try:
         conn = subscription_model._get_connection()
         cursor = conn.cursor()
-        active_subscriptions = subscription_model.get_subscriptions_by_user_id(
-            cursor, user_id, status=True
-        )
-        logger.debug(f"USER SUBSCRIPTIONS: {active_subscriptions}")
-        if active_subscriptions:
+        subscriptions = subscription_model.get_subscriptions_by_user_id(cursor, user_id)
+
+        if len(subscriptions) > 0:
+            active = False
+            i = 0
+            while i < len(subscriptions) and not active:
+                if subscriptions[i].status:
+                    active = True
+                    break
+                i += 1
             return SubscriptionStatus(
-                subscriptions=active_subscriptions, active=True, is_free_trial=False
+                subscriptions=subscriptions, active=active, is_free_trial=False
             )
 
         user_created_at = user_created_at.replace(tzinfo=timezone.utc)
@@ -38,7 +43,7 @@ def verify_subscription(user_id: int, user_created_at: datetime) -> Subscription
             )
 
         return SubscriptionStatus(
-            subscriptions=active_subscriptions, active=False, is_free_trial=False
+            subscriptions=subscriptions, active=False, is_free_trial=False
         )
     except Exception as e:
         logger.error(e)
