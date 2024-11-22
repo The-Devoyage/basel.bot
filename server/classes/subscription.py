@@ -7,6 +7,7 @@ class Subscription(BaseModel):
     id: int
     uuid: str
     user_id: int
+    customer_id: Optional[str]
     checkout_session_id: str
     status: bool
     created_by: Optional[int]
