@@ -58,7 +58,12 @@ export const ManageSubscription = async () => {
   };
 
   return (
-    <Card>
+    <Card
+      style={{
+        boxShadow: "-11px 0 10px RGBA(118, 169, 250, 0.2)",
+        borderLeft: "4px solid #3B82F6",
+      }}
+    >
       <div className="flex justify-between">
         <Typography.Heading className="mb-2 text-2xl">
           Subscription

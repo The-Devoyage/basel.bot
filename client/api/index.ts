@@ -21,6 +21,7 @@ export enum Endpoint {
   Verify = "/verify",
   SubscribeStart = "/subscribe-start",
   GetSubscriptions = "/subscriptions",
+  ResetIndex = "/reset-index",
 }
 
 type ShareableLinksQuery = { limit?: number; offset?: number };
@@ -59,6 +60,11 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.ResetIndex]: {
+    query: undefined;
+    body: { chat_start_time?: string };
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -71,6 +77,7 @@ export interface EndpointResponse {
   [Endpoint.UpdateShareableLink]: ShareableLink;
   [Endpoint.SubscribeStart]: { url: string };
   [Endpoint.GetSubscriptions]: Subscription[];
+  [Endpoint.ResetIndex]: null;
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

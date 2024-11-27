@@ -32,6 +32,9 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
         <Card
           style={{
             borderLeft: isBot ? "4px solid #34D399" : "4px solid #3B82F6",
+            boxShadow: isBot
+              ? "-11px 3px 20px RGBA(5, 122, 85, 0.3)"
+              : "-7px 3px 20px RGBA(118, 169, 250, 0.2)",
           }}
         >
           <div className="flex flex-row items-center space-x-2">

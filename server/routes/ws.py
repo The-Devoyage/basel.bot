@@ -21,7 +21,7 @@ from database.user_meta import UserMetaModel
 from utils.environment import get_env_var
 
 from utils.indexing import (
-    create_index,
+    add_to_index,
     get_documents,
     get_agent,
 )
@@ -190,6 +190,7 @@ async def websocket_endpoint(
                     and not subscription_status.is_free_trial
                 )
             ):
+                logger.debug("CLOSING WITHOUT SUMMERIZING")
                 conn.close()
                 return
 
@@ -259,8 +260,8 @@ async def websocket_endpoint(
             conn.close()
 
             # Create Index
-            documents = get_documents(current_user.id)
-            create_index(documents, current_user.id)
+            documents = get_documents(current_user.id, chat_start_time)
+            add_to_index(documents)
         except Exception as e:
             logger.error(f"FAILED TO SAVE SUMMARY: {e}")
     except Exception as e:

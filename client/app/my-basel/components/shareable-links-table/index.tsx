@@ -1,6 +1,4 @@
-"use client";
-
-import { Table } from "flowbite-react";
+import { Table, TableBody, TableCell, TableRow } from "flowbite-react";
 import { ShareableLinksTableHead } from "./components/shareable-links-table-head";
 import { ShareableLink } from "@/types/shareable-link";
 import { FC } from "react";
@@ -23,24 +21,27 @@ export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
   return (
     <Table>
       <ShareableLinksTableHead />
-      <Table.Body className="divide-y">
+      <TableBody className="divide-y">
         {shareableLinks?.map((sl) => (
-          <Table.Row key={sl.uuid}>
-            <Table.Cell>
+          <TableRow
+            key={sl.uuid}
+            className="bg-white dark:border-gray-700 dark:bg-gray-800"
+          >
+            <TableCell>
               <TagCell shareableLink={sl} />
-            </Table.Cell>
-            <Table.Cell>
+            </TableCell>
+            <TableCell>
               <StatusCell shareableLink={sl} />
-            </Table.Cell>
-            <Table.Cell className="hidden md:table-cell">
+            </TableCell>
+            <TableCell className="hidden md:table-cell">
               {dayjs.utc(sl.created_at).local().format("MMM D, YYYY")}
-            </Table.Cell>
-            <Table.Cell>
+            </TableCell>
+            <TableCell>
               <LinkCell shareableLink={sl} />
-            </Table.Cell>
-          </Table.Row>
+            </TableCell>
+          </TableRow>
         ))}
-      </Table.Body>
+      </TableBody>
     </Table>
   );
 };

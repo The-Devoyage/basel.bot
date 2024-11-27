@@ -1,25 +1,32 @@
+from datetime import datetime
 import os
 import logging
 from typing import Optional
-
+import chromadb
 from llama_index.core import (
     StorageContext,
     VectorStoreIndex,
     Settings,
-    load_index_from_storage,
 )
 from llama_index.core.tools.query_engine import QueryEngineTool
 from llama_index.core.tools.types import ToolMetadata
+from llama_index.core.vector_stores.types import (
+    FilterOperator,
+    MetadataFilter,
+    MetadataFilters,
+)
 from llama_index.readers.database import DatabaseReader
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.agent.openai import OpenAIAgent
+from llama_index.vector_stores.chroma import ChromaVectorStore
 from classes.user import User
 
 from utils.environment import get_env_var
 from utils.subscription import SubscriptionStatus
 
 logger = logging.getLogger(__name__)
+remote_db = chromadb.HttpClient(port=8080)
 
 DATABASE_URL = get_env_var("DATABASE_URL")
 OPENAI_API_KEY = get_env_var("OPENAI_API_KEY")
@@ -31,7 +38,7 @@ Settings.llm = OpenAI(model="gpt-4o", api_key=OPENAI_API_KEY)
 Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
 
-def get_documents(user_id: int | None):
+def get_documents(user_id: int, chat_start_time: Optional[datetime] = None):
     logger.debug("GETTING DOCUMENTS")
     if not user_id:
         return
@@ -41,31 +48,42 @@ def get_documents(user_id: int | None):
         uri="sqlite:///basel.db",
     )
 
-    # Load data from the database using a query
-    documents = reader.load_data(
-        query=f"""
+    query = f"""
         SELECT 'Summary: '|| data ||'" on ' || strftime('%Y-%m-%d', created_at) AS sentence
-            FROM user_meta WHERE user_id = {user_id} AND created_by = {user_id};
-        """
-    )
+            FROM user_meta WHERE deleted_at IS NULL AND user_id = {user_id} AND created_by = {user_id}
+    """
+
+    if chat_start_time:
+        query += f' AND created_at > "{str(chat_start_time)}"'
+
+    # Load data from the database using a query
+    documents = reader.load_data(query=query)
+
+    for document in documents:
+        document.metadata = {"user_id": user_id}
 
     return documents
 
 
-def create_index(documents, current_user_id):
+def add_to_index(documents):
     logger.debug("CREATING INDEX")
-    index = VectorStoreIndex.from_documents(documents, show_progress=True)
-    index.set_index_id(current_user_id)
-    index.storage_context.persist(PERSIST_DIR)
+    chroma_collection = remote_db.get_or_create_collection("user_meta")
+    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    VectorStoreIndex.from_documents(documents, storage_context, show_progress=True)
 
 
-def get_index(index_id):
-    storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-    index = load_index_from_storage(
-        persist_dir=PERSIST_DIR,
-        storage_context=storage_context,
-        index_id=str(index_id),
-    )
+def reset_index(user_id: int):
+    logger.debug("RESETTING INDEX")
+    chroma_collection = remote_db.get_or_create_collection("user_meta")
+    chroma_collection.delete(where={"user_id": user_id})
+
+
+def get_index():
+    logger.debug("GETTING INDEX")
+    chroma_collection = remote_db.get_or_create_collection("user_meta")
+    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
     return index
 
 
@@ -76,38 +94,19 @@ def get_agent(
     subscription_status: SubscriptionStatus,
 ) -> OpenAIAgent:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with_id}")
-    # Load or create index
-    tool = None
-    index = None
 
-    # Get index
-    if os.path.exists(PERSIST_DIR + "/docstore.json"):
-        logger.debug(f"LOADING INDEX")
-        try:
-            index = get_index(chatting_with_id)
-        except Exception as e:
-            logger.warn(
-                f"Index does not exist. Creating new index for user {chatting_with_id}."
+    index = get_index()
+
+    filters = MetadataFilters(
+        filters=[
+            MetadataFilter(
+                key="user_id", operator=FilterOperator.EQ, value=chatting_with_id
             )
-            logger.warn(e)
-            documents = get_documents(current_user.id if current_user else None)
-            create_index(documents, current_user.id if current_user else None)
-            index = get_index(chatting_with_id)
-    else:
-        logger.debug(f"CREATING NEW INDEX IF NONE EXISTS")
-        if not current_user:
-            raise Exception("No user found when creating new index.")
-        documents = get_documents(current_user.id if current_user else None)
-        create_index(documents, current_user.id if current_user else None)
-        storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
-        index = load_index_from_storage(
-            persist_dir=PERSIST_DIR,
-            storage_context=storage_context,
-            index_id=str(chatting_with_id),
-        )
+        ]
+    )
 
-    tool = QueryEngineTool(
-        query_engine=index.as_query_engine(similarity_top_k=5),
+    canidate_profile_tool = QueryEngineTool(
+        query_engine=index.as_query_engine(similarity_top_k=5, filters=filters),
         metadata=ToolMetadata(
             name="candidate_profile",
             description="Provides information about the candidate that you represent. Useful to answer questions about the candidate's career, job search, etc.",
@@ -171,5 +170,7 @@ def get_agent(
             Call the candidate_profile tool to get historical information about the candidate.
         """
 
-    agent = OpenAIAgent.from_tools([tool], verbose=True, system_prompt=prompt)
+    agent = OpenAIAgent.from_tools(
+        [canidate_profile_tool], verbose=True, system_prompt=prompt
+    )
     return agent

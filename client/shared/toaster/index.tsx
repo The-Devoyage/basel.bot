@@ -1,8 +1,8 @@
 "use client";
 
 import { GlobalContext } from "@/app/provider";
-import { Toast } from "flowbite-react";
-import { useContext, useEffect } from "react";
+import { Progress, Toast } from "flowbite-react";
+import { useContext, useEffect, useState } from "react";
 import { Typography } from "../typography";
 import { removeToast } from "../useStore/toast";
 
@@ -14,6 +14,7 @@ export interface Notification {
 }
 
 export const Toaster = () => {
+  const [hovering, setHovering] = useState<Notification["uuid"][]>([]);
   const {
     store: { toasts },
     dispatch,
@@ -21,12 +22,16 @@ export const Toaster = () => {
 
   useEffect(() => {
     if (toasts.length === 0) return;
-    const timeout = setTimeout(() => {
-      dispatch(removeToast(toasts[0]));
-    }, 3000);
 
-    return () => clearTimeout(timeout);
-  }, [toasts]);
+    const activeToast = toasts[0];
+    if (!hovering.includes(activeToast.uuid)) {
+      const timeout = setTimeout(() => {
+        dispatch(removeToast(activeToast));
+      }, 3000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [toasts, hovering, dispatch]);
 
   return (
     <div className="fixed right-4 top-4 space-y-4" style={{ zIndex: 999 }}>
@@ -34,13 +39,22 @@ export const Toaster = () => {
         <Toast
           key={toast.uuid}
           className={`bg-${toast.type === "error" ? "red" : "green"}-100 flex flex-col items-start`}
+          onMouseEnter={() => setHovering((curr) => [...curr, toast.uuid])}
+          onMouseLeave={() =>
+            setHovering((curr) => curr.filter((u) => u !== toast.uuid))
+          }
         >
-          <Typography.Heading className="mb-1">
-            {toast?.title ?? toast.type === "error" ? "Error" : "Success"}
-          </Typography.Heading>
-          <Typography.Paragraph className="text-sm">
-            {toast.description}
-          </Typography.Paragraph>
+          <div className="flex">
+            <div>
+              <Typography.Heading className="mb-1">
+                {toast?.title ?? toast.type === "error" ? "Error" : "Success"}
+              </Typography.Heading>
+              <Typography.Paragraph className="text-sm">
+                {toast.description}
+              </Typography.Paragraph>
+            </div>
+            <Toast.Toggle />
+          </div>
         </Toast>
       ))}
     </div>

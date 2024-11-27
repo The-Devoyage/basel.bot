@@ -2,7 +2,7 @@
 
 import { useContext, useState, useEffect, useRef } from "react";
 import { Button, Textarea } from "flowbite-react";
-import { TbShoppingCartSearch } from "react-icons/tb";
+import { GrSend } from "react-icons/gr";
 import { GlobalContext } from "@/app/provider";
 import { Message } from "@/types";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -83,7 +83,7 @@ export const ChatInput = () => {
         onFocus={handleFocus}
       />
       <Button color="green" onClick={handleMessage} disabled={!messageText}>
-        <TbShoppingCartSearch className="h-6 w-6" />
+        <GrSend className="h-6 w-6" />
       </Button>
     </div>
   );

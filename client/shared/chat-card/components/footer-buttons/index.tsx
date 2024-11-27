@@ -3,11 +3,12 @@
 import { Endpoint } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
 import { Button } from "@/types";
-import { Button as FlowbiteButton } from "flowbite-react";
+import { Button as FlowbiteButton, useThemeMode } from "flowbite-react";
 import { FC, useState } from "react";
 
 export const FooterButtons: FC<{ buttons?: Button[] }> = ({ buttons }) => {
   const [loading, setLoading] = useState<number[]>([]);
+  const themeMode = useThemeMode();
   const { call: handleSubscribe } = useCallApi(
     {
       endpoint: Endpoint.SubscribeStart,
@@ -50,7 +51,7 @@ export const FooterButtons: FC<{ buttons?: Button[] }> = ({ buttons }) => {
         <FlowbiteButton
           key={index}
           color="green"
-          outline
+          outline={themeMode.mode === "dark"}
           isProcessing={loading.includes(index)}
           onClick={() => handleAction(b.action, index)}
         >
