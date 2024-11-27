@@ -20,7 +20,7 @@ export const ResetIndex = () => {
         Reset Index
       </Typography.Heading>
       <Typography.Paragraph className="mt-1 dark:text-slate-600">
-        Resetting Basel's index allows her to get a fresh start on your data.
+        Resetting your index allows her to get a fresh start on your data.
       </Typography.Paragraph>
       <Button
         outline
