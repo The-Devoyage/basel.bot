@@ -11,10 +11,12 @@ from fastapi import (
 )
 import jwt
 import json
+from llama_index.llms.openai import OpenAI
+from llama_index.agent.openai import OpenAIAgent
+from pydantic import BaseModel, Field
 
 from classes.user_claims import ShareableLinkClaims
 from database.message import MessageModel
-import google.generativeai as genai
 from classes.socket_message import Button, ButtonAction, SocketMessage
 from database.user import UserModel
 from database.user_meta import UserMetaModel
@@ -33,7 +35,6 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 # Constants
-GOOGLE_API_KEY = get_env_var("GOOGLE_API_KEY")
 SHAREABLE_LINK_SECRET = get_env_var("SHAREABLE_LINK_SECRET")
 ALGORITHM = get_env_var("JWT_ALGORITHM")
 
@@ -41,9 +42,6 @@ ALGORITHM = get_env_var("JWT_ALGORITHM")
 message_model = MessageModel("basel.db")
 user_model = UserModel("basel.db")
 user_meta_model = UserMetaModel("basel.db")
-
-# Gemini Init
-genai.configure(api_key=GOOGLE_API_KEY)
 
 
 @router.websocket("/ws")
@@ -196,26 +194,6 @@ async def websocket_endpoint(
 
             conn = user_meta_model._get_connection()
             cursor = conn.cursor()
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash",
-                system_instruction=f"""
-                   Summarize the following chat logs by extracting only *new* information that the user has shared today
-                        that could help them find or maintain a job. Relevant information includes:
-                        - Professional skills or competencies
-                        - Day-to-day tasks
-                        - Personal hobbies (if relevant to their career)
-                        - General knowledge about the user’s career aspirations or goals
-
-                        Rules:
-                        - Only include new facts that the user shared today.
-                        - Exclude information that the bot brought up or that appears redundant or already known by the bot.
-                        - If there are no updates in today’s logs, respond with "None".
-
-                        Format response as JSON:
-                            UserMeta = {{'user_meta': str | None}}
-                            return UserMeta
-                    """,
-            )
 
             logs = message_model.get_messages_by_user_id(
                 cursor, current_user.id, chat_start_time
@@ -228,30 +206,35 @@ async def websocket_endpoint(
                 f"{message.sender}: {message.text}" for message in logs
             )
 
-            response = model.generate_content(
-                f"Summerize the following chat logs as instructed: {logs_story}",
-                generation_config=genai.GenerationConfig(
-                    response_mime_type="application/json",
-                ),
-            )
+            class MetaSummary(BaseModel):
+                user_meta: str = Field(
+                    description="""
+                        Summary of chat logs by extracting only *new* information that the user has shared today which
+                        could help them find or maintain a job. Relevant information includes:
+                        - Professional skills or competencies
+                        - Day-to-day tasks
+                        - Personal hobbies (if relevant to their career)
+                        - General knowledge about the user’s career aspirations or goals
 
-            # Parse the JSON response from the model
-            try:
-                logger.debug("Updating Index")
-                parsed_response = json.loads(
-                    response.text
-                )  # Assuming response.text contains JSON
+                        Rules:
+                        - Only include new facts that the user shared today.
+                        - Exclude information that the bot brought up or that appears redundant or already known by the bot.
+                        - If there are no updates in today’s logs, respond with "None". Do not use punctuation if responding with the word None.
+                                       """
+                )
 
-                user_meta = parsed_response.get("user_meta")
-            except json.JSONDecodeError:
-                logger.debug("Failed to decode JSON from response.")
-                user_meta = None
+            llm = OpenAI(model="gpt-4o")
+            sllm = llm.as_structured_llm(MetaSummary)
+            response = sllm.complete(logs_story)
 
-            if user_meta and user_meta != "None":
+            json_response = json.loads(response.text)
+            print(json.dumps(json_response, indent=2))
+
+            if response and response is not None and response != "None":
                 user_meta_model.create_user_meta(
                     cursor=cursor,
                     user_id=current_user.id,
-                    data=user_meta,
+                    data=json_response["user_meta"],
                     tags="",  # TODO: Populate tags if available
                     current_user_id=current_user.id,
                 )

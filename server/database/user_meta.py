@@ -19,6 +19,7 @@ class UserMetaModel:
         data,
         current_user_id,
     ) -> int:
+        logger.debug("INSERTING USER META")
         cursor.execute(
             """
             INSERT INTO user_meta (user_id, `data`, tags, created_by, updated_by)
