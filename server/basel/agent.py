@@ -1,90 +1,23 @@
-from datetime import datetime
-import os
+from datetime import datetime, timedelta, timezone
 import logging
-from typing import Optional
-import chromadb
-from llama_index.core import (
-    StorageContext,
-    VectorStoreIndex,
-    Settings,
-)
-from llama_index.core.tools.query_engine import QueryEngineTool
-from llama_index.core.tools.types import ToolMetadata
-from llama_index.core.vector_stores.types import (
-    FilterOperator,
-    MetadataFilter,
-    MetadataFilters,
-)
-from llama_index.readers.database import DatabaseReader
-from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.llms.openai import OpenAI
+from typing import List, Optional
 from llama_index.agent.openai import OpenAIAgent
-from llama_index.vector_stores.chroma import ChromaVectorStore
+from llama_index.agent.openai.openai_assistant_agent import MessageRole
+from llama_index.core.base.llms.types import ChatMessage
+from llama_index.core.tools import BaseTool
+from basel.candidate_profile_tool import create_candidate_profile_tool
+from basel.create_interview_tool import create_create_interview_tool
+from basel.get_interviews_tool import (
+    create_get_interviews_tool,
+)
 from classes.user import User
+from database.message import MessageModel
 
-from utils.environment import get_env_var
 from utils.subscription import SubscriptionStatus
 
 logger = logging.getLogger(__name__)
-remote_db = chromadb.HttpClient(port=8080)
 
-DATABASE_URL = get_env_var("DATABASE_URL")
-OPENAI_API_KEY = get_env_var("OPENAI_API_KEY")
-PERSIST_DIR = get_env_var("PERSIST_DIR")
-
-Settings.chunk_size = 512
-Settings.chunk_overlap = 64
-Settings.llm = OpenAI(model="gpt-4o", api_key=OPENAI_API_KEY)
-Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
-
-
-def get_documents(user_id: int, chat_start_time: Optional[datetime] = None):
-    logger.debug("GETTING DOCUMENTS")
-    if not user_id:
-        return
-
-    # Initialize DatabaseReader with the SQL database connection details
-    reader = DatabaseReader(
-        uri="sqlite:///basel.db",
-    )
-
-    query = f"""
-        SELECT 'Summary: '|| data ||'" on ' || strftime('%Y-%m-%d', created_at) AS sentence
-            FROM user_meta WHERE deleted_at IS NULL AND user_id = {user_id} AND created_by = {user_id}
-    """
-
-    if chat_start_time:
-        query += f' AND created_at > "{str(chat_start_time)}"'
-
-    # Load data from the database using a query
-    documents = reader.load_data(query=query)
-
-    for document in documents:
-        document.metadata = {"user_id": user_id}
-
-    return documents
-
-
-def add_to_index(documents):
-    logger.debug("CREATING INDEX")
-    chroma_collection = remote_db.get_or_create_collection("user_meta")
-    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-    storage_context = StorageContext.from_defaults(vector_store=vector_store)
-    VectorStoreIndex.from_documents(documents, storage_context, show_progress=True)
-
-
-def reset_index(user_id: int):
-    logger.debug("RESETTING INDEX")
-    chroma_collection = remote_db.get_or_create_collection("user_meta")
-    chroma_collection.delete(where={"user_id": user_id})
-
-
-def get_index():
-    logger.debug("GETTING INDEX")
-    chroma_collection = remote_db.get_or_create_collection("user_meta")
-    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-    index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
-    return index
+message_model = MessageModel("basel.db")
 
 
 def get_agent(
@@ -94,24 +27,7 @@ def get_agent(
     subscription_status: SubscriptionStatus,
 ) -> OpenAIAgent:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with_id}")
-
-    index = get_index()
-
-    filters = MetadataFilters(
-        filters=[
-            MetadataFilter(
-                key="user_id", operator=FilterOperator.EQ, value=chatting_with_id
-            )
-        ]
-    )
-
-    canidate_profile_tool = QueryEngineTool(
-        query_engine=index.as_query_engine(similarity_top_k=5, filters=filters),
-        metadata=ToolMetadata(
-            name="candidate_profile",
-            description="Provides information about the candidate that you represent. Useful to answer questions about the candidate's career, job search, etc.",
-        ),
-    )
+    candidate_profile_tool = create_candidate_profile_tool(chatting_with_id)
 
     prompt = f"""
        You are a bot representing the candidate.
@@ -170,7 +86,39 @@ def get_agent(
             Call the candidate_profile tool to get historical information about the candidate.
         """
 
+    # Get Tools
+    tools: List[BaseTool] = [candidate_profile_tool]
+
+    chat_history: List[ChatMessage] = []
+    if current_user:
+        # Get Authenticated Tools
+        get_interviews_tool = create_get_interviews_tool()
+        tools.append(get_interviews_tool)
+
+        create_interview_tool = create_create_interview_tool(current_user.id)
+        tools.append(create_interview_tool)
+
+        # Populate Recent Chat History
+        conn = message_model._get_connection()
+        cursor = conn.cursor()
+        messages = message_model.get_messages(cursor, current_user.id, limit=40)
+        for message in messages:
+            logger.debug(f"MESSAGE: {message}")
+            history = ChatMessage(
+                role=MessageRole.ASSISTANT
+                if message.sender == "bot"
+                else MessageRole.USER,
+                content=message.text,
+            )
+            chat_history.append(history)
+
+        # Populate User Details
+        prompt += f"""
+            Current User Email: {current_user.email}
+            Current User ID (Private, never share): {current_user.id}
+        """
+
     agent = OpenAIAgent.from_tools(
-        [canidate_profile_tool], verbose=True, system_prompt=prompt
+        tools=tools, verbose=True, system_prompt=prompt, chat_history=chat_history
     )
     return agent

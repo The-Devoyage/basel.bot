@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone
+from time import time
 from typing import Optional, cast
 from fastapi import (
     APIRouter,
@@ -12,8 +13,8 @@ from fastapi import (
 import jwt
 import json
 from llama_index.llms.openai import OpenAI
-from llama_index.agent.openai import OpenAIAgent
 from pydantic import BaseModel, Field
+from basel.agent import get_agent
 
 from classes.user_claims import ShareableLinkClaims
 from database.message import MessageModel
@@ -22,10 +23,9 @@ from database.user import UserModel
 from database.user_meta import UserMetaModel
 from utils.environment import get_env_var
 
-from utils.indexing import (
+from basel.indexing import (
     add_to_index,
     get_documents,
-    get_agent,
 )
 from utils.jwt import handle_decode_token, verify_token_session
 from utils.subscription import SubscriptionStatus, verify_subscription
@@ -163,13 +163,13 @@ async def websocket_endpoint(
                     conn.commit()
 
             except Exception as e:
-                logger.error(f"UNEXPECTED ERROR WHILE CONNECTED")
-                response = SocketMessage(
+                logger.error(f"UNEXPECTED ERROR WHILE CONNECTED: {e}")
+                socket_response = SocketMessage(
                     text="Sorry, I am having some trouble with that. Let's try again.",
                     timestamp=datetime.now(),
                     sender="bot",
                 )
-                await websocket.send_text(response.model_dump_json())
+                await websocket.send_text(socket_response.model_dump_json())
             finally:
                 logger.debug("CLOSING CURSOR")
                 cursor.close()
@@ -195,9 +195,7 @@ async def websocket_endpoint(
             conn = user_meta_model._get_connection()
             cursor = conn.cursor()
 
-            logs = message_model.get_messages_by_user_id(
-                cursor, current_user.id, chat_start_time
-            )
+            logs = message_model.get_messages(cursor, current_user.id, chat_start_time)
 
             if not logs:
                 return
@@ -225,12 +223,16 @@ async def websocket_endpoint(
 
             llm = OpenAI(model="gpt-4o")
             sllm = llm.as_structured_llm(MetaSummary)
-            response = sllm.complete(logs_story)
+            socket_response = sllm.complete(logs_story)
 
-            json_response = json.loads(response.text)
+            json_response = json.loads(socket_response.text)
             print(json.dumps(json_response, indent=2))
 
-            if response and response is not None and response != "None":
+            if (
+                socket_response
+                and socket_response is not None
+                and socket_response != "None"
+            ):
                 user_meta_model.create_user_meta(
                     cursor=cursor,
                     user_id=current_user.id,

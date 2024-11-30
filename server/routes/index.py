@@ -3,8 +3,8 @@ import logging
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from llama_index.core.bridge.pydantic import BaseModel
+from basel.indexing import add_to_index, get_documents, reset_index
 from classes.user_claims import UserClaims
-from utils.indexing import add_to_index, get_documents, reset_index
 from utils.jwt import require_auth
 
 from utils.responses import create_response
