@@ -47,7 +47,26 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
             </Typography.Heading>
           </div>
           {!loading ? (
-            <Markdown className="prose w-full break-words dark:text-slate-300">
+            <Markdown
+              className="prose w-full break-words dark:text-slate-300"
+              components={{
+                h1: (props) => (
+                  <h1 {...props} className="dark:text-slate-300" />
+                ),
+                h2: (props) => (
+                  <h2 {...props} className="dark:text-slate-300" />
+                ),
+                h3: (props) => (
+                  <h3 {...props} className="dark:text-slate-300" />
+                ),
+                h4: (props) => (
+                  <h4 {...props} className="dark:text-slate-300" />
+                ),
+                h5: (props) => (
+                  <h5 {...props} className="dark:text-slate-300" />
+                ),
+              }}
+            >
               {message.text}
             </Markdown>
           ) : (

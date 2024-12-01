@@ -14,7 +14,7 @@ export const InitScreen = () => {
     switch (type) {
       case "interviews":
         text =
-          "I am interested in learning about Automated Interviews. How do these work?";
+          "I am interested in learning about Basel's Automated Interviews. How do these work?";
         break;
       case "bot":
         text = "Who are you, Basel? What is a Career Assistant Bot?";
