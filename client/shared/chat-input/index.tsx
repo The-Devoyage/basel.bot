@@ -5,14 +5,14 @@ import { Button } from "flowbite-react";
 import { GrSend } from "react-icons/gr";
 import { GlobalContext } from "@/app/provider";
 import { Message } from "@/types";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 // Command map with primary commands and subcommands
 const commandResponses: Record<string, Record<string, string>> = {
   "/interviews": {
     list: "Show me some interviews!",
-    create: "Create a new interview with a name and description.",
-    ["question"]: "Add a question to an interview.",
+    // create: "Create a new interview with a name and description.",
+    // ["question"]: "Add a question to an interview.",
   },
 };
 
