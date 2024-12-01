@@ -50,7 +50,7 @@ async def websocket_endpoint(
     token: str = Cookie(None),
     sl_token: Optional[str] = None,
 ):
-    current_user = None
+    user_claims = None
     chatting_with = None
     chat_start_time = datetime.now(timezone.utc)
     subscription_status = SubscriptionStatus(
@@ -63,13 +63,9 @@ async def websocket_endpoint(
         if token:
             user_claims = handle_decode_token(token)
             verify_token_session(user_claims.token_session_uuid)
-            current_user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
-            if not current_user:
-                raise Exception("Current user not found.")
             subscription_status = verify_subscription(
-                current_user.id, current_user.created_at
+                user_claims.user.id, user_claims.user.created_at
             )
-            logger.debug(f"SUBSCRIPTION STATUS: {subscription_status}")
 
         if sl_token:
             decoded = jwt.decode(
@@ -80,9 +76,8 @@ async def websocket_endpoint(
             if not chatting_with:
                 logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
                 raise Exception("Shareable Link Token User Not Found")
-
-        if not chatting_with:
-            chatting_with = current_user
+        if user_claims and not sl_token:
+            chatting_with = user_claims.user
 
         conn.close()
 
@@ -90,17 +85,19 @@ async def websocket_endpoint(
         logger.error(f"{e}")
         return WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
 
-    if not chatting_with:
-        raise Exception("No target to represent")
-
-    is_candidate = False
-    if current_user is not None and current_user.id == chatting_with.id:
+    if (
+        user_claims is not None
+        and chatting_with is not None
+        and user_claims.user.id == chatting_with.id
+    ):
         is_candidate = True
+    else:
+        is_candidate = False
 
     agent = get_agent(
         is_candidate,
-        chatting_with.id,
-        current_user,
+        chatting_with,
+        user_claims,
         subscription_status,
     )
 
@@ -117,15 +114,19 @@ async def websocket_endpoint(
                 logger.debug(f"USER MESSAGE RECEIVED: {data}")
 
                 message = SocketMessage.model_validate_json(data)
-                if current_user and (
-                    subscription_status.active or subscription_status.is_free_trial
+                if (
+                    user_claims
+                    and (
+                        subscription_status.active or subscription_status.is_free_trial
+                    )
+                    and chatting_with
                 ):
                     message_model.create_message(
                         cursor=cursor,
                         text=message.text,
                         sender=message.sender,
-                        created_by=current_user.id,
-                        updated_by=current_user.id,
+                        created_by=user_claims.user.id,
+                        updated_by=user_claims.user.id,
                         user_id=chatting_with.id,
                     )
                     conn.commit()
@@ -151,13 +152,13 @@ async def websocket_endpoint(
                     else None,
                 )
                 await websocket.send_text(response.model_dump_json())
-                if current_user and subscription_status:
+                if user_claims and subscription_status and chatting_with:
                     message_model.create_message(
                         cursor=cursor,
                         text=response.text,
                         sender="bot",
-                        created_by=current_user.id,
-                        updated_by=current_user.id,
+                        created_by=user_claims.user.id,
+                        updated_by=user_claims.user.id,
                         user_id=chatting_with.id,
                     )
                     conn.commit()
@@ -177,12 +178,11 @@ async def websocket_endpoint(
     except WebSocketDisconnect as e:
         logger.debug(f"WEBSOCKET DISCONNECT: {e}")
 
-        # If the user is the candidate, save the summary
-        logger.debug(f"{current_user, subscription_status, chatting_with}")
         try:
             if (
-                not current_user
-                or current_user.id != chatting_with.id
+                not user_claims
+                or not chatting_with
+                or user_claims.user.id != chatting_with.id
                 or (
                     not subscription_status.active
                     and not subscription_status.is_free_trial
@@ -195,7 +195,9 @@ async def websocket_endpoint(
             conn = user_meta_model._get_connection()
             cursor = conn.cursor()
 
-            logs = message_model.get_messages(cursor, current_user.id, chat_start_time)
+            logs = message_model.get_messages(
+                cursor, user_claims.user.id, chat_start_time
+            )
 
             if not logs:
                 return
@@ -235,17 +237,17 @@ async def websocket_endpoint(
             ):
                 user_meta_model.create_user_meta(
                     cursor=cursor,
-                    user_id=current_user.id,
+                    user_id=user_claims.user.id,
                     data=json_response["user_meta"],
                     tags="",  # TODO: Populate tags if available
-                    current_user_id=current_user.id,
+                    current_user_id=user_claims.user.id,
                 )
                 conn.commit()
 
             conn.close()
 
             # Create Index
-            documents = get_documents(current_user.id, chat_start_time)
+            documents = get_documents(user_claims.user.id, chat_start_time)
             add_to_index(documents)
         except Exception as e:
             logger.error(f"FAILED TO SAVE SUMMARY: {e}")

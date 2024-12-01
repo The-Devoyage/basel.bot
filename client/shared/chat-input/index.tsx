@@ -23,19 +23,17 @@ export const ChatInput = () => {
     client,
     store: { isAuthenticated },
   } = useContext(GlobalContext);
-  const searchParams = useSearchParams();
-  const token = searchParams.get("sl_token");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const [repetedMessage, setRepeatedMessage] = useState<Message | null>(null);
 
   useEffect(() => {
-    if (inputRef.current && isAuthenticated) inputRef.current?.focus();
+    inputRef.current?.focus();
   }, [inputRef.current, isAuthenticated]);
 
   const handleFocus = () => {
-    if (client && !client?.connected && (isAuthenticated || token)) {
+    if (client && !client?.connected) {
       client.handleConnect();
     }
   };
@@ -143,20 +141,22 @@ export const ChatInput = () => {
   return (
     <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
       <div className="relative w-full">
-        <div
-          className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden whitespace-pre-wrap text-gray-400 dark:text-gray-600"
-          style={{
-            padding: "0.5rem 0.75rem",
-          }}
-        >
-          {messageText}
-          <span className="ml-2">{suggestion}</span>
-        </div>
+        {suggestion && (
+          <div
+            className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden whitespace-pre-wrap text-gray-400 dark:text-gray-600"
+            style={{
+              padding: "0.5rem 0.75rem",
+            }}
+          >
+            {messageText}
+            <span className="ml-2">{suggestion}</span>
+          </div>
+        )}
         <textarea
           placeholder={
             isAuthenticated
               ? "Ask something to get started or type '/' for commands..."
-              : "Login to start chatting"
+              : "Say hello to Basel, your career bot professional"
           }
           className="relative h-full w-full resize-none rounded bg-transparent focus:border-green-400 focus:ring-green-400 dark:bg-slate-950/5 dark:text-white"
           rows={1}

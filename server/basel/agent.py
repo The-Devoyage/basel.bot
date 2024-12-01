@@ -14,7 +14,10 @@ from basel.get_interview_questions_tool import create_get_interview_questions_to
 from basel.get_interviews_tool import (
     create_get_interviews_tool,
 )
+from basel.get_system_prompt import get_system_prompt
+from classes.role import RoleIdentifier
 from classes.user import User
+from classes.user_claims import UserClaims
 from database.message import MessageModel
 
 from utils.subscription import SubscriptionStatus
@@ -26,116 +29,68 @@ message_model = MessageModel("basel.db")
 
 def get_agent(
     is_candidate,
-    chatting_with_id: int,
-    current_user: Optional[User],
+    chatting_with: Optional[User],
+    user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
 ) -> OpenAIAgent:
-    logger.debug(f"GETTING AGENT FOR USER {chatting_with_id}")
-    candidate_profile_tool = create_candidate_profile_tool(chatting_with_id)
+    logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
+    system_prompt = get_system_prompt(
+        subscription_status, user_claims, chatting_with, is_candidate
+    )
 
-    prompt = f"""
-       You are a bot representing the candidate.
-
-       You are currently conversting with the candidate that you represent.
-
-       Your name is Basel, you are respectful, professional, helpful, and friendly.
-       You help match candidates with employers by learning about the candidates skills, career goals, personal life and hobbies.
-       Your personality is a warm extrovert. Slightly gen alpha.
-
-       Your job is to ask questions about the candidate to learn about their skills, career goals, 
-       and personal life/hobbies. As you progress through the conversation, try to ask more technical questions
-       to get an idea of the users skill level.
-
-       Call the candidate_profile tool to get historical information about the candidate.\n
-    """
-
-    subscription_message = ""
-
-    # Membership Expired
-    if not subscription_status.active and not subscription_status.is_free_trial:
-        subscription_message += """
-            Note: This candidate is currently not subscribed to the platform and their free trial
-            has expired. Remind them every so often  that while they can interact with you as 
-            normal, nothing will be saved and their profile will not receive updates based on 
-            the current conversation.
-        """
-    # Membership Free Trial
-    elif not subscription_status.active and subscription_status.is_free_trial:
-        subscription_message += f"""
-            Note: This user is currently subscribed on a free trial that expires soon. Remind them
-            every so often that they are on the free plan and to subscribe for $3.99 a month in order
-            to keep ability to update the bot. The free trial last for 30 days. You started your trial on
-            {current_user.created_at if current_user else "Unknown"}
-            """
-    elif subscription_status.active and not subscription_status.is_free_trial:
-        subscription_message += """
-            Note: The user is currently subscribed to a paid subscription plan.
-        """
-
-    prompt += subscription_message
-
-    if is_candidate is False:
-        prompt = """
-            You are a bot representing the candidate.
-
-            You are currently conversting with the employer or recruiter that wants to ask questions about the candidate that you represent.
-
-            Your name is Basel, you are respectful, professional, helpful, and friendly.
-            You help match candidates with employers by learning about the candidates skills, career goals, personal life and hobbies.
-            Your personality is a warm extrovert. Slightly gen alpha.
-
-            Your job is to call and use the candidate_profile tool to get historical information about the candidate in order
-            to answer questions that the recruiter asks you.
-
-            Call the candidate_profile tool to get historical information about the candidate.
-        """
-
-    # Get Tools
-    tools: List[BaseTool] = [candidate_profile_tool]
-
+    tools: List[BaseTool] = []
     chat_history: List[ChatMessage] = []
-    if current_user:
-        # Get Authenticated Tools
-        get_interviews_tool = create_get_interviews_tool()
-        tools.append(get_interviews_tool)
 
-        create_interview_tool = create_create_interview_tool(current_user.id)
-        tools.append(create_interview_tool)
+    if chatting_with:
+        candidate_profile_tool = create_candidate_profile_tool(chatting_with.id)
+        # Get Tools
+        tools: List[BaseTool] = [candidate_profile_tool]
 
-        create_interview_question_tool = create_create_interview_question_tool(
-            current_user.id
-        )
-        tools.append(create_interview_question_tool)
+        if user_claims:
+            # Get Authenticated Tools
+            # Handle Admin Role Tools
+            if user_claims.role.identifier == RoleIdentifier.ADMIN:
+                logger.debug("HEYHEYHEY")
+                create_interview_tool = create_create_interview_tool(
+                    user_claims.user.id
+                )
+                tools.append(create_interview_tool)
 
-        get_interview_questions_tool = create_get_interview_questions_tool()
-        tools.append(get_interview_questions_tool)
+                create_interview_question_tool = create_create_interview_question_tool(
+                    user_claims.user.id
+                )
+                tools.append(create_interview_question_tool)
 
-        create_interview_question_response = (
-            create_create_interview_question_response_tool(current_user.id)
-        )
-        tools.append(create_interview_question_response)
+            # Handle General User Role Tools
+            get_interviews_tool = create_get_interviews_tool()
+            tools.append(get_interviews_tool)
 
-        # Populate Recent Chat History
-        conn = message_model._get_connection()
-        cursor = conn.cursor()
-        messages = message_model.get_messages(cursor, current_user.id, limit=40)
-        for message in messages:
-            logger.debug(f"MESSAGE: {message}")
-            history = ChatMessage(
-                role=MessageRole.ASSISTANT
-                if message.sender == "bot"
-                else MessageRole.USER,
-                content=message.text,
+            get_interview_questions_tool = create_get_interview_questions_tool()
+            tools.append(get_interview_questions_tool)
+
+            create_interview_question_response = (
+                create_create_interview_question_response_tool(user_claims.user.id)
             )
-            chat_history.append(history)
+            tools.append(create_interview_question_response)
 
-        # Populate User Details
-        prompt += f"""
-            Current User Email: {current_user.email}
-            Current User UUID: {current_user.uuid}
-        """
+            # Populate Recent Chat History
+            conn = message_model._get_connection()
+            cursor = conn.cursor()
+            messages = message_model.get_messages(cursor, user_claims.user.id, limit=40)
+            for message in messages:
+                logger.debug(f"MESSAGE: {message}")
+                history = ChatMessage(
+                    role=MessageRole.ASSISTANT
+                    if message.sender == "bot"
+                    else MessageRole.USER,
+                    content=message.text,
+                )
+                chat_history.append(history)
 
     agent = OpenAIAgent.from_tools(
-        tools=tools, verbose=True, system_prompt=prompt, chat_history=chat_history
+        tools=tools,
+        verbose=True,
+        system_prompt=system_prompt,
+        chat_history=chat_history,
     )
     return agent

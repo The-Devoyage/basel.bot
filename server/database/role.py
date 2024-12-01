@@ -1,4 +1,7 @@
 import sqlite3
+from typing import Optional
+
+from classes.role import Role
 
 
 class RoleModel:
@@ -8,7 +11,7 @@ class RoleModel:
     def _get_connection(self):
         return sqlite3.connect(self.db_path)
 
-    def get_role_by_id(self, cursor, role_id):
+    def get_role_by_id(self, cursor, role_id) -> Optional[Role]:
         """Retrieve a role by its ID using the provided cursor."""
         cursor.execute(
             """
@@ -20,7 +23,8 @@ class RoleModel:
         if not row:
             return None
         columns = [column[0] for column in cursor.description]
-        return dict(zip(columns, row))
+        data = dict(zip(columns, row))
+        return Role(**data)
 
     def get_role_by_identifier(self, cursor, identifier):
         """Retrieve a role by its identifier using the provided cursor."""

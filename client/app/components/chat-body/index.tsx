@@ -25,10 +25,7 @@ export const ChatBody = () => {
     }
   }, [ref.current, client?.messages]);
 
-  if (
-    (!client?.messages?.length && !client?.initializing) ||
-    (!token && !isAuthenticated)
-  ) {
+  if (!client?.messages?.length && !client?.initializing) {
     return (
       <div className="mx-auto flex h-full flex-col items-center justify-center space-y-4">
         <ChatCard
