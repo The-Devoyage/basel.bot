@@ -5,6 +5,7 @@ from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
 from llama_index.core.tools import BaseTool
 from basel.candidate_profile_tool import create_candidate_profile_tool
+from basel.create_about_tool import create_about_tool
 from basel.create_create_interview_question_response_tool import (
     create_create_interview_question_response_tool,
 )
@@ -40,6 +41,10 @@ def get_agent(
 
     tools: List[BaseTool] = []
     chat_history: List[ChatMessage] = []
+
+    # Get the About Basel Tool
+    about_tool = create_about_tool()
+    tools.append(about_tool)
 
     if chatting_with:
         candidate_profile_tool = create_candidate_profile_tool(chatting_with.id)

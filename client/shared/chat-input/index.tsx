@@ -10,7 +10,7 @@ import { useRouter, usePathname } from "next/navigation";
 // Command map with primary commands and subcommands
 const commandResponses: Record<string, Record<string, string>> = {
   "/interviews": {
-    list: "Show me some interviews!",
+    list: "Can you please list interviews available for me to take?",
     // create: "Create a new interview with a name and description.",
     // ["question"]: "Add a question to an interview.",
   },
@@ -60,6 +60,7 @@ export const ChatInput = () => {
 
   // Update the suggestion based on the current input
   const updateSuggestion = (input: string) => {
+    if (!isAuthenticated) return;
     if (input.split(" ").length > 2) return;
     if (input.startsWith("/")) {
       // Split input to identify the base command and subcommand
