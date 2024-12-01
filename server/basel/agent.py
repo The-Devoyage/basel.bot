@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta, timezone
 import logging
 from typing import List, Optional
 from llama_index.agent.openai import OpenAIAgent
@@ -6,7 +5,12 @@ from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
 from llama_index.core.tools import BaseTool
 from basel.candidate_profile_tool import create_candidate_profile_tool
+from basel.create_create_interview_question_response_tool import (
+    create_create_interview_question_response_tool,
+)
+from basel.create_interview_question_tool import create_create_interview_question_tool
 from basel.create_interview_tool import create_create_interview_tool
+from basel.get_interview_questions_tool import create_get_interview_questions_tool
 from basel.get_interviews_tool import (
     create_get_interviews_tool,
 )
@@ -98,6 +102,19 @@ def get_agent(
         create_interview_tool = create_create_interview_tool(current_user.id)
         tools.append(create_interview_tool)
 
+        create_interview_question_tool = create_create_interview_question_tool(
+            current_user.id
+        )
+        tools.append(create_interview_question_tool)
+
+        get_interview_questions_tool = create_get_interview_questions_tool()
+        tools.append(get_interview_questions_tool)
+
+        create_interview_question_response = (
+            create_create_interview_question_response_tool(current_user.id)
+        )
+        tools.append(create_interview_question_response)
+
         # Populate Recent Chat History
         conn = message_model._get_connection()
         cursor = conn.cursor()
@@ -115,7 +132,7 @@ def get_agent(
         # Populate User Details
         prompt += f"""
             Current User Email: {current_user.email}
-            Current User ID (Private, never share): {current_user.id}
+            Current User UUID: {current_user.uuid}
         """
 
     agent = OpenAIAgent.from_tools(

@@ -72,16 +72,23 @@ class InterviewQuestionResponseModel:
         ]
 
     def create_interview_question_response(
-        self, cursor: Cursor, user_id: int, response: str
+        self, cursor: Cursor, user_id: int, interview_question_uuid: str, response: str
     ):
         logger.debug("CREATING NEW INTERVIEW QUESTION RESPONSE")
         interview_question_response_uuid = str(uuid.uuid4())
         cursor.execute(
             """
-            INSERT INTO interview_question_response (uuid, user_id, response, created_by, updated_by)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO interview_question_response (uuid, user_id, interview_question_id, response, created_by, updated_by)
+            VALUES (?, ?, (SELECT id FROM interview_question WHERE uuid = ?),  ?, ?, ?)
             """,
-            (interview_question_response_uuid, user_id, response, user_id, user_id),
+            (
+                interview_question_response_uuid,
+                user_id,
+                interview_question_uuid,
+                response,
+                user_id,
+                user_id,
+            ),
         )
         logger.debug(f"NEW INTERVIEW QUESTION RESPONSE CREATED: {cursor.lastrowid}")
         return cursor.lastrowid

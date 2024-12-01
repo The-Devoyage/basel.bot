@@ -14,7 +14,7 @@ def create_interview(
     current_user_id: int,
     name: str = Field(description="The name of the interview."),
     description: str = Field(description="The description of the interview."),
-) -> Interview:
+):
     conn = interview_model._get_connection()
     cursor = conn.cursor()
     interview_id = interview_model.create_interview(
@@ -27,7 +27,7 @@ def create_interview(
         raise Exception("Failed to find interview.")
     conn.commit()
     conn.close()
-    return interview
+    return interview.to_public_dict()
 
 
 def create_create_interview_tool(current_user_id: int):

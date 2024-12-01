@@ -10,8 +10,9 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 // Command map with primary commands and subcommands
 const commandResponses: Record<string, Record<string, string>> = {
   "/interviews": {
-    list: "Tell me about some interviews I can take.",
+    list: "Show me some interviews!",
     create: "Create a new interview with a name and description.",
+    ["question"]: "Add a question to an interview.",
   },
 };
 

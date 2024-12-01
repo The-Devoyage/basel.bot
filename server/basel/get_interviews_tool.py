@@ -21,7 +21,10 @@ def get_interviews(
         """
     ),
     created_by_uuid: Optional[str] = Field(
-        description="The uuid of the user who created the interview, useful to get interviews per user. Never provide ID or integer identifiers."
+        description="""
+        The uuid of the user who created the interview, useful to get interviews per user. 
+        Only search by UUID if specifically requested.
+        """
     ),
     limit: Optional[int] = Field(
         description="Limit the number of results returned. Default 10"

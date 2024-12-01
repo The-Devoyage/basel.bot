@@ -53,34 +53,41 @@ class InterviewQuestionModel:
     def get_interview_questions(
         self,
         cursor,
-        interview_id: int,
+        interview_id: Optional[int] = None,
+        interview_uuid: Optional[str] = None,
         limit: Union[int, None] = 10,
         offset: Union[int, None] = 0,
     ) -> list[InterviewQuestion]:
-        cursor.execute(
-            """
-            SELECT * FROM interview_question WHERE interview_id = ? LIMIT ? OFFSET ?
-            """,
-            (
-                interview_id,
-                limit,
-                offset,
-            ),
-        )
+        query = "SELECT * FROM interview_question WHERE deleted_at IS NULL"
+        params = ()
+
+        if interview_id:
+            query += " AND id = ?"
+            params += (interview_id,)
+        if interview_uuid:
+            query += " AND interview_id = (SELECT id FROM interview WHERE uuid = ?)"
+            params += (interview_uuid,)
+
+        query += " LIMIT ? OFFSET ?"
+        params += (limit, offset)
+
+        cursor.execute(query, params)
         columns = [column[0] for column in cursor.description]
         return [
             InterviewQuestion(**dict(zip(columns, row))) for row in cursor.fetchall()
         ]
 
-    def create_interview_question(self, cursor: Cursor, user_id: int, question: str):
+    def create_interview_question(
+        self, cursor: Cursor, user_id: int, interview_uuid: str, question: str
+    ):
         logger.debug("CREATING NEW INTERVIEW QUESTION")
         interview_question_uuid = str(uuid.uuid4())
         cursor.execute(
             """
-            INSERT INTO interview_question (uuid, question, created_by, updated_by)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO interview_question (uuid, interview_id, question, created_by, updated_by)
+            VALUES (?, (SELECT id FROM interview WHERE uuid = ?), ?, ?, ?)
             """,
-            (interview_question_uuid, question, user_id, user_id),
+            (interview_question_uuid, interview_uuid, question, user_id, user_id),
         )
         logger.debug(f"NEW INTERVIEW QUESTION CREATED: {cursor.lastrowid}")
         return cursor.lastrowid
