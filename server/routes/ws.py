@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime, timezone
-from time import time
 from typing import Optional, cast
 from fastapi import (
     APIRouter,
@@ -11,9 +10,6 @@ from fastapi import (
     status,
 )
 import jwt
-import json
-from llama_index.llms.openai import OpenAI
-from pydantic import BaseModel, Field
 from basel.agent import get_agent
 
 from classes.user_claims import ShareableLinkClaims
@@ -23,12 +19,9 @@ from database.user import UserModel
 from database.user_meta import UserMetaModel
 from utils.environment import get_env_var
 
-from basel.indexing import (
-    add_to_index,
-    get_documents,
-)
 from utils.jwt import handle_decode_token, verify_token_session
 from utils.subscription import SubscriptionStatus, verify_subscription
+from utils.summary import create_summary
 
 router = APIRouter()
 
@@ -191,64 +184,9 @@ async def websocket_endpoint(
                 logger.debug("CLOSING WITHOUT SUMMERIZING")
                 conn.close()
                 return
+            # CREATE SUMMARY
+            create_summary(user_claims, chat_start_time)
 
-            conn = user_meta_model._get_connection()
-            cursor = conn.cursor()
-
-            logs = message_model.get_messages(
-                cursor, user_claims.user.id, chat_start_time
-            )
-
-            if not logs:
-                return
-
-            logs_story = "\n".join(
-                f"{message.sender}: {message.text}" for message in logs
-            )
-
-            class MetaSummary(BaseModel):
-                user_meta: str = Field(
-                    description="""
-                        Summary of chat logs by extracting only *new* information that the user has shared today which
-                        could help them find or maintain a job. Relevant information includes:
-                        - Professional skills or competencies
-                        - Day-to-day tasks
-                        - Personal hobbies (if relevant to their career)
-                        - General knowledge about the user’s career aspirations or goals
-
-                        Rules:
-                        - Only include new facts that the user shared today.
-                        - Exclude information that the bot brought up or that appears redundant or already known by the bot.
-                        - If there are no updates in today’s logs, respond with "None". Do not use punctuation if responding with the word None.
-                                       """
-                )
-
-            llm = OpenAI(model="gpt-4o")
-            sllm = llm.as_structured_llm(MetaSummary)
-            socket_response = sllm.complete(logs_story)
-
-            json_response = json.loads(socket_response.text)
-            print(json.dumps(json_response, indent=2))
-
-            if (
-                socket_response
-                and socket_response is not None
-                and socket_response != "None"
-            ):
-                user_meta_model.create_user_meta(
-                    cursor=cursor,
-                    user_id=user_claims.user.id,
-                    data=json_response["user_meta"],
-                    tags="",  # TODO: Populate tags if available
-                    current_user_id=user_claims.user.id,
-                )
-                conn.commit()
-
-            conn.close()
-
-            # Create Index
-            documents = get_documents(user_claims.user.id, chat_start_time)
-            add_to_index(documents)
         except Exception as e:
             logger.error(f"FAILED TO SAVE SUMMARY: {e}")
     except Exception as e:

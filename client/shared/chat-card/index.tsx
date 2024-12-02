@@ -48,7 +48,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
           </div>
           {!loading ? (
             <Markdown
-              className="prose w-full break-words dark:text-slate-300"
+              className="prose break-words dark:text-slate-300"
               components={{
                 h1: (props) => (
                   <h1 {...props} className="dark:text-slate-300" />

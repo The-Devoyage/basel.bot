@@ -23,7 +23,7 @@ export const useSocket = <Send, Receive>(
 ) => {
   const socket = useRef<WebSocket | null>(null);
   const [loading, setLoading] = useState(false);
-  const [initializing, setInitializing] = useState(false);
+  const [initializing, setInitializing] = useState(true);
   const [messages, setMessages] = useState<(Send | Receive)[]>([]);
   const connected = useRef(false);
   const reconnectTimeout = useRef(1000);
@@ -75,7 +75,6 @@ export const useSocket = <Send, Receive>(
   const handleClose = () => {
     closed.current = true;
     socket?.current?.close();
-    setMessages([]);
   };
 
   const handleSend = (message: Send) => {

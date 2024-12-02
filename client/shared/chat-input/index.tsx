@@ -11,8 +11,6 @@ import { useRouter, usePathname } from "next/navigation";
 const commandResponses: Record<string, Record<string, string>> = {
   "/interviews": {
     list: "Can you please list interviews available for me to take?",
-    // create: "Create a new interview with a name and description.",
-    // ["question"]: "Add a question to an interview.",
   },
 };
 
@@ -32,11 +30,10 @@ export const ChatInput = () => {
     inputRef.current?.focus();
   }, [inputRef.current, isAuthenticated]);
 
-  const handleFocus = () => {
-    if (client && !client?.connected) {
-      client.handleConnect();
-    }
-  };
+  useEffect(() => {
+    client?.handleClose();
+    client?.handleConnect();
+  }, [isAuthenticated]);
 
   const handleRepeatMessage = (previous = true) => {
     if (previous) {
@@ -184,7 +181,6 @@ export const ChatInput = () => {
             }
           }}
           value={messageText}
-          onFocus={handleFocus}
         />
       </div>
       <Button color="green" onClick={handleMessage} disabled={!messageText}>

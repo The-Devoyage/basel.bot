@@ -1,7 +1,7 @@
-import { FC, HTMLAttributes } from "react";
+import { FC, HTMLAttributes, ReactNode } from "react";
 
 interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
-  children: string;
+  children: ReactNode;
 }
 
 export const Heading: FC<HeadingProps> = ({ children, ...props }) => {

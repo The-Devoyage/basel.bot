@@ -1,13 +1,19 @@
+from enum import Enum
 from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel
+
+
+class SenderIdentifer(str, Enum):
+    BOT = "bot"
+    USER = "user"
 
 
 class Message(BaseModel):
     id: int
     uuid: str
     user_id: int
-    sender: str
+    sender: SenderIdentifer
     text: str
     created_by: Optional[int]
     updated_by: Optional[int]

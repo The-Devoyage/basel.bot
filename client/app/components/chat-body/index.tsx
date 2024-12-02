@@ -26,15 +26,7 @@ export const ChatBody = () => {
     }
   }, [ref.current, client?.messages]);
 
-  if (!client?.messages?.length && !client?.initializing) {
-    return <InitScreen />;
-  }
-
-  if (
-    client?.messages.length &&
-    !client.connected &&
-    (isAuthenticated || token)
-  ) {
+  if (client?.messages.length && !client.connected) {
     return (
       <Alert color="warning" className="flex space-x-4">
         <Spinner />
@@ -46,12 +38,18 @@ export const ChatBody = () => {
     );
   }
 
-  if ((client?.loading && !client?.messages.length) || client?.initializing) {
+  if (!client || client?.initializing) return <Loader />;
+
+  if (!client?.messages?.length && !client?.initializing) {
+    return <InitScreen />;
+  }
+
+  if (client?.loading && !client?.messages.length) {
     return <Loader />;
   }
 
   return (
-    <div className="mx-auto flex flex-col space-y-4">
+    <div className="mx-auto flex flex-col justify-center space-y-4 md:min-w-[700px]">
       {client.messages.map((m, index) => (
         <ChatCard
           key={m.timestamp?.toString()}

@@ -3,7 +3,7 @@ import sqlite3
 from typing import List, Optional
 import uuid
 from datetime import datetime
-from classes.message import Message
+from classes.message import Message, SenderIdentifer
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,7 @@ class MessageModel:
         cursor: sqlite3.Cursor,
         user_id: Optional[int] = None,
         created_at: Optional[datetime] = None,
+        sender: Optional[SenderIdentifer] = None,
         limit: Optional[int] = 10,
         offset: Optional[int] = 0,
     ) -> List[Message]:
@@ -55,6 +56,9 @@ class MessageModel:
         if created_at:
             query += " AND created_at >= ?"
             params += (created_at,)
+        if sender:
+            query += " AND sender = ?"
+            params += (sender,)
 
         query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
         params += (
