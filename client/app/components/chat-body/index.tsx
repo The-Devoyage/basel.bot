@@ -5,17 +5,11 @@ import { GlobalContext } from "@/app/provider";
 import { ChatCard } from "@/shared/chat-card";
 import { Loader } from "@/shared/loader";
 import { Alert, Spinner } from "flowbite-react";
-import { useSearchParams } from "next/navigation";
 import { InitScreen } from "./components";
 
 export const ChatBody = () => {
-  const {
-    client,
-    store: { isAuthenticated },
-  } = useContext(GlobalContext);
+  const { client } = useContext(GlobalContext);
   const ref = useRef<HTMLDivElement>(null);
-  const searchParams = useSearchParams();
-  const token = searchParams.get("sl_token");
 
   useEffect(() => {
     if (ref.current) {

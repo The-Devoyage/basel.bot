@@ -21,7 +21,14 @@ export const setAuthToken = async (token: string) => {
 export const removeAuthToken = async () => {
   const cookieStore = cookies();
 
-  cookieStore.delete({
+  cookieStore.set({
     name: "token",
+    value: "",
+    httpOnly: true,
+    path: "/",
+    domain: process.env.NODE_ENV === "production" ? ".basel.bot" : undefined,
+    secure: process.env.NODE_ENV === "production" ? true : undefined,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : undefined,
+    expires: new Date(0), // Expire immediately
   });
 };
