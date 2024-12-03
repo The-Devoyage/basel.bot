@@ -26,7 +26,7 @@ export const InitScreen = () => {
     switch (type) {
       case "interviews":
         text =
-          "I am interested in learning about Basel's Automated Interviews. How do these work?";
+          "I am interested in learning about Automated Interviews. How do these work?";
         break;
       case "bot":
         text = "Who are you, Basel? What is a Career Assistant Bot?";
@@ -80,7 +80,7 @@ export const InitScreen = () => {
             onClick={() => handleMessage("candidate")}
             className="mt-4 w-full"
           >
-            Let's Get Started
+            Get Started
           </Button>
         </Alert>
       )}
@@ -157,7 +157,7 @@ export const InitScreen = () => {
                   Basel specializes in translating your unique skills and
                   experiences into professional, recruiter-friendly language,
                   ensuring they are clearly and effectively communicated—no
-                  matter what language you speak or where you're from.
+                  matter what language you speak or where you are from.
                 </Typography.Paragraph>
               </div>
             </li>
