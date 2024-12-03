@@ -14,12 +14,14 @@ interface GlobalContext {
   client: SocketClient<Message, Message> | null;
   store: ReturnType<typeof useStore>[0];
   dispatch: ReturnType<typeof useStore>[1];
+  slToken: string | null;
 }
 
 export const GlobalContext = createContext<GlobalContext>({
   client: null,
   store: { toasts: [], isAuthenticated: false, me: null },
   dispatch: () => {},
+  slToken: null,
 });
 
 interface GlobalProviderProps {
@@ -29,11 +31,11 @@ interface GlobalProviderProps {
 export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const [store, dispatch] = useStore();
   const searchParams = useSearchParams();
-  const token = searchParams.get("sl_token");
+  const slToken = searchParams.get("sl_token");
   useVerifyLogin(dispatch);
 
   const client = useSocket<Message, Message>(
-    `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${token ? "?sl_token=" + token : ""}`,
+    `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${slToken ? "?sl_token=" + slToken : ""}`,
   );
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   }, [store.isAuthenticated]);
 
   const value = useMemo(
-    () => ({ client, store, dispatch }),
+    () => ({ client, store, dispatch, slToken }),
     [
       client.socket,
       client.messages,
@@ -74,6 +76,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
       client.loading,
       client.connected,
       store,
+      slToken,
     ],
   );
 
