@@ -10,10 +10,7 @@ from fastapi import (
     status,
 )
 import jwt
-import json
-from llama_index.llms.openai import OpenAI
-from llama_index.agent.openai import OpenAIAgent
-from pydantic import BaseModel, Field
+from basel.agent import get_agent
 
 from classes.user_claims import ShareableLinkClaims
 from database.message import MessageModel
@@ -22,13 +19,9 @@ from database.user import UserModel
 from database.user_meta import UserMetaModel
 from utils.environment import get_env_var
 
-from utils.indexing import (
-    add_to_index,
-    get_documents,
-    get_agent,
-)
 from utils.jwt import handle_decode_token, verify_token_session
 from utils.subscription import SubscriptionStatus, verify_subscription
+from utils.summary import create_summary
 
 router = APIRouter()
 
@@ -50,7 +43,7 @@ async def websocket_endpoint(
     token: str = Cookie(None),
     sl_token: Optional[str] = None,
 ):
-    current_user = None
+    user_claims = None
     chatting_with = None
     chat_start_time = datetime.now(timezone.utc)
     subscription_status = SubscriptionStatus(
@@ -63,13 +56,9 @@ async def websocket_endpoint(
         if token:
             user_claims = handle_decode_token(token)
             verify_token_session(user_claims.token_session_uuid)
-            current_user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
-            if not current_user:
-                raise Exception("Current user not found.")
             subscription_status = verify_subscription(
-                current_user.id, current_user.created_at
+                user_claims.user.id, user_claims.user.created_at
             )
-            logger.debug(f"SUBSCRIPTION STATUS: {subscription_status}")
 
         if sl_token:
             decoded = jwt.decode(
@@ -80,9 +69,8 @@ async def websocket_endpoint(
             if not chatting_with:
                 logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
                 raise Exception("Shareable Link Token User Not Found")
-
-        if not chatting_with:
-            chatting_with = current_user
+        if user_claims and not sl_token:
+            chatting_with = user_claims.user
 
         conn.close()
 
@@ -90,17 +78,19 @@ async def websocket_endpoint(
         logger.error(f"{e}")
         return WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
 
-    if not chatting_with:
-        raise Exception("No target to represent")
-
-    is_candidate = False
-    if current_user is not None and current_user.id == chatting_with.id:
+    if (
+        user_claims is not None
+        and chatting_with is not None
+        and user_claims.user.id == chatting_with.id
+    ):
         is_candidate = True
+    else:
+        is_candidate = False
 
     agent = get_agent(
         is_candidate,
-        chatting_with.id,
-        current_user,
+        chatting_with,
+        user_claims,
         subscription_status,
     )
 
@@ -117,15 +107,19 @@ async def websocket_endpoint(
                 logger.debug(f"USER MESSAGE RECEIVED: {data}")
 
                 message = SocketMessage.model_validate_json(data)
-                if current_user and (
-                    subscription_status.active or subscription_status.is_free_trial
+                if (
+                    user_claims
+                    and (
+                        subscription_status.active or subscription_status.is_free_trial
+                    )
+                    and chatting_with
                 ):
                     message_model.create_message(
                         cursor=cursor,
                         text=message.text,
                         sender=message.sender,
-                        created_by=current_user.id,
-                        updated_by=current_user.id,
+                        created_by=user_claims.user.id,
+                        updated_by=user_claims.user.id,
                         user_id=chatting_with.id,
                     )
                     conn.commit()
@@ -151,25 +145,25 @@ async def websocket_endpoint(
                     else None,
                 )
                 await websocket.send_text(response.model_dump_json())
-                if current_user and subscription_status:
+                if user_claims and subscription_status and chatting_with:
                     message_model.create_message(
                         cursor=cursor,
                         text=response.text,
                         sender="bot",
-                        created_by=current_user.id,
-                        updated_by=current_user.id,
+                        created_by=user_claims.user.id,
+                        updated_by=user_claims.user.id,
                         user_id=chatting_with.id,
                     )
                     conn.commit()
 
             except Exception as e:
-                logger.error(f"UNEXPECTED ERROR WHILE CONNECTED")
-                response = SocketMessage(
+                logger.error(f"UNEXPECTED ERROR WHILE CONNECTED: {e}")
+                socket_response = SocketMessage(
                     text="Sorry, I am having some trouble with that. Let's try again.",
                     timestamp=datetime.now(),
                     sender="bot",
                 )
-                await websocket.send_text(response.model_dump_json())
+                await websocket.send_text(socket_response.model_dump_json())
             finally:
                 logger.debug("CLOSING CURSOR")
                 cursor.close()
@@ -177,12 +171,11 @@ async def websocket_endpoint(
     except WebSocketDisconnect as e:
         logger.debug(f"WEBSOCKET DISCONNECT: {e}")
 
-        # If the user is the candidate, save the summary
-        logger.debug(f"{current_user, subscription_status, chatting_with}")
         try:
             if (
-                not current_user
-                or current_user.id != chatting_with.id
+                not user_claims
+                or not chatting_with
+                or user_claims.user.id != chatting_with.id
                 or (
                     not subscription_status.active
                     and not subscription_status.is_free_trial
@@ -191,60 +184,9 @@ async def websocket_endpoint(
                 logger.debug("CLOSING WITHOUT SUMMERIZING")
                 conn.close()
                 return
+            # CREATE SUMMARY
+            create_summary(user_claims, chat_start_time)
 
-            conn = user_meta_model._get_connection()
-            cursor = conn.cursor()
-
-            logs = message_model.get_messages_by_user_id(
-                cursor, current_user.id, chat_start_time
-            )
-
-            if not logs:
-                return
-
-            logs_story = "\n".join(
-                f"{message.sender}: {message.text}" for message in logs
-            )
-
-            class MetaSummary(BaseModel):
-                user_meta: str = Field(
-                    description="""
-                        Summary of chat logs by extracting only *new* information that the user has shared today which
-                        could help them find or maintain a job. Relevant information includes:
-                        - Professional skills or competencies
-                        - Day-to-day tasks
-                        - Personal hobbies (if relevant to their career)
-                        - General knowledge about the user’s career aspirations or goals
-
-                        Rules:
-                        - Only include new facts that the user shared today.
-                        - Exclude information that the bot brought up or that appears redundant or already known by the bot.
-                        - If there are no updates in today’s logs, respond with "None". Do not use punctuation if responding with the word None.
-                                       """
-                )
-
-            llm = OpenAI(model="gpt-4o")
-            sllm = llm.as_structured_llm(MetaSummary)
-            response = sllm.complete(logs_story)
-
-            json_response = json.loads(response.text)
-            print(json.dumps(json_response, indent=2))
-
-            if response and response is not None and response != "None":
-                user_meta_model.create_user_meta(
-                    cursor=cursor,
-                    user_id=current_user.id,
-                    data=json_response["user_meta"],
-                    tags="",  # TODO: Populate tags if available
-                    current_user_id=current_user.id,
-                )
-                conn.commit()
-
-            conn.close()
-
-            # Create Index
-            documents = get_documents(current_user.id, chat_start_time)
-            add_to_index(documents)
         except Exception as e:
             logger.error(f"FAILED TO SAVE SUMMARY: {e}")
     except Exception as e:

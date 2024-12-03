@@ -6,6 +6,7 @@ import { ChatCard } from "@/shared/chat-card";
 import { Loader } from "@/shared/loader";
 import { Alert, Spinner } from "flowbite-react";
 import { useSearchParams } from "next/navigation";
+import { InitScreen } from "./components";
 
 export const ChatBody = () => {
   const {
@@ -25,30 +26,7 @@ export const ChatBody = () => {
     }
   }, [ref.current, client?.messages]);
 
-  if (
-    (!client?.messages?.length && !client?.initializing) ||
-    (!token && !isAuthenticated)
-  ) {
-    return (
-      <div className="mx-auto flex h-full flex-col items-center justify-center space-y-4">
-        <ChatCard
-          message={{
-            text: `Hello there! I'm Basel, your personal career assistant. I am 
-                   ready to help you find jobs, prepare for interviews, and keep 
-                   your dynamic resume up to date. **How can I help you today?**`,
-            sender: "bot",
-            timestamp: new Date(),
-          }}
-        />
-      </div>
-    );
-  }
-
-  if (
-    client?.messages.length &&
-    !client.connected &&
-    (isAuthenticated || token)
-  ) {
+  if (client?.messages.length && !client.connected) {
     return (
       <Alert color="warning" className="flex space-x-4">
         <Spinner />
@@ -60,12 +38,18 @@ export const ChatBody = () => {
     );
   }
 
-  if ((client?.loading && !client?.messages.length) || client?.initializing) {
+  if (!client || client?.initializing) return <Loader />;
+
+  if (!client?.messages?.length && !client?.initializing) {
+    return <InitScreen />;
+  }
+
+  if (client?.loading && !client?.messages.length) {
     return <Loader />;
   }
 
   return (
-    <div className="mx-auto flex w-full flex-col space-y-4">
+    <div className="mx-auto flex flex-col justify-center space-y-4 md:min-w-[700px]">
       {client.messages.map((m, index) => (
         <ChatCard
           key={m.timestamp?.toString()}

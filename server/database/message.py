@@ -1,8 +1,11 @@
+import logging
 import sqlite3
-from typing import List
+from typing import List, Optional
 import uuid
 from datetime import datetime
-from classes.message import Message
+from classes.message import Message, SenderIdentifer
+
+logger = logging.getLogger(__name__)
 
 
 class MessageModel:
@@ -34,14 +37,40 @@ class MessageModel:
         )
         return cursor.fetchone()
 
-    def get_messages_by_user_id(self, cursor, user_id, created_at) -> List[Message]:
+    def get_messages(
+        self,
+        cursor: sqlite3.Cursor,
+        user_id: Optional[int] = None,
+        created_at: Optional[datetime] = None,
+        sender: Optional[SenderIdentifer] = None,
+        limit: Optional[int] = 10,
+        offset: Optional[int] = 0,
+    ) -> List[Message]:
         """Retrieve all messages by a user using the provided cursor."""
-        cursor.execute(
-            """
-            SELECT * FROM message WHERE user_id = ? AND created_at > ?
-        """,
-            (user_id, created_at),
+        query = "SELECT * FROM (SELECT * FROM message WHERE deleted_at IS NULL"
+        params = ()
+
+        if user_id:
+            query += " AND user_id = ?"
+            params += (user_id,)
+        if created_at:
+            query += " AND created_at >= ?"
+            params += (created_at,)
+        if sender:
+            query += " AND sender = ?"
+            params += (sender,)
+
+        query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+        params += (
+            limit,
+            offset,
         )
+
+        query += ") sub ORDER BY created_at ASC;"
+
+        logger.debug(f"QUERY: {query}")
+
+        cursor.execute(query, params)
         columns = [column[0] for column in cursor.description]
         return [Message(**dict(zip(columns, row))) for row in cursor.fetchall()]
 

@@ -1,20 +1,14 @@
-from enum import Enum
-from typing import Optional
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 
-class SenderIdentifer(str, Enum):
-    BOT = "bot"
-    USER = "user"
-
-
-class Message(BaseModel):
+class Interview(BaseModel):
     id: int
     uuid: str
-    user_id: int
-    sender: SenderIdentifer
-    text: str
+    name: str
+    description: str
+    status: bool
     created_by: Optional[int]
     updated_by: Optional[int]
     deleted_by: Optional[int]
@@ -23,4 +17,7 @@ class Message(BaseModel):
     deleted_at: Optional[datetime]
 
     def to_public_dict(self) -> dict:
-        return self.model_dump(exclude={"id", "created_by", "updated_by", "deleted_by"})
+        interview = self.model_dump(
+            exclude={"id", "created_by", "updated_by", "deleted_by"}
+        )
+        return interview

@@ -22,38 +22,32 @@ export const AuthButton = () => {
   } = useContext(GlobalContext);
   const emailInput = useRef<HTMLInputElement>(null);
 
-  const {
-    handleSend,
-    initializing,
-    handleConnect,
-    handleClose,
-    connected,
-    loading,
-  } = useSocket<
-    { email: string },
-    { success: boolean; message: string; token: string }
-  >(`${process.env.NEXT_PUBLIC_SOCKET_URL}/auth-start`, {
-    handleReceive: async (message) => {
-      if (message?.token) {
-        await setAuthToken(message.token);
-        dispatch(setAuthenticated(true));
-        dispatch(
-          addToast({
-            type: "success",
-            description: message?.message,
-          }),
-        );
-        handleClose();
-      }
+  const { handleSend, handleConnect, handleClose, connected, loading } =
+    useSocket<
+      { email: string },
+      { success: boolean; message: string; token: string }
+    >(`${process.env.NEXT_PUBLIC_SOCKET_URL}/auth-start`, {
+      handleReceive: async (message) => {
+        if (message?.token) {
+          await setAuthToken(message.token);
+          dispatch(setAuthenticated(true));
+          dispatch(
+            addToast({
+              type: "success",
+              description: message?.message,
+            }),
+          );
+          handleClose();
+        }
 
-      if (!message?.success) {
-        dispatch(addToast({ type: "error", description: message?.message }));
-        dispatch(setAuthenticated(false));
-      } else {
-        setAwaitAuth(true);
-      }
-    },
-  });
+        if (!message?.success) {
+          dispatch(addToast({ type: "error", description: message?.message }));
+          dispatch(setAuthenticated(false));
+        } else {
+          setAwaitAuth(true);
+        }
+      },
+    });
 
   useEffect(() => {
     if (!connected) return;
@@ -158,12 +152,7 @@ export const AuthButton = () => {
           )}
         </Modal.Body>
       </Modal>
-      <Button
-        color="green"
-        className="col-span-1"
-        isProcessing={initializing}
-        onClick={handleConnect}
-      >
+      <Button color="green" className="col-span-1" onClick={handleConnect}>
         Login/Register
       </Button>
     </>

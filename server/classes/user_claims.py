@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 from classes.user import User
+from classes.role import Role
 
 
 class UserClaims(BaseModel):
@@ -9,6 +10,7 @@ class UserClaims(BaseModel):
     auth_id: str
     token_session_uuid: str
     user: User
+    role: Role
 
 
 class ShareableLinkClaims(BaseModel):

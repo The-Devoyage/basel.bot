@@ -8,6 +8,7 @@ import logging
 from classes.user_claims import UserClaims
 from database.token_session import TokenSessionModel
 from database.user import UserModel
+from database.role import RoleModel
 from utils.environment import get_env_var
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ oauth2scheme = OAuth2PasswordBearer(tokenUrl="token")
 # Database
 token_session_model = TokenSessionModel("basel.db")
 user_model = UserModel("basel.db")
+role_model = RoleModel("basel.db")
 
 
 def create_jwt(payload: dict, secret: str) -> str:
@@ -35,10 +37,18 @@ def handle_decode_token(token: str) -> UserClaims:
         decoded_token = jwt.decode(token, ACCESS_SECRET, algorithms=[ALGORITHM])
         conn = user_model._get_connection()
         cursor = conn.cursor()
+        # Populate User Service Context
         user = user_model.get_user_by_uuid(cursor, decoded_token["user_uuid"])
         if not user:
             raise Exception("User not found")
         decoded_token["user"] = user
+
+        # Populate User Role Service Context
+        role = role_model.get_role_by_id(cursor, user.role_id)
+        if not role:
+            raise Exception("User role not found.")
+        decoded_token["role"] = role
+
         return cast(UserClaims, UserClaims(**decoded_token))
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")

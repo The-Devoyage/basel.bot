@@ -134,7 +134,7 @@ async def auth_start(websocket: WebSocket):
                 if not current_user:
                     raise ValueError("Failed to update user")
 
-            expire_time = datetime.utcnow() + timedelta(minutes=3)
+            expire_time = datetime.utcnow() + timedelta(minutes=10)
 
             token = create_jwt(
                 {

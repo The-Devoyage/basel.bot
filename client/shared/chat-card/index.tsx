@@ -32,6 +32,9 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
         <Card
           style={{
             borderLeft: isBot ? "4px solid #34D399" : "4px solid #3B82F6",
+            borderTop: "none",
+            borderRight: "none",
+            borderBottom: "none",
             boxShadow: isBot
               ? "-11px 3px 20px RGBA(5, 122, 85, 0.3)"
               : "-7px 3px 20px RGBA(118, 169, 250, 0.2)",
@@ -44,7 +47,26 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
             </Typography.Heading>
           </div>
           {!loading ? (
-            <Markdown className="prose w-full break-words dark:text-slate-300">
+            <Markdown
+              className="prose break-words dark:text-slate-300"
+              components={{
+                h1: (props) => (
+                  <h1 {...props} className="dark:text-slate-300" />
+                ),
+                h2: (props) => (
+                  <h2 {...props} className="dark:text-slate-300" />
+                ),
+                h3: (props) => (
+                  <h3 {...props} className="dark:text-slate-300" />
+                ),
+                h4: (props) => (
+                  <h4 {...props} className="dark:text-slate-300" />
+                ),
+                h5: (props) => (
+                  <h5 {...props} className="dark:text-slate-300" />
+                ),
+              }}
+            >
               {message.text}
             </Markdown>
           ) : (
