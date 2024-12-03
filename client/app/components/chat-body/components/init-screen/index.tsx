@@ -59,7 +59,7 @@ export const InitScreen = () => {
     client?.handleSend(message);
   };
   return (
-    <div className="mx-auto flex h-full flex-col items-center justify-center space-y-4">
+    <div className="mx-auto flex h-full flex-col items-center justify-center space-y-8">
       {slToken && (
         <Alert color="info" className="space-y-4">
           <Typography.Heading className="text-xl dark:!text-slate-800">
@@ -100,8 +100,9 @@ export const InitScreen = () => {
         <Typography.Paragraph>
           Ask Basel to learn how she can help guide your career.
         </Typography.Paragraph>
-        <Button.Group>
+        <div className="flex flex-wrap space-y-4 md:space-x-4 md:space-y-0">
           <Button
+            className="w-full md:w-auto"
             gradientDuoTone="greenToBlue"
             outline
             onClick={() => handleMessage("interviews")}
@@ -109,6 +110,7 @@ export const InitScreen = () => {
             Automated Interviews
           </Button>
           <Button
+            className="w-full md:w-auto"
             gradientDuoTone="greenToBlue"
             outline
             onClick={() => handleMessage("bot")}
@@ -116,6 +118,7 @@ export const InitScreen = () => {
             Personalized Bot
           </Button>
           <Button
+            className="w-full md:w-auto"
             gradientDuoTone="greenToBlue"
             outline
             onClick={() => handleMessage("search")}
@@ -123,15 +126,16 @@ export const InitScreen = () => {
             Job Search
           </Button>
           <Button
+            className="w-full md:w-auto"
             gradientDuoTone="greenToBlue"
             outline
             onClick={() => handleMessage("resume")}
           >
             Dynamic Resumes
           </Button>
-        </Button.Group>
+        </div>
       </Card>
-      <div className="flex flex-col p-12 md:flex-row md:space-x-8">
+      <div className="flex flex-col md:flex-row md:space-x-8">
         <div>
           <Typography.Heading className="text-4xl">
             Break Barriers, Build Opportunities
@@ -149,7 +153,7 @@ export const InitScreen = () => {
               <div className="mr-2 flex h-12 w-12 min-w-12 items-center justify-center rounded bg-blue-800">
                 <IoLanguage className="text-2xl text-blue-200" />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Typography.Heading className="text-lg">
                   Overcome Language Barriers
                 </Typography.Heading>
@@ -165,7 +169,7 @@ export const InitScreen = () => {
               <div className="mr-2 flex h-12 w-12 min-w-12 items-center justify-center rounded bg-green-800">
                 <GiTechnoHeart className="pt-1 text-3xl text-green-200" />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Typography.Heading className="text-lg">
                   Bridge Technical Knowledge Gaps
                 </Typography.Heading>
