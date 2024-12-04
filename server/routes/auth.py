@@ -90,6 +90,13 @@ class AuthStart(BaseModel):
     email: str
 
 
+from fastapi import WebSocket, WebSocketDisconnect
+import asyncio
+import os
+import uuid
+from datetime import datetime, timedelta
+
+
 @router.websocket("/auth-start")
 async def auth_start(websocket: WebSocket):
     await websocket.accept()
@@ -102,74 +109,108 @@ async def auth_start(websocket: WebSocket):
     if not secret:
         raise ValueError("AUTH_SECRET environment variable not set")
 
-    while True:
+    active = True
+
+    async def send_ping():
+        """Send periodic ping messages to the client."""
         try:
-            data = await websocket.receive_text()
-            auth_data = AuthStart.model_validate_json(data)
-
-            logger.debug(f"Auth data: {auth_data}")
-
-            if not auth_data.email:
-                raise ValueError("Email is required")
-
-            current_user = user_model.get_user_by_email(cursor, auth_data.email)
-            if not current_user:
-                logger.debug("User not found, creating new user")
-                user_id = user_model.create_user(
-                    cursor=cursor,
-                    email=auth_data.email,
-                )
-                current_user = user_model.get_user_by_id(cursor, user_id)
-                if not current_user:
-                    raise ValueError("Failed to create user")
-            else:
-                logger.debug("User found, updating user")
-                user_id = user_model.update_user(
-                    cursor,
-                    current_user.id,
-                    auth_id=str(uuid.uuid4()),
-                    current_user=current_user,
-                )
-                current_user = user_model.get_user_by_id(cursor, current_user.id)
-                if not current_user:
-                    raise ValueError("Failed to update user")
-
-            expire_time = datetime.utcnow() + timedelta(minutes=10)
-
-            token = create_jwt(
-                {
-                    "uuid": current_user.uuid,
-                    "auth_id": current_user.auth_id,
-                    "exp": expire_time,
-                },
-                secret,
-            )
-            magic_link = f"{CLIENT_URL}/auth/{token}"
-
-            logger.debug(f"Magic link: {magic_link}")
-
-            connection.commit()
-
-            active_auth_connections[current_user.auth_id] = websocket
-
-            send_email(
-                current_user.email,
-                "Magic Link - Click and Authenticate",
-                "d-647b376beee74b30aff1b669af7a7392",
-                {"magic_link": magic_link},
-            )
-
-            await websocket.send_json(
-                {
-                    "success": True,
-                }
-            )
-
+            while active:
+                await asyncio.sleep(30)  # Adjust the interval as needed
+                await websocket.send_json({"type": "ping"})
         except Exception as e:
-            logger.error(e)
-            await websocket.send_json(
-                {"success": False, "message": "Something went wrong. Please try again."}
-            )
+            logger.error(f"Ping failed: {e}")
+
+    # Start the ping task
+    ping_task = asyncio.create_task(send_ping())
+
+    try:
+        while True:
+            try:
+                # Wait for a message or disconnect
+                data = await websocket.receive_text()
+                auth_data = AuthStart.model_validate_json(data)
+
+                # Handle Pong response or other messages
+                if data == '{"type":"pong"}':
+                    logger.debug("Received pong from client")
+                    continue
+
+                logger.debug(f"Auth data: {auth_data}")
+
+                if not auth_data.email:
+                    raise ValueError("Email is required")
+
+                current_user = user_model.get_user_by_email(cursor, auth_data.email)
+                if not current_user:
+                    logger.debug("User not found, creating new user")
+                    user_id = user_model.create_user(
+                        cursor=cursor,
+                        email=auth_data.email,
+                    )
+                    current_user = user_model.get_user_by_id(cursor, user_id)
+                    if not current_user:
+                        raise ValueError("Failed to create user")
+                else:
+                    logger.debug("User found, updating user")
+                    user_id = user_model.update_user(
+                        cursor,
+                        current_user.id,
+                        auth_id=str(uuid.uuid4()),
+                        current_user=current_user,
+                    )
+                    current_user = user_model.get_user_by_id(cursor, current_user.id)
+                    if not current_user:
+                        raise ValueError("Failed to update user")
+
+                expire_time = datetime.utcnow() + timedelta(minutes=10)
+
+                token = create_jwt(
+                    {
+                        "uuid": current_user.uuid,
+                        "auth_id": current_user.auth_id,
+                        "exp": expire_time,
+                    },
+                    secret,
+                )
+                magic_link = f"{CLIENT_URL}/auth/{token}"
+
+                logger.debug(f"Magic link: {magic_link}")
+
+                connection.commit()
+
+                active_auth_connections[current_user.auth_id] = websocket
+
+                send_email(
+                    current_user.email,
+                    "Magic Link - Click and Authenticate",
+                    "d-647b376beee74b30aff1b669af7a7392",
+                    {"magic_link": magic_link},
+                )
+
+                await websocket.send_json(
+                    {
+                        "success": True,
+                    }
+                )
+
+            except WebSocketDisconnect:
+                logger.warning("WebSocket disconnected")
+                active = False
+                break
+            except Exception as e:
+                logger.error(e)
+                await websocket.send_json(
+                    {
+                        "success": False,
+                        "message": "Something went wrong. Please try again.",
+                    }
+                )
+
+    finally:
+        active = False
+        ping_task.cancel()  # Stop the ping task
+        cursor.close()
+        connection.close()
 
 
 class AuthFinish(BaseModel):
