@@ -25,12 +25,12 @@ export const useSocket = <Send, Receive>(
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [messages, setMessages] = useState<(Send | Receive)[]>([]);
-  const connected = useRef(false);
+  const [connected, setConnected] = useState(false);
   const reconnectTimeout = useRef(1000);
   const closed = useRef(false);
 
   const retryConnection = () => {
-    if (closed?.current) return;
+    if (closed.current) return;
     setTimeout(() => {
       options?.handleRetryFailed?.();
       handleConnect();
@@ -45,7 +45,7 @@ export const useSocket = <Send, Receive>(
     ws.onopen = (e) => {
       setLoading(false);
       setInitializing(false);
-      connected.current = true;
+      setConnected(true);
       console.log("Connected to server", e);
     };
 
@@ -58,7 +58,7 @@ export const useSocket = <Send, Receive>(
 
     ws.onclose = () => {
       console.log("Disconnected from server");
-      connected.current = false;
+      setConnected(false);
       retryConnection();
     };
 
@@ -92,6 +92,6 @@ export const useSocket = <Send, Receive>(
     handleConnect,
     loading,
     initializing,
-    connected: connected?.current,
+    connected,
   } as SocketClient<Send, Receive>;
 };
