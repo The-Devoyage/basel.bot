@@ -51,7 +51,15 @@ export const useSocket = <Send, Receive>(
 
     ws.onmessage = (message: { data: Receive }) => {
       setLoading(false);
+
       const parsed = JSON.parse(message.data as string);
+
+      if (parsed.type === "ping") {
+        console.log("Received ping, sending pong");
+        ws.send(JSON.stringify({ type: "pong" }));
+        return;
+      }
+
       setMessages((prev) => [...prev, parsed]);
       options?.handleReceive?.(parsed);
     };
