@@ -27,8 +27,7 @@ export const AuthButton = () => {
       { email: string },
       { success: boolean; message: string; token: string }
     >(`${process.env.NEXT_PUBLIC_SOCKET_URL}/auth-start`, {
-      handleReceive: async (message) => {
-        console.info(message);
+      onReceive: async (message) => {
         if (message?.token) {
           await setAuthToken(message.token);
           dispatch(setAuthenticated(true));
@@ -47,6 +46,9 @@ export const AuthButton = () => {
         } else {
           setAwaitAuth(true);
         }
+      },
+      onClose: () => {
+        setAwaitAuth(false);
       },
     });
 

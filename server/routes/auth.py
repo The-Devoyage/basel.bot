@@ -92,15 +92,15 @@ class AuthStart(BaseModel):
 
 @router.websocket("/auth-start")
 async def auth_start(websocket: WebSocket):
+    logger.debug("AUTH START")
+
+    # Start Connection
     await websocket.accept()
 
-    # Get the connection
+    # Get the connection to DB
     connection = user_model._get_connection()
     cursor = connection.cursor()
-
-    secret = os.getenv("AUTH_SECRET")
-    if not secret:
-        raise ValueError("AUTH_SECRET environment variable not set")
+    current_user = None
 
     while True:
         try:
@@ -112,6 +112,7 @@ async def auth_start(websocket: WebSocket):
             if not auth_data.email:
                 raise ValueError("Email is required")
 
+            # Find or create current user
             current_user = user_model.get_user_by_email(cursor, auth_data.email)
             if not current_user:
                 logger.debug("User not found, creating new user")
@@ -134,19 +135,24 @@ async def auth_start(websocket: WebSocket):
                 if not current_user:
                     raise ValueError("Failed to update user")
 
+            # Create Sign In Token
             expire_time = datetime.utcnow() + timedelta(minutes=10)
-
             token = create_jwt(
                 {
                     "uuid": current_user.uuid,
                     "auth_id": current_user.auth_id,
                     "exp": expire_time,
                 },
-                secret,
+                AUTH_SECRET,
             )
             magic_link = f"{CLIENT_URL}/auth/{token}"
 
-            logger.debug(f"Magic link: {magic_link}")
+            logger.info(
+                f"""
+                User: {current_user.email}
+                Magic link: {magic_link}
+                """
+            )
 
             connection.commit()
 
@@ -171,6 +177,12 @@ async def auth_start(websocket: WebSocket):
                 {"success": False, "message": "Something went wrong. Please try again."}
             )
 
+        finally:
+            if current_user and current_user.auth_id in active_auth_connections:
+                del active_auth_connections[current_user.auth_id]
+                logger.info(f"Removed connection for auth_id: {current_user.auth_id}")
+            connection.close()
+
 
 class AuthFinish(BaseModel):
     token: str
@@ -178,8 +190,8 @@ class AuthFinish(BaseModel):
 
 @router.post("/auth-finish")
 async def auth_finish(auth_finish: AuthFinish):
-    logger.debug("Finishing Auth")
-    logger.debug(f"Auth Finish Body: {auth_finish}")
+    logger.debug("AUTH FINISH")
+    logger.debug(f"PAYLOAD: {auth_finish}")
     # Decode the token
     if not auth_finish.token or auth_finish.token is None:
         return HTTPException(status_code=400, detail="Token is required")
@@ -215,7 +227,7 @@ async def auth_finish(auth_finish: AuthFinish):
 
         connection.commit()
 
-        expire_time = datetime.utcnow() + timedelta(hours=24)
+        expire_time = datetime.utcnow() + timedelta(days=24)
 
         token = create_jwt(
             {
