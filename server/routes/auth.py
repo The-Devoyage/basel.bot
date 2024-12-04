@@ -102,8 +102,8 @@ async def auth_start(websocket: WebSocket):
     cursor = connection.cursor()
     current_user = None
 
-    while True:
-        try:
+    try:
+        while True:
             data = await websocket.receive_text()
             auth_data = AuthStart.model_validate_json(data)
 
@@ -171,17 +171,17 @@ async def auth_start(websocket: WebSocket):
                 }
             )
 
-        except Exception as e:
-            logger.error(e)
-            await websocket.send_json(
-                {"success": False, "message": "Something went wrong. Please try again."}
-            )
+    except Exception as e:
+        logger.error(e)
+        await websocket.send_json(
+            {"success": False, "message": "Something went wrong. Please try again."}
+        )
 
-        finally:
-            if current_user and current_user.auth_id in active_auth_connections:
-                del active_auth_connections[current_user.auth_id]
-                logger.info(f"Removed connection for auth_id: {current_user.auth_id}")
-            connection.close()
+    finally:
+        if current_user and current_user.auth_id in active_auth_connections:
+            del active_auth_connections[current_user.auth_id]
+            logger.info(f"Removed connection for auth_id: {current_user.auth_id}")
+        connection.close()
 
 
 class AuthFinish(BaseModel):
