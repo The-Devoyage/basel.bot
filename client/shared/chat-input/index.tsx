@@ -151,11 +151,7 @@ export const ChatInput = () => {
           </div>
         )}
         <textarea
-          placeholder={
-            isAuthenticated
-              ? "Ask something to get started or type '/' for commands..."
-              : "Say hello to Basel, your career bot professional"
-          }
+          placeholder="Message Basel"
           className="relative h-full w-full resize-none rounded bg-transparent focus:border-green-400 focus:ring-green-400 dark:bg-slate-950/5 dark:text-white"
           rows={1}
           ref={inputRef}

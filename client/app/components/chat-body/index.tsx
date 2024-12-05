@@ -43,7 +43,7 @@ export const ChatBody = () => {
   }
 
   return (
-    <div className="mx-auto flex flex-col justify-center space-y-4 md:min-w-[700px]">
+    <div className="mx-full flex flex-col justify-center space-y-4 md:mx-auto md:min-w-[700px]">
       {client.messages.map((m, index) => (
         <ChatCard
           key={m.timestamp?.toString()}
