@@ -6,10 +6,13 @@ import { BiSolidLeaf } from "react-icons/bi";
 import { GlobalContext } from "@/app/provider";
 import { useRouter } from "next/navigation";
 import { Endpoint, callApi } from "@/api";
+import { setAuthToken } from "@/api/auth";
+import { setAuthenticated } from "@/shared/useStore/auth";
 
 export default function Page({ params }: { params: { auth_token: string } }) {
   const router = useRouter();
   const {
+    dispatch,
     store: { isAuthenticated },
   } = useContext(GlobalContext);
   const [message, setMessage] = useState<{
@@ -31,7 +34,7 @@ export default function Page({ params }: { params: { auth_token: string } }) {
           body: { token: params.auth_token },
           path: null,
         });
-        if (!res.success) {
+        if (!res.success || !res) {
           setMessage({ type: "error", message: "Failed to login." });
           return;
         }
@@ -40,6 +43,10 @@ export default function Page({ params }: { params: { auth_token: string } }) {
           message:
             "Account verified! Continue from your original tab or device.",
         });
+        if (res.data?.token) {
+          await setAuthToken(res.data.token);
+          dispatch(setAuthenticated(true));
+        }
       } catch (error) {
         setMessage({
           type: "error",

@@ -73,7 +73,7 @@ export interface EndpointResponse {
   [Endpoint.Me]: User;
   [Endpoint.Logout]: null;
   [Endpoint.Verify]: null;
-  [Endpoint.AuthFinish]: null;
+  [Endpoint.AuthFinish]: { token: string };
   [Endpoint.UpdateShareableLink]: ShareableLink;
   [Endpoint.SubscribeStart]: { url: string };
   [Endpoint.GetSubscriptions]: Subscription[];

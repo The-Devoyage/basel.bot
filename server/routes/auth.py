@@ -166,9 +166,7 @@ async def auth_start(websocket: WebSocket):
             )
 
             await websocket.send_json(
-                {
-                    "success": True,
-                }
+                {"success": True, "auth_id": current_user.auth_id}
             )
 
     except Exception as e:
@@ -241,20 +239,16 @@ async def auth_finish(auth_finish: AuthFinish):
 
         auth_connection = active_auth_connections.get(payload["auth_id"])
 
-        if not auth_connection:
-            return HTTPException(
-                status_code=400, detail="No active connection found for user"
+        if auth_connection:
+            await auth_connection.send_json(
+                {
+                    "success": True,
+                    "token": token,
+                    "message": "User authenticated successfully",
+                }
             )
 
-        await auth_connection.send_json(
-            {
-                "success": True,
-                "token": token,
-                "message": "User authenticated successfully",
-            }
-        )
-
-        return create_response(success=True, data=None)
+        return create_response(success=True, data={"token": token})
 
     except jwt.ExpiredSignatureError as e:
         logger.error(e)
