@@ -1,6 +1,7 @@
 from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel
+from classes.user import User
 
 from utils.environment import get_env_var
 
@@ -19,6 +20,9 @@ class ShareableLink(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime]
+
+    # Extend
+    creator: Optional[User] = None
 
     def to_public_dict(self) -> dict:
         link = CLIENT_URL + f"?sl_token={self.token}"

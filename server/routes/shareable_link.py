@@ -1,9 +1,11 @@
 import logging
-from typing import Optional
+import jwt
+from typing import Literal, Optional, cast
 from fastapi import APIRouter, HTTPException
 from fastapi.param_functions import Depends
-from classes.user_claims import UserClaims
+from classes.user_claims import ShareableLinkClaims, UserClaims
 from database.shareable_link import ShareableLinkModel
+from database.user import UserModel
 from utils.environment import get_env_var
 from pydantic import BaseModel
 
@@ -16,9 +18,11 @@ logger = logging.getLogger(__name__)
 
 # Database
 shareable_link_model = ShareableLinkModel("basel.db")
+user_model = UserModel("basel.db")
 
 # Constants
 SHAREABLE_LINK_SECRET = get_env_var("SHAREABLE_LINK_SECRET")
+ALGORITHM = get_env_var("JWT_ALGORITHM")
 
 
 class CreateShareableLinkBody(BaseModel):
@@ -131,15 +135,25 @@ async def update_shareable_link(
         return HTTPException(status_code=500, detail="Something went wrong...")
 
 
-@router.get("/shareable-link")
-async def get_shareable_link(id: int, _: UserClaims = Depends(require_auth)):
+@router.get("/shareable-link/{sl_token}")
+async def get_shareable_link(sl_token: str, extend: Literal["user"]):
     try:
         conn = shareable_link_model._get_connection()
         cursor = conn.cursor()
-        shareable_link = shareable_link_model.get_shareable_link_by_id(cursor, id)
+        decoded = jwt.decode(sl_token, SHAREABLE_LINK_SECRET, algorithms=[ALGORITHM])
+        sl_claims = cast(ShareableLinkClaims, ShareableLinkClaims(**decoded))
+        shareable_link = shareable_link_model.get_shareable_link_by_uuid(
+            cursor, sl_claims.shareable_link_uuid
+        )
 
         if not shareable_link:
             raise Exception("Shareable link not found")
+
+        if extend == "user":
+            user = user_model.get_user_by_uuid(cursor, sl_claims.user_uuid)
+            shareable_link.creator = user.to_public_dict()
+
+        conn.close()
 
         return create_response(success=True, data=shareable_link.to_public_dict())
     except Exception as e:

@@ -17,6 +17,7 @@ from basel.get_interviews_tool import (
 )
 from basel.get_system_prompt import get_system_prompt
 from classes.role import RoleIdentifier
+from classes.shareable_link import ShareableLink
 from classes.user import User
 from classes.user_claims import UserClaims
 from database.message import MessageModel
@@ -33,10 +34,11 @@ def get_agent(
     chatting_with: Optional[User],
     user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
+    shareable_link: ShareableLink | None,
 ) -> OpenAIAgent:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
     system_prompt = get_system_prompt(
-        subscription_status, user_claims, chatting_with, is_candidate
+        subscription_status, user_claims, chatting_with, is_candidate, shareable_link
     )
 
     tools: List[BaseTool] = []
@@ -46,7 +48,9 @@ def get_agent(
     about_tool = create_about_tool()
     tools.append(about_tool)
 
-    if chatting_with:
+    if chatting_with and (
+        (shareable_link and shareable_link.status) or not shareable_link
+    ):
         candidate_profile_tool = create_candidate_profile_tool(chatting_with.id)
         # Get Tools
         tools: List[BaseTool] = [candidate_profile_tool]
@@ -55,7 +59,6 @@ def get_agent(
             # Get Authenticated Tools
             # Handle Admin Role Tools
             if user_claims.role.identifier == RoleIdentifier.ADMIN:
-                logger.debug("HEYHEYHEY")
                 create_interview_tool = create_create_interview_tool(
                     user_claims.user.id
                 )

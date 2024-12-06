@@ -15,6 +15,7 @@ from basel.agent import get_agent
 from classes.user_claims import ShareableLinkClaims
 from database.message import MessageModel
 from classes.socket_message import Button, ButtonAction, SocketMessage
+from database.shareable_link import ShareableLinkModel
 from database.user import UserModel
 from database.user_meta import UserMetaModel
 from utils.environment import get_env_var
@@ -35,6 +36,7 @@ ALGORITHM = get_env_var("JWT_ALGORITHM")
 message_model = MessageModel("basel.db")
 user_model = UserModel("basel.db")
 user_meta_model = UserMetaModel("basel.db")
+shareable_link_model = ShareableLinkModel("basel.db")
 
 
 @router.websocket("/ws")
@@ -49,6 +51,7 @@ async def websocket_endpoint(
     subscription_status = SubscriptionStatus(
         active=False, subscriptions=None, is_free_trial=False
     )
+    shareable_link = None
 
     try:
         conn = user_model._get_connection()
@@ -65,6 +68,9 @@ async def websocket_endpoint(
                 sl_token, SHAREABLE_LINK_SECRET, algorithms=[ALGORITHM]
             )
             sl_claims = cast(ShareableLinkClaims, ShareableLinkClaims(**decoded))
+            shareable_link = shareable_link_model.get_shareable_link_by_uuid(
+                cursor, sl_claims.shareable_link_uuid
+            )
             chatting_with = user_model.get_user_by_uuid(cursor, sl_claims.user_uuid)
             if not chatting_with:
                 logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
@@ -92,6 +98,7 @@ async def websocket_endpoint(
         chatting_with,
         user_claims,
         subscription_status,
+        shareable_link,
     )
 
     await websocket.accept()

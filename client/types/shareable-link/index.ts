@@ -1,3 +1,5 @@
+import { User } from "../user";
+
 export interface ShareableLink {
   uuid: string;
   tag: string;
@@ -6,4 +8,7 @@ export interface ShareableLink {
   created_at: string;
   updated_at: string;
   deleted_at: string;
+
+  // Extended
+  creator?: User;
 }

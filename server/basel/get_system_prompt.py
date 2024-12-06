@@ -1,5 +1,6 @@
 import logging
 from typing import Optional
+from classes.shareable_link import ShareableLink
 from classes.user import User
 from classes.user_claims import UserClaims
 from utils.subscription import SubscriptionStatus
@@ -12,6 +13,7 @@ def get_system_prompt(
     user_claims: Optional[UserClaims],
     chatting_with: Optional[User],
     is_candidate: bool,
+    shareable_link: ShareableLink | None,
 ):
     prompt = ""
 
@@ -25,7 +27,7 @@ def get_system_prompt(
 
     # Handle Unauthenticated Users catting with themselves.
     if not user_claims and not is_candidate and not chatting_with:
-        prompt += "You are chatting with a user who has not signed in. Just tell them about Basel!"
+        prompt += "You are chatting with a user who has not signed in. Just tell them about Basel, sell them on it and get them to join!"
 
     # Candidate talking with their own bot
     if user_claims and is_candidate:
@@ -88,5 +90,14 @@ def get_system_prompt(
             Note: The user is currently subscribed to a paid subscription plan.
         """
     prompt += subscription_message
+
+    # Shareable Link
+    if shareable_link and not shareable_link.status:
+        prompt += """
+            The candidate has deactivated access to this bot. Tell the current user to try again later or to
+            request the user to reach out to the candidate
+
+            You will not have access to any tools to answer questions about the candidate.
+        """
 
     return prompt

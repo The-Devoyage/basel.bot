@@ -9,19 +9,20 @@ import { useContext } from "react";
 import { MdSchool } from "react-icons/md";
 import { IoLanguage } from "react-icons/io5";
 import { GiTechnoHeart } from "react-icons/gi";
+import { RecruiterWelcome } from "./components";
+
+export type MessageType =
+  | "interviews"
+  | "bot"
+  | "search"
+  | "resume"
+  | "translations"
+  | "candidate";
 
 export const InitScreen = () => {
   const { client, slToken } = useContext(GlobalContext);
 
-  const handleMessage = (
-    type:
-      | "interviews"
-      | "bot"
-      | "search"
-      | "resume"
-      | "translations"
-      | "candidate",
-  ) => {
+  const handleMessage = (type: MessageType) => {
     let text = "";
     switch (type) {
       case "interviews":
@@ -44,7 +45,7 @@ export const InitScreen = () => {
         break;
       case "candidate":
         text =
-          "Hey Basel! I am here to talk with you about the candidate. Let me tell you who I am first, my organization, and a little about the position I am looking to fill.";
+          "Hey Basel! I am here to talk with you about the candidate you represent.";
         break;
       default:
         text = "Tell me a bit about the Basel platform.";
@@ -60,30 +61,7 @@ export const InitScreen = () => {
   };
   return (
     <div className="mx-auto flex h-full flex-col items-center justify-center space-y-8">
-      {slToken && (
-        <Alert color="info" className="space-y-4">
-          <Typography.Heading className="text-xl dark:!text-slate-800">
-            Welcome! Here to learn about a candidate?
-          </Typography.Heading>
-          <Typography.Paragraph className="mb-2 dark:text-slate-600">
-            It looks like you might be here to chat about a potential hire! Tell
-            Basel about yourself, the organization you are with, and the
-            position you are trying to fill.
-          </Typography.Paragraph>
-          <Typography.Paragraph className="dark:text-slate-600">
-            Basel will help you learn about this candidate so that you may
-            determine if they are a good fit or not.
-          </Typography.Paragraph>
-          <Button
-            gradientDuoTone="purpleToBlue"
-            outline
-            onClick={() => handleMessage("candidate")}
-            className="mt-4 w-full"
-          >
-            Get Started
-          </Button>
-        </Alert>
-      )}
+      <RecruiterWelcome handleMessage={handleMessage} slToken={slToken} />
       <ChatCard
         message={{
           text: `Hello there! I'm Basel, your personal career assistant. I am 

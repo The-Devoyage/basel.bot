@@ -12,6 +12,7 @@ export interface Response<T> {
 }
 
 export enum Endpoint {
+  ShareableLink = "/shareable-link/:sl_token",
   ShareableLinks = "/shareable-links",
   CreateShareableLink = "/shareable-link",
   UpdateShareableLink = "/shareable-link/:uuid",
@@ -27,6 +28,13 @@ export enum Endpoint {
 type ShareableLinksQuery = { limit?: number; offset?: number };
 
 interface EndpointParams {
+  [Endpoint.ShareableLink]: {
+    query: {
+      extend?: "user";
+    };
+    body: undefined;
+    path: { sl_token: string };
+  };
   [Endpoint.ShareableLinks]: {
     query: ShareableLinksQuery;
     body: undefined;
@@ -68,6 +76,7 @@ interface EndpointParams {
 }
 
 export interface EndpointResponse {
+  [Endpoint.ShareableLink]: ShareableLink;
   [Endpoint.ShareableLinks]: ShareableLink[];
   [Endpoint.CreateShareableLink]: ShareableLink;
   [Endpoint.Me]: User;

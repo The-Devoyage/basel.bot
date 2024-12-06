@@ -3,6 +3,7 @@
 import { Endpoint } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
 import { ShareableLink } from "@/types/shareable-link";
+import clsx from "clsx";
 import { Button, Tooltip } from "flowbite-react";
 import { FC } from "react";
 import { FaUnlink, FaLink } from "react-icons/fa";
@@ -29,18 +30,20 @@ export const StatusCell: FC<StatusCellProps> = ({ shareableLink }) => {
       revalidationPath: Endpoint.ShareableLinks,
     },
   );
+
   const handleClick = async () => {
     await call();
   };
+
   return (
     <Tooltip
       content={shareableLink.status ? "Deactivate Link" : "Activate Link"}
     >
       <Button
-        className="px-2"
         onClick={handleClick}
         isProcessing={loading}
-        color={shareableLink.status ? "success" : "gray"}
+        outline
+        color={shareableLink.status ? "success" : "failure"}
       >
         {shareableLink.status ? <FaLink /> : <FaUnlink />}
       </Button>

@@ -50,6 +50,22 @@ class ShareableLinkModel:
         data = dict(zip(columns, row))
         return ShareableLink(**data)
 
+    def get_shareable_link_by_token(
+        self, cursor: Cursor, token: str
+    ) -> Optional[ShareableLink]:
+        cursor.execute(
+            """
+            SELECT * FROM shareable_link WHERE token = ?
+            """,
+            (token,),
+        )
+        row = cursor.fetchone()
+        if not row:
+            return None
+        columns = [column[0] for column in cursor.description]
+        data = dict(zip(columns, row))
+        return ShareableLink(**data)
+
     def get_shareable_links(
         self,
         cursor,
