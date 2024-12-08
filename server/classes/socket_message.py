@@ -1,6 +1,8 @@
 from datetime import datetime
-from typing import List, Literal, Optional
+from typing import List, Optional
 from pydantic import BaseModel
+
+from database.message import SenderIdentifer
 
 
 class ButtonAction(BaseModel):
@@ -16,5 +18,5 @@ class Button(BaseModel):
 class SocketMessage(BaseModel):
     text: str
     timestamp: datetime
-    sender: Literal["user", "bot"]
+    sender: SenderIdentifer
     buttons: Optional[List[Button]] = None

@@ -1,8 +1,8 @@
-import json
 import logging
 from datetime import datetime
 from llama_index.llms.openai import OpenAI
 from pydantic import BaseModel, Field
+from database.message import Message
 
 
 from basel.indexing import (
@@ -10,14 +10,9 @@ from basel.indexing import (
     get_documents,
 )
 from classes.user_claims import UserClaims
-from database.message import MessageModel
-from database.user_meta import UserMetaModel
+from database.user_meta import UserMeta
 
 logger = logging.getLogger(__name__)
-
-# Database
-user_meta_model = UserMetaModel("basel.db")
-message_model = MessageModel("basel.db")
 
 
 class MetaSummary(BaseModel):
@@ -30,11 +25,8 @@ class MetaSummary(BaseModel):
     )
 
 
-def create_summary(user_claims: UserClaims, chat_start_time: datetime):
-    conn = user_meta_model._get_connection()
-    cursor = conn.cursor()
-
-    logs = message_model.get_messages(cursor, user_claims.user.id, chat_start_time)
+async def create_summary(user_claims: UserClaims, chat_start_time: datetime):
+    logs = await Message.find(Message.user == user_claims.user).to_list()
 
     if not logs:
         return
@@ -64,17 +56,9 @@ def create_summary(user_claims: UserClaims, chat_start_time: datetime):
     logger.debug(f"SUMMARY: {summary}")
 
     if summary.text and summary.text != "None":
-        user_meta_model.create_user_meta(
-            cursor=cursor,
-            user_id=user_claims.user.id,
-            data=summary.text,
-            tags="",  # TODO: Populate tags if available
-            current_user_id=user_claims.user.id,
-        )
-        conn.commit()
-        conn.close()
+        user_meta = UserMeta(
+            user=user_claims.user, data=summary.text  # type:ignore
+        ).create()
         # Update Index
-        documents = get_documents(user_claims.user.id, chat_start_time)
-        add_to_index(documents)
-    else:
-        conn.close()
+        # documents = get_documents(user_claims.user, chat_start_time)
+        # add_to_index(documents)

@@ -2,13 +2,12 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from pydantic import BaseModel
-from classes.subscription import Subscription
-from database.subscription import SubscriptionModel
 import logging
+from database.subscription import Subscription
+
+from database.user import User
 
 logger = logging.getLogger(__name__)
-
-subscription_model = SubscriptionModel("basel.db")
 
 
 class SubscriptionStatus(BaseModel):
@@ -17,11 +16,13 @@ class SubscriptionStatus(BaseModel):
     is_free_trial: bool
 
 
-def verify_subscription(user_id: int, user_created_at: datetime) -> SubscriptionStatus:
+async def verify_subscription(
+    user: User, user_created_at: datetime
+) -> SubscriptionStatus:
     try:
-        conn = subscription_model._get_connection()
-        cursor = conn.cursor()
-        subscriptions = subscription_model.get_subscriptions_by_user_id(cursor, user_id)
+        subscriptions = await Subscription.find_many(
+            Subscription.user == user
+        ).to_list()
 
         if len(subscriptions) > 0:
             active = False

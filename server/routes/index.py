@@ -21,6 +21,8 @@ class PostIndexBody(BaseModel):
 @router.post("/reset-index")
 async def index(body: PostIndexBody, user_claims: UserClaims = Depends(require_auth)):
     try:
+        if not user_claims or not user_claims.user.id:
+            raise Exception("Login Required.")
         documents = get_documents(user_claims.user.id, body.chat_start_time)
         reset_index(user_claims.user.id)
         add_to_index(documents)

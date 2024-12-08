@@ -16,20 +16,18 @@ from basel.get_interviews_tool import (
     create_get_interviews_tool,
 )
 from basel.get_system_prompt import get_system_prompt
-from classes.role import RoleIdentifier
-from classes.shareable_link import ShareableLink
-from classes.user import User
 from classes.user_claims import UserClaims
-from database.message import MessageModel
+from database.role import RoleIdentifier
+from database.message import Message
+from database.shareable_link import ShareableLink
+from database.user import User
 
 from utils.subscription import SubscriptionStatus
 
 logger = logging.getLogger(__name__)
 
-message_model = MessageModel("basel.db")
 
-
-def get_agent(
+async def get_agent(
     is_candidate,
     chatting_with: Optional[User],
     user_claims: Optional[UserClaims],
@@ -37,7 +35,7 @@ def get_agent(
     shareable_link: ShareableLink | None,
 ) -> OpenAIAgent:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
-    system_prompt = get_system_prompt(
+    system_prompt = await get_system_prompt(
         subscription_status, user_claims, chatting_with, is_candidate, shareable_link
     )
 
@@ -51,21 +49,23 @@ def get_agent(
     if chatting_with and (
         (shareable_link and shareable_link.status) or not shareable_link
     ):
-        candidate_profile_tool = create_candidate_profile_tool(chatting_with.id)
+        candidate_profile_tool = create_candidate_profile_tool(chatting_with)
         # Get Tools
         tools: List[BaseTool] = [candidate_profile_tool]
 
         if user_claims:
             # Get Authenticated Tools
             # Handle Admin Role Tools
-            if user_claims.role.identifier == RoleIdentifier.ADMIN:
-                create_interview_tool = create_create_interview_tool(
-                    user_claims.user.id
-                )
+            role = await user_claims.user.role.fetch()
+            if not role:
+                raise Exception("Can't find role")
+
+            if role.identifier == RoleIdentifier.ADMIN:  # type:ignore
+                create_interview_tool = create_create_interview_tool(user_claims.user)
                 tools.append(create_interview_tool)
 
                 create_interview_question_tool = create_create_interview_question_tool(
-                    user_claims.user.id
+                    user_claims.user
                 )
                 tools.append(create_interview_question_tool)
 
@@ -77,14 +77,14 @@ def get_agent(
             tools.append(get_interview_questions_tool)
 
             create_interview_question_response = (
-                create_create_interview_question_response_tool(user_claims.user.id)
+                create_create_interview_question_response_tool(user_claims.user)
             )
             tools.append(create_interview_question_response)
 
             # Populate Recent Chat History
-            conn = message_model._get_connection()
-            cursor = conn.cursor()
-            messages = message_model.get_messages(cursor, user_claims.user.id, limit=40)
+            messages = (
+                await Message.find(Message.user == user_claims.user).limit(40).to_list()
+            )
             for message in messages:
                 logger.debug(f"MESSAGE: {message}")
                 history = ChatMessage(

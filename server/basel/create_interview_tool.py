@@ -1,39 +1,31 @@
 import logging
 from llama_index.core.bridge.pydantic import Field
 from llama_index.core.tools.function_tool import FunctionTool
-from classes.interview import Interview
 
-from database.interview import InterviewModel
+from database.interview import Interview
+from database.user import User
 
-interview_model = InterviewModel("basel.db")
 
 logger = logging.getLogger(__name__)
 
 
-def create_interview(
-    current_user_id: int,
+async def create_interview(
+    current_user: User,
     name: str = Field(description="The name of the interview."),
     description: str = Field(description="The description of the interview."),
 ):
-    conn = interview_model._get_connection()
-    cursor = conn.cursor()
-    interview_id = interview_model.create_interview(
-        cursor, current_user_id, name, description
-    )
-    if not interview_id:
-        raise Exception("Failed to create interview.")
-    interview = interview_model.get_interview_by_id(cursor, interview_id)
+    interview = await Interview(
+        name=name, description=description, created_by=current_user  # type:ignore
+    ).create()
     if not interview:
-        raise Exception("Failed to find interview.")
-    conn.commit()
-    conn.close()
+        raise Exception("Failed to create interview.")
     return interview.to_public_dict()
 
 
-def create_create_interview_tool(current_user_id: int):
+def create_create_interview_tool(current_user: User):
     create_interview_tool = FunctionTool.from_defaults(
-        fn=lambda name, description: create_interview(
-            current_user_id, name, description
+        async_fn=lambda name, description: create_interview(
+            current_user, name, description
         ),
         name="create_interiew_tool",
         description="""
