@@ -82,7 +82,7 @@ async def websocket_endpoint(
     else:
         is_candidate = False
 
-    agent = get_agent(
+    agent = await get_agent(
         is_candidate,
         chatting_with,
         user_claims,
@@ -150,7 +150,7 @@ async def websocket_endpoint(
                 )
                 await websocket.send_text(socket_response.model_dump_json())
             finally:
-                logger.debug("CLOSING CURSOR")
+                logger.debug("CLOSING")
     except WebSocketDisconnect as e:
         logger.debug(f"WEBSOCKET DISCONNECT: {e}")
 
@@ -167,7 +167,7 @@ async def websocket_endpoint(
                 logger.debug("CLOSING WITHOUT SUMMERIZING")
                 return
             # CREATE SUMMARY
-            create_summary(user_claims, chat_start_time)
+            await create_summary(user_claims, chat_start_time)
 
         except Exception as e:
             logger.error(f"FAILED TO SAVE SUMMARY: {e}")

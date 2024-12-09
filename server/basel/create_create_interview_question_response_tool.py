@@ -30,7 +30,7 @@ async def create_interview_question_response(
     # Handle Errors
     if not interview_question_response:
         raise Exception("Failed to create interview question response.")
-    return interview_question_response.to_public_dict()
+    return await interview_question_response.to_public_dict()
 
 
 def create_create_interview_question_response_tool(user: User):

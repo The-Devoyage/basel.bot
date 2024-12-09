@@ -24,7 +24,7 @@ async def create_interview_question(
     ).create()
     if not interview_question:
         raise Exception("Failed to create interview question.")
-    return interview_question.to_public_dict()
+    return await interview_question.to_public_dict()
 
 
 def create_create_interview_question_tool(current_user: User):

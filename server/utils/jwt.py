@@ -1,4 +1,5 @@
 from typing import cast
+from uuid import UUID
 from fastapi import Cookie
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -31,12 +32,11 @@ async def handle_decode_token(token: str) -> UserClaims:
         decoded_token = jwt.decode(token, ACCESS_SECRET, algorithms=[ALGORITHM])
         # Populate User Service Context
         user = await User.find_one(
-            User.uuid == decoded_token["user_uuid"], fetch_links=True
+            User.uuid == UUID(decoded_token["user_uuid"]), fetch_links=True
         )
         if not user:
             raise Exception("User not found")
         decoded_token["user"] = user
-
         return cast(UserClaims, UserClaims(**decoded_token))
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
@@ -51,7 +51,7 @@ async def verify_token_session(token_session_uuid: str) -> bool:
     """Verify a token session."""
     try:
         token_session = await TokenSession.find_one(
-            TokenSession.uuid == token_session_uuid
+            TokenSession.uuid == UUID(token_session_uuid)
         )
         if not token_session:
             raise HTTPException(status_code=401, detail="Token session not found")

@@ -19,7 +19,7 @@ async def create_interview(
     ).create()
     if not interview:
         raise Exception("Failed to create interview.")
-    return interview.to_public_dict()
+    return await interview.to_public_dict()
 
 
 def create_create_interview_tool(current_user: User):

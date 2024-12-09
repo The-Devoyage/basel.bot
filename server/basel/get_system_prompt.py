@@ -15,6 +15,7 @@ async def get_system_prompt(
     is_candidate: bool,
     shareable_link: ShareableLink | None,
 ):
+    logger.debug("GET SYSTEM PROMPT")
     prompt = ""
 
     # General
@@ -57,7 +58,7 @@ async def get_system_prompt(
     # Populat details for authenticated users
     if user_claims:
         # Populate User Details
-        role = user_claims.user.role.fetch()
+        role = user_claims.user.role
         prompt += f"""
             Current User Email: {user_claims.user.email}
             Current User UUID: {user_claims.user.uuid}

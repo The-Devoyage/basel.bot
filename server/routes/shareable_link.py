@@ -1,4 +1,6 @@
 import logging
+from uuid import UUID
+from beanie import WriteRules
 import jwt
 from beanie.operators import Set
 from typing import Optional, cast
@@ -24,7 +26,10 @@ ALGORITHM = get_env_var("JWT_ALGORITHM")
 @router.post("/shareable-link")
 async def create_shareable_link(user_claims: UserClaims = Depends(require_auth)):
     try:
-        shareable_link = await ShareableLink().create()
+        shareable_link = await ShareableLink(
+            created_by=user_claims.user,  # type:ignore
+            updated_by=user_claims.user,  # type:ignore
+        ).create()
 
         if shareable_link is None:
             raise Exception("Failed to create Shareable Link")
@@ -32,17 +37,19 @@ async def create_shareable_link(user_claims: UserClaims = Depends(require_auth))
         # Create the Token with Payload
         payload = {
             "user_uuid": user_claims.user_uuid,
-            "shareable_link_uuid": shareable_link.uuid,
+            "shareable_link_uuid": str(shareable_link.uuid),
         }
 
         token = create_jwt(payload, SHAREABLE_LINK_SECRET)
 
-        shareable_link = await shareable_link.update(Set({"token": token}))
+        shareable_link.token = token
+
+        await shareable_link.save()
 
         if not shareable_link:
             raise Exception("Unable to create link token.")
 
-        return create_response(success=True, data=shareable_link.to_public_dict())
+        return create_response(success=True, data=await shareable_link.to_public_dict())
 
     except Exception as e:
         logger.error(e)
@@ -58,22 +65,26 @@ class UpdateShareableLinkBody(BaseModel):
 async def update_shareable_link(
     uuid: str,
     body: UpdateShareableLinkBody,
-    _: UserClaims = Depends(require_auth),
+    user_claims: UserClaims = Depends(require_auth),
 ):
     try:
-        shareable_link = await ShareableLink.find_one(ShareableLink.uuid == uuid)
+        shareable_link = await ShareableLink.find_one(ShareableLink.uuid == UUID(uuid))
 
         if shareable_link is None:
             raise Exception("Failed to find shareable link.")
 
-        shareable_link = await shareable_link.update(
-            Set({"status": body.status, "tag": body.tag})
+        shareable_link.status = (
+            body.status if body.status is not None else shareable_link.status
         )
+        shareable_link.tag = body.tag if body.tag else shareable_link.tag
+        shareable_link.updated_by = user_claims.user  # type:ignore
+
+        await shareable_link.save()
 
         if not shareable_link:
             raise Exception("Failed to update shareable link")
 
-        return create_response(success=True, data=shareable_link.to_public_dict())
+        return create_response(success=True, data=await shareable_link.to_public_dict())
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail="Something went wrong...")
@@ -85,12 +96,12 @@ async def get_shareable_link(sl_token: str):
         decoded = jwt.decode(sl_token, SHAREABLE_LINK_SECRET, algorithms=[ALGORITHM])
         sl_claims = cast(ShareableLinkClaims, ShareableLinkClaims(**decoded))
         shareable_link = await ShareableLink.find_one(
-            ShareableLink.uuid == sl_claims.shareable_link_uuid
+            ShareableLink.uuid == UUID(sl_claims.shareable_link_uuid), fetch_links=True
         )
         if not shareable_link:
             raise Exception("Shareable link not found")
 
-        return create_response(success=True, data=shareable_link.to_public_dict())
+        return create_response(success=True, data=await shareable_link.to_public_dict())
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail="Something went wrong...")
@@ -104,13 +115,17 @@ async def get_shareable_links(
 ):
     try:
         shareable_links = (
-            await ShareableLink.find_many(ShareableLink.created_by == user_claims.user)
+            await ShareableLink.find(
+                ShareableLink.created_by.id == user_claims.user.id,  # type:ignore
+                fetch_links=True,
+            )
             .limit(limit)
             .skip(offset)
             .to_list()
         )
+        logger.debug(f"SHAREABLE LINKS: {shareable_links}")
         return create_response(
-            success=True, data=[link.to_public_dict() for link in shareable_links]
+            success=True, data=[await link.to_public_dict() for link in shareable_links]
         )
     except Exception as e:
         logger.error(e)

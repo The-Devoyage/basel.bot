@@ -34,7 +34,9 @@ async def get_subscriptions(user_claims: UserClaims = Depends(require_auth)):
 
         return create_response(
             success=True,
-            data=[subscription.to_public_dict() for subscription in subscriptions],
+            data=[
+                await subscription.to_public_dict() for subscription in subscriptions
+            ],
         )
 
     except Exception as e:

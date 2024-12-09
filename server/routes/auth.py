@@ -2,6 +2,7 @@ from beanie import WriteRules
 import jwt
 import uuid
 import logging
+from uuid import UUID
 from beanie.operators import Set
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, WebSocket
@@ -33,7 +34,7 @@ active_auth_connections = {}
 async def verify(user_claims: UserClaims = Depends(require_auth)):
     try:
         token_session = await TokenSession.find_one(
-            TokenSession.uuid == user_claims.token_session_uuid
+            TokenSession.uuid == UUID(user_claims.token_session_uuid)
         )
 
         if not token_session:
@@ -47,11 +48,14 @@ async def verify(user_claims: UserClaims = Depends(require_auth)):
 
 @router.get("/me")
 async def me(user_claims: UserClaims = Depends(require_auth)):
+    logger.debug(f"FETCHING ME: {user_claims}")
     try:
-        user = await User.find_one(User.uuid == user_claims.user_uuid)
+        user = await User.find_one(
+            User.uuid == UUID(user_claims.user_uuid), fetch_links=True
+        )
         if not user:
             raise Exception("User not found")
-        return create_response(success=True, data=user.to_public_dict())
+        return create_response(success=True, data=await user.to_public_dict())
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=401, detail="Invalid token")
@@ -61,13 +65,13 @@ async def me(user_claims: UserClaims = Depends(require_auth)):
 async def logout(user_claims: UserClaims = Depends(require_auth)):
     try:
         token_session = await TokenSession.find_one(
-            TokenSession.uuid == user_claims.token_session_uuid
+            TokenSession.uuid == UUID(user_claims.token_session_uuid)
         )
 
         if not token_session:
             raise Exception("Failed to find token session")
 
-        await token_session.update(Set({TokenSession.status: 0}))
+        await token_session.update(Set({TokenSession.status: False}))
 
         return create_response(success=True, data=None)
     except Exception as e:
@@ -102,27 +106,30 @@ async def auth_start(websocket: WebSocket):
             # Find or create current user
             current_user = await User.find_one(User.email == auth_data.email)
             if not current_user:
-                logger.debug("User not found, creating new user")
+                logger.debug("CREATING NEW USER")
                 role = await Role.find_one(Role.identifier == RoleIdentifier.USER)
                 if not role:
                     raise ValueError("Role not found")
+                logger.debug(f"FOUND ROLE: {role}")
                 current_user = await User(
                     email=auth_data.email, role=role  # type: ignore
                 ).insert(link_rule=WriteRules.DO_NOTHING)
+                logger.debug(f"USER CREATED: {current_user}")
                 if not current_user:
                     raise ValueError("Failed to create user")
             else:
-                logger.debug("User found, updating user")
+                logger.debug(f"UPDATING USER: {current_user}")
                 current_user = await current_user.update(Set({"auth_id": uuid.uuid4()}))
                 if not current_user:
                     raise ValueError("Failed to update user")
 
             # Create Sign In Token
+            logger.debug("CREATING TOKEN")
             expire_time = datetime.utcnow() + timedelta(minutes=10)
             token = create_jwt(
                 {
-                    "uuid": current_user.uuid,
-                    "auth_id": current_user.auth_id,
+                    "uuid": str(current_user.uuid),
+                    "auth_id": str(current_user.auth_id),
                     "exp": expire_time,
                 },
                 AUTH_SECRET,
@@ -136,7 +143,7 @@ async def auth_start(websocket: WebSocket):
                 """
             )
 
-            active_auth_connections[current_user.auth_id] = websocket
+            active_auth_connections[str(current_user.auth_id)] = websocket
 
             send_email(
                 current_user.email,
@@ -146,7 +153,7 @@ async def auth_start(websocket: WebSocket):
             )
 
             await websocket.send_json(
-                {"success": True, "auth_id": current_user.auth_id}
+                {"success": True, "auth_id": str(current_user.auth_id)}
             )
 
     except Exception as e:
@@ -176,7 +183,7 @@ async def auth_finish(auth_finish: AuthFinish):
     try:
         payload = jwt.decode(auth_finish.token, AUTH_SECRET, algorithms=[JWT_ALGO])
         logger.debug(f"AuthID: {payload['auth_id']}")
-        current_user = await User.find_one(User.auth_id == payload["auth_id"])
+        current_user = await User.find_one(User.auth_id == UUID(payload["auth_id"]))
         if not current_user:
             raise Exception("User not found")
 
@@ -196,10 +203,10 @@ async def auth_finish(auth_finish: AuthFinish):
 
         token = create_jwt(
             {
-                "user_uuid": current_user.uuid,
-                "auth_id": current_user.auth_id,
+                "user_uuid": str(current_user.uuid),
+                "auth_id": str(current_user.auth_id),
                 "exp": expire_time,
-                "token_session_uuid": token_session.uuid,
+                "token_session_uuid": str(token_session.uuid),
             },
             ACCESS_SECRET,
         )

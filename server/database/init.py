@@ -1,4 +1,5 @@
 import logging
+from bson import UuidRepresentation
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import (
     init_beanie,
@@ -29,7 +30,10 @@ async def sync_roles():
 
 async def init_db():
     logger.debug("INIT DB")
-    client = AsyncIOMotorClient("mongodb://api:basel@localhost:27017/basel")
+    client = AsyncIOMotorClient(
+        "mongodb://api:basel@localhost:27017/basel",
+        uuidRepresentation="standard",
+    )
     await init_beanie(
         database=client.basel,
         document_models=[

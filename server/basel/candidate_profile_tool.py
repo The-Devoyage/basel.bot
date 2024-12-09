@@ -17,7 +17,9 @@ def create_candidate_profile_tool(chatting_with_id: User):
     filters = MetadataFilters(
         filters=[
             MetadataFilter(
-                key="user_id", operator=FilterOperator.EQ, value=str(chatting_with_id)
+                key="user_id",
+                operator=FilterOperator.EQ,
+                value=str(chatting_with_id.id),
             )
         ]
     )

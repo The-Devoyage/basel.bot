@@ -1,10 +1,12 @@
-from typing import Optional
-import uuid
-
+import logging
+from typing import Optional, Set
+from uuid import UUID, uuid4
 from beanie import Link
-
+from llama_index.core.bridge.pydantic import Field
 from database.base import BaseMongoModel
 from database.role import Role
+
+logger = logging.getLogger(__name__)
 
 
 class User(BaseMongoModel):
@@ -14,7 +16,6 @@ class User(BaseMongoModel):
     phone: Optional[str] = None
     role: Link[Role]
     status: bool = False
-    auth_id: uuid.UUID = uuid.uuid4()
+    auth_id: UUID = Field(default_factory=uuid4)
 
-    def to_public_dict(self) -> dict:
-        return self.model_dump(exclude={"_id", "auth_id"})
+    exclude_from_public_dict: Set[str] = {"id", "auth_id"}

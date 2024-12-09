@@ -4,7 +4,7 @@ import { GlobalContext } from "@/app/provider";
 import { ChatCard } from "@/shared/chat-card";
 import { Typography } from "@/shared/typography";
 import { Message } from "@/types";
-import { Alert, Button, Card } from "flowbite-react";
+import { Button, Card } from "flowbite-react";
 import { useContext } from "react";
 import { MdSchool } from "react-icons/md";
 import { IoLanguage } from "react-icons/io5";
