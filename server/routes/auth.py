@@ -1,15 +1,17 @@
-from datetime import datetime, timedelta
-import os
-import logging
-from fastapi import APIRouter, Depends, HTTPException, WebSocket
+from beanie import WriteRules
 import jwt
 import uuid
+import logging
+from uuid import UUID
+from beanie.operators import Set
+from datetime import datetime, timedelta
+from fastapi import APIRouter, Depends, HTTPException, WebSocket
 from pydantic import BaseModel
 from classes.user_claims import UserClaims
+from database.token_session import TokenSession
+from database.user import User
+from database.role import Role, RoleIdentifier
 
-from database.role import RoleModel
-from database.token_session import TokenSessionModel
-from database.user import UserModel
 from utils.environment import get_env_var
 from utils.jwt import create_jwt, require_auth
 from utils.mailer import send_email
@@ -25,22 +27,16 @@ ACCESS_SECRET = get_env_var("ACCESS_SECRET")
 JWT_ALGO = get_env_var("JWT_ALGORITHM")
 CLIENT_URL = get_env_var("CLIENT_URL")
 
-# Database
-role_model = RoleModel("basel.db")
-user_model = UserModel("basel.db")
-token_session_model = TokenSessionModel("basel.db")
-
 active_auth_connections = {}
 
 
 @router.get("/verify")
-def verify(user_claims: UserClaims = Depends(require_auth)):
-    connection = token_session_model._get_connection()
-    cursor = connection.cursor()
+async def verify(user_claims: UserClaims = Depends(require_auth)):
     try:
-        token_session = token_session_model.get_token_session_by_uuid(
-            cursor, user_claims.token_session_uuid
+        token_session = await TokenSession.find_one(
+            TokenSession.uuid == UUID(user_claims.token_session_uuid)
         )
+
         if not token_session:
             raise Exception("Token session not found")
 
@@ -51,35 +47,34 @@ def verify(user_claims: UserClaims = Depends(require_auth)):
 
 
 @router.get("/me")
-def me(user_claims: UserClaims = Depends(require_auth)):
-    connection = user_model._get_connection()
-    cursor = connection.cursor()
+async def me(user_claims: UserClaims = Depends(require_auth)):
+    logger.debug(f"FETCHING ME: {user_claims}")
     try:
-        user = user_model.get_user_by_uuid(cursor, user_claims.user_uuid)
+        user = await User.find_one(
+            User.uuid == UUID(user_claims.user_uuid), fetch_links=True
+        )
         if not user:
             raise Exception("User not found")
-        return create_response(success=True, data=user.to_public_dict())
+        return create_response(success=True, data=await user.to_public_dict())
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=401, detail="Invalid token")
 
 
 @router.post("/logout")
-def logout(user_claims: UserClaims = Depends(require_auth)):
+async def logout(user_claims: UserClaims = Depends(require_auth)):
     try:
-        connection = user_model._get_connection()
-        cursor = connection.cursor()
-
-        logger.debug(f"User claims: {user_claims}")
-
-        invalidated = token_session_model.invalidate_token_session(
-            cursor, user_claims.token_session_uuid
+        token_session = await TokenSession.find_one(
+            TokenSession.uuid == UUID(user_claims.token_session_uuid)
         )
 
-        if not invalidated:
-            raise Exception("Failed to invalidate token session.")
+        if not token_session:
+            raise Exception("Failed to find token session")
 
-        connection.commit()
+        token_session.status = False
+        token_session.updated_by = user_claims.user  # type:ignore
+        await token_session.save()
+
         return create_response(success=True, data=None)
     except Exception as e:
         logger.error(e)
@@ -97,9 +92,7 @@ async def auth_start(websocket: WebSocket):
     # Start Connection
     await websocket.accept()
 
-    # Get the connection to DB
-    connection = user_model._get_connection()
-    cursor = connection.cursor()
+    # Global Scope
     current_user = None
 
     try:
@@ -113,34 +106,32 @@ async def auth_start(websocket: WebSocket):
                 raise ValueError("Email is required")
 
             # Find or create current user
-            current_user = user_model.get_user_by_email(cursor, auth_data.email)
+            current_user = await User.find_one(User.email == auth_data.email)
             if not current_user:
-                logger.debug("User not found, creating new user")
-                user_id = user_model.create_user(
-                    cursor=cursor,
-                    email=auth_data.email,
-                )
-                current_user = user_model.get_user_by_id(cursor, user_id)
+                logger.debug("CREATING NEW USER")
+                role = await Role.find_one(Role.identifier == RoleIdentifier.USER)
+                if not role:
+                    raise ValueError("Role not found")
+                logger.debug(f"FOUND ROLE: {role}")
+                current_user = await User(
+                    email=auth_data.email, role=role  # type: ignore
+                ).insert(link_rule=WriteRules.DO_NOTHING)
+                logger.debug(f"USER CREATED: {current_user}")
                 if not current_user:
                     raise ValueError("Failed to create user")
             else:
-                logger.debug("User found, updating user")
-                user_id = user_model.update_user(
-                    cursor,
-                    current_user.id,
-                    auth_id=str(uuid.uuid4()),
-                    current_user=current_user,
-                )
-                current_user = user_model.get_user_by_id(cursor, current_user.id)
+                logger.debug(f"UPDATING USER: {current_user}")
+                current_user = await current_user.update(Set({"auth_id": uuid.uuid4()}))
                 if not current_user:
                     raise ValueError("Failed to update user")
 
             # Create Sign In Token
+            logger.debug("CREATING TOKEN")
             expire_time = datetime.utcnow() + timedelta(minutes=10)
             token = create_jwt(
                 {
-                    "uuid": current_user.uuid,
-                    "auth_id": current_user.auth_id,
+                    "uuid": str(current_user.uuid),
+                    "auth_id": str(current_user.auth_id),
                     "exp": expire_time,
                 },
                 AUTH_SECRET,
@@ -154,19 +145,17 @@ async def auth_start(websocket: WebSocket):
                 """
             )
 
-            connection.commit()
-
-            active_auth_connections[current_user.auth_id] = websocket
+            active_auth_connections[str(current_user.auth_id)] = websocket
 
             send_email(
                 current_user.email,
-                "Magic Link - Click and Authenticate",
+                "Magic Link - Click to Authenticate",
                 "d-647b376beee74b30aff1b669af7a7392",
                 {"magic_link": magic_link},
             )
 
             await websocket.send_json(
-                {"success": True, "auth_id": current_user.auth_id}
+                {"success": True, "auth_id": str(current_user.auth_id)}
             )
 
     except Exception as e:
@@ -179,7 +168,6 @@ async def auth_start(websocket: WebSocket):
         if current_user and current_user.auth_id in active_auth_connections:
             del active_auth_connections[current_user.auth_id]
             logger.info(f"Removed connection for auth_id: {current_user.auth_id}")
-        connection.close()
 
 
 class AuthFinish(BaseModel):
@@ -194,45 +182,34 @@ async def auth_finish(auth_finish: AuthFinish):
     if not auth_finish.token or auth_finish.token is None:
         return HTTPException(status_code=400, detail="Token is required")
 
-    connection = user_model._get_connection()
-    cursor = connection.cursor()
-
     try:
         payload = jwt.decode(auth_finish.token, AUTH_SECRET, algorithms=[JWT_ALGO])
         logger.debug(f"AuthID: {payload['auth_id']}")
-        current_user = user_model.get_user_by_auth_id(cursor, payload["auth_id"])
+        current_user = await User.find_one(User.auth_id == UUID(payload["auth_id"]))
         if not current_user:
             raise Exception("User not found")
 
-        user_id = user_model.update_user(
-            cursor, current_user.id, status=True, current_user=current_user
-        )
-        if not user_id:
+        current_user = await current_user.update(Set({"status": True}))
+
+        if not current_user:
             raise Exception("Failed to activate user.")
 
-        token_session_id = token_session_model.create_token_session(
-            cursor, current_user.id
-        )
-        if not token_session_id:
-            raise Exception("Failed to create token session")
-
-        token_session = token_session_model.get_token_session_by_id(
-            cursor, token_session_id
-        )
+        token_session = await TokenSession(
+            user=current_user,  # type:ignore
+            created_by=current_user,  # type:ignore
+        ).insert()
 
         if not token_session:
-            raise Exception("Failed to get token session")
-
-        connection.commit()
+            raise Exception("Failed to create token session")
 
         expire_time = datetime.utcnow() + timedelta(days=24)
 
         token = create_jwt(
             {
-                "user_uuid": current_user.uuid,
-                "auth_id": current_user.auth_id,
+                "user_uuid": str(current_user.uuid),
+                "auth_id": str(current_user.auth_id),
                 "exp": expire_time,
-                "token_session_uuid": token_session.uuid,
+                "token_session_uuid": str(token_session.uuid),
             },
             ACCESS_SECRET,
         )
@@ -262,5 +239,4 @@ async def auth_finish(auth_finish: AuthFinish):
         )
     except Exception as e:
         logger.error(e)
-        connection.rollback()
         return HTTPException(status_code=500, detail=f"Error decoding token: {e}")

@@ -1,8 +1,9 @@
 import logging
+from beanie.operators import Set
 from fastapi import APIRouter, HTTPException, Header, Request
 from fastapi.param_functions import Depends
 from classes.user_claims import UserClaims
-from database.subscription import SubscriptionModel
+from database.subscription import Subscription
 from utils.environment import get_env_var
 import stripe
 from stripe import Event
@@ -20,9 +21,6 @@ STRIPE_PRICE_ID = get_env_var("STRIPE_PRICE_ID")
 STRIPE_ENDPOINT_SECRET = get_env_var("STRIPE_ENDPOINT_SECRET")
 CLIENT_URL = get_env_var("CLIENT_URL")
 
-# Models
-subscription_model = SubscriptionModel("basel.db")
-
 # Init Stripe
 stripe.api_key = STRIPE_API_KEY
 
@@ -30,14 +28,15 @@ stripe.api_key = STRIPE_API_KEY
 @router.get("/subscriptions")
 async def get_subscriptions(user_claims: UserClaims = Depends(require_auth)):
     try:
-        conn = subscription_model._get_connection()
-        cursor = conn.cursor()
-        subscriptions = subscription_model.get_subscriptions_by_user_id(
-            cursor, user_claims.user.id
-        )
+        subscriptions = await Subscription.find_many(
+            Subscription.user.id == user_claims.user.id  # type:ignore
+        ).to_list()
+
         return create_response(
             success=True,
-            data=[subscription.to_public_dict() for subscription in subscriptions],
+            data=[
+                await subscription.to_public_dict() for subscription in subscriptions
+            ],
         )
 
     except Exception as e:
@@ -48,13 +47,10 @@ async def get_subscriptions(user_claims: UserClaims = Depends(require_auth)):
 @router.get("/subscribe-start")
 async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
     try:
-        conn = subscription_model._get_connection()
-        cursor = conn.cursor()
+        subscriptions = await Subscription.find_many(
+            Subscription.user == user_claims.user
+        ).to_list()
 
-        # Users may have one subscription
-        subscriptions = subscription_model.get_subscriptions_by_user_id(
-            cursor, user_claims.user.id, status=True
-        )
         if subscriptions:
             return create_response(
                 success=False,
@@ -75,13 +71,16 @@ async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
             customer_email=user_claims.user.email,
         )
 
-        subscription_model.create_subscription(
-            cursor,
-            user_id=user_claims.user.id,
+        subscription = await Subscription(
+            user=user_claims.user,  # type:ignore
             checkout_session_id=checkout_session.id,
-        )
-        conn.commit()
-        conn.close()
+            status=False,
+            created_by=user_claims.user,  # type:ignore
+        ).create()
+
+        if not subscription:
+            raise Exception("Failed to create subscription.")
+
         return create_response(success=True, data={"url": checkout_session.url})
     except Exception as e:
         logger.error(e)
@@ -104,88 +103,65 @@ async def subscribe_finish(
             event["type"] == "checkout.session.completed"
             or event["type"] == "checkout.session.async_payment_succeeded"
         ):
-            handle_success_checkout(event)
+            await handle_success_checkout(event)
         if event["type"] == "customer.subscription.updated":
-            handle_subscription_cancel(event)
+            await handle_subscription_cancel(event)
         return create_response(success=True)
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail="Something went wrong...")
 
 
-def handle_success_checkout(event: Event):
+async def handle_success_checkout(event: Event):
+    logger.debug("HANDLE SUCCESS CHECKOUT")
     checkout_session = stripe.checkout.Session.retrieve(
         event["data"]["object"]["id"],
         expand=["line_items"],
     )
     if checkout_session.payment_status != "unpaid":
         # Create subscription
-        conn = subscription_model._get_connection()
-        cursor = conn.cursor()
-        subscription = subscription_model.get_subscription_by_checkout_session_id(
-            cursor, checkout_session.id
+        subscription = await Subscription.find_one(
+            Subscription.checkout_session_id == checkout_session.id
         )
 
         if not subscription:
             raise Exception("Subscription not found.")
 
-        updated_count = subscription_model.update_subscription(
-            cursor,
-            status=True,
-            id=subscription.id,
-            customer_id=event["data"]["object"]["customer"],
-        )
-        conn.commit()
-
-        subscription = subscription_model.get_subscription_by_id(
-            cursor, subscription.id
+        subscription = await subscription.update(
+            Set({"status": True, "customer_id": event["data"]["object"]["customer"]})
         )
 
         if not subscription:
             raise Exception("Failed to retrieve updated subscription information.")
+        return create_response(success=True)
 
-        conn.close()
-        if not updated_count:
-            raise Exception("Failed to find subscription.")
     else:
         raise Exception("Failed to verify payment.")
 
 
-def handle_subscription_cancel(event: Event):
+async def handle_subscription_cancel(event: Event):
     logger.debug("HANDLE CANCEL")
 
     try:
         if event["data"]["object"]["canceled_at"]:
-            conn = subscription_model._get_connection()
-            cursor = conn.cursor()
-            subscriptions = subscription_model.get_subscriptions_by_customer_id(
-                cursor, event["data"]["object"]["customer"]
-            )
+            subscriptions = await Subscription.find(
+                Subscription.customer_id == event["data"]["object"]["customer"]
+            ).to_list()
             if not subscriptions:
                 return create_response(success=True)
             for subscription in subscriptions:
-                subscription_model.update_subscription(
-                    cursor, subscription.id, status=False
-                )
-                conn.commit()
-            conn.close()
-        logger.info(f"EVNET {event}")
+                await subscription.update(Set({"status": False}))
+
         if (
             not event["data"]["object"]["canceled_at"]
             and event["data"]["previous_attributes"]["canceled_at"]
         ):
-            conn = subscription_model._get_connection()
-            cursor = conn.cursor()
-            subscriptions = subscription_model.get_subscriptions_by_customer_id(
-                cursor, event["data"]["object"]["customer"]
-            )
+            subscriptions = await Subscription.find_many(
+                Subscription.customer_id == event["data"]["object"]["customer"]
+            ).to_list()
             if not subscriptions:
                 raise Exception("Customer has no recorded subscriptions.")
-            subscription_model.update_subscription(
-                cursor, id=subscriptions[0].id, status=True
-            )
-            conn.commit()
-            conn.close()
+            await subscriptions[0].update(Set({"status": True}))
     except Exception as e:
         logger.warn(e)
         return

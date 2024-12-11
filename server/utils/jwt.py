@@ -1,4 +1,5 @@
 from typing import cast
+from uuid import UUID
 from fastapi import Cookie
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -6,9 +7,8 @@ import jwt
 import logging
 
 from classes.user_claims import UserClaims
-from database.token_session import TokenSessionModel
-from database.user import UserModel
-from database.role import RoleModel
+from database.token_session import TokenSession
+from database.user import User
 from utils.environment import get_env_var
 
 logger = logging.getLogger(__name__)
@@ -20,35 +20,23 @@ ALGORITHM = get_env_var("JWT_ALGORITHM")
 
 oauth2scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-# Database
-token_session_model = TokenSessionModel("basel.db")
-user_model = UserModel("basel.db")
-role_model = RoleModel("basel.db")
-
 
 def create_jwt(payload: dict, secret: str) -> str:
     """Create a JWT token."""
     return jwt.encode(payload, secret, algorithm=ALGORITHM)
 
 
-def handle_decode_token(token: str) -> UserClaims:
+async def handle_decode_token(token: str) -> UserClaims:
     """Decode a JWT token."""
     try:
         decoded_token = jwt.decode(token, ACCESS_SECRET, algorithms=[ALGORITHM])
-        conn = user_model._get_connection()
-        cursor = conn.cursor()
         # Populate User Service Context
-        user = user_model.get_user_by_uuid(cursor, decoded_token["user_uuid"])
+        user = await User.find_one(
+            User.uuid == UUID(decoded_token["user_uuid"]), fetch_links=True
+        )
         if not user:
             raise Exception("User not found")
         decoded_token["user"] = user
-
-        # Populate User Role Service Context
-        role = role_model.get_role_by_id(cursor, user.role_id)
-        if not role:
-            raise Exception("User role not found.")
-        decoded_token["role"] = role
-
         return cast(UserClaims, UserClaims(**decoded_token))
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
@@ -59,16 +47,12 @@ def handle_decode_token(token: str) -> UserClaims:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-def verify_token_session(token_session_uuid: str) -> bool:
+async def verify_token_session(token_session_uuid: str) -> bool:
     """Verify a token session."""
-    connection = token_session_model._get_connection()
-    cursor = connection.cursor()
     try:
-        token_session = token_session_model.get_token_session_by_uuid(
-            cursor, token_session_uuid
+        token_session = await TokenSession.find_one(
+            TokenSession.uuid == UUID(token_session_uuid)
         )
-        logger.debug(f"Token session: {token_session}")
-
         if not token_session:
             raise HTTPException(status_code=401, detail="Token session not found")
         if token_session.status is False:
@@ -79,9 +63,9 @@ def verify_token_session(token_session_uuid: str) -> bool:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-def require_auth(token: str = Cookie(None)) -> UserClaims:
+async def require_auth(token: str = Cookie(None)) -> UserClaims:
     """Verify a JWT token."""
     logger.debug(f"Token: {token}")
-    user_claims = handle_decode_token(token)
-    verify_token_session(user_claims.token_session_uuid)
+    user_claims = await handle_decode_token(token)
+    await verify_token_session(user_claims.token_session_uuid)
     return user_claims

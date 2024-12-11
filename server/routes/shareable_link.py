@@ -1,11 +1,11 @@
 import logging
+from uuid import UUID
 import jwt
-from typing import Literal, Optional, cast
+from typing import Optional, cast
 from fastapi import APIRouter, HTTPException
 from fastapi.param_functions import Depends
 from classes.user_claims import ShareableLinkClaims, UserClaims
-from database.shareable_link import ShareableLinkModel
-from database.user import UserModel
+from database.shareable_link import ShareableLink
 from utils.environment import get_env_var
 from pydantic import BaseModel
 
@@ -16,74 +16,38 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
-# Database
-shareable_link_model = ShareableLinkModel("basel.db")
-user_model = UserModel("basel.db")
-
 # Constants
 SHAREABLE_LINK_SECRET = get_env_var("SHAREABLE_LINK_SECRET")
 ALGORITHM = get_env_var("JWT_ALGORITHM")
 
 
-class CreateShareableLinkBody(BaseModel):
-    tag: str
-
-
 @router.post("/shareable-link")
-async def create_shareable_link(
-    body: CreateShareableLinkBody, user_claims: UserClaims = Depends(require_auth)
-):
+async def create_shareable_link(user_claims: UserClaims = Depends(require_auth)):
     try:
-        conn = shareable_link_model._get_connection()
-        cursor = conn.cursor()
-
-        # Create Shareable Link
-        updated = shareable_link_model.create_shareable_link(
-            cursor, user_claims.user.id, body.tag
-        )
-
-        conn.commit()
-
-        if updated is None:
-            raise Exception("Failed to create Shareable Link")
-
-        shareable_link = shareable_link_model.get_shareable_link_by_id(cursor, updated)
+        shareable_link = await ShareableLink(
+            created_by=user_claims.user,  # type:ignore
+            updated_by=user_claims.user,  # type:ignore
+        ).create()
 
         if shareable_link is None:
-            raise Exception("Failed to find Shareable Link")
+            raise Exception("Failed to create Shareable Link")
 
         # Create the Token with Payload
         payload = {
             "user_uuid": user_claims.user_uuid,
-            "shareable_link_uuid": shareable_link.uuid,
+            "shareable_link_uuid": str(shareable_link.uuid),
         }
 
         token = create_jwt(payload, SHAREABLE_LINK_SECRET)
 
-        # Save The Token
-        updated = shareable_link_model.update_shareable_link(
-            cursor,
-            shareable_link_id=updated,
-            token=token,
-            current_user=user_claims.user,
-        )
+        shareable_link.token = token
 
-        if updated == 0:
-            raise Exception("Unable to update sharebale link")
-
-        # Commit
-        conn.commit()
-
-        shareable_link = shareable_link_model.get_shareable_link_by_id(
-            cursor, shareable_link.id
-        )
-
-        conn.close()
+        await shareable_link.save()
 
         if not shareable_link:
-            raise Exception("Shareable link not found")
+            raise Exception("Unable to create link token.")
 
-        return create_response(success=True, data=shareable_link.to_public_dict())
+        return create_response(success=True, data=await shareable_link.to_public_dict())
 
     except Exception as e:
         logger.error(e)
@@ -102,60 +66,40 @@ async def update_shareable_link(
     user_claims: UserClaims = Depends(require_auth),
 ):
     try:
-        conn = shareable_link_model._get_connection()
-        cursor = conn.cursor()
-        shareable_link = shareable_link_model.get_shareable_link_by_uuid(cursor, uuid)
+        shareable_link = await ShareableLink.find_one(ShareableLink.uuid == UUID(uuid))
 
         if shareable_link is None:
             raise Exception("Failed to find shareable link.")
 
-        update_count = shareable_link_model.update_shareable_link(
-            cursor,
-            shareable_link_id=shareable_link.id,
-            status=body.status,
-            tag=body.tag,
-            current_user=user_claims.user,
+        shareable_link.status = (
+            body.status if body.status is not None else shareable_link.status
         )
+        shareable_link.tag = body.tag if body.tag else shareable_link.tag
+        shareable_link.updated_by = user_claims.user  # type:ignore
 
-        if not update_count:
-            raise Exception("Failed to update shareable link")
-
-        conn.commit()
-
-        shareable_link = shareable_link_model.get_shareable_link_by_id(
-            cursor, shareable_link.id
-        )
+        await shareable_link.save()
 
         if not shareable_link:
-            raise Exception("Shareable link not found")
+            raise Exception("Failed to update shareable link")
 
-        return create_response(success=True, data=shareable_link.to_public_dict())
+        return create_response(success=True, data=await shareable_link.to_public_dict())
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail="Something went wrong...")
 
 
 @router.get("/shareable-link/{sl_token}")
-async def get_shareable_link(sl_token: str, extend: Literal["user"]):
+async def get_shareable_link(sl_token: str):
     try:
-        conn = shareable_link_model._get_connection()
-        cursor = conn.cursor()
         decoded = jwt.decode(sl_token, SHAREABLE_LINK_SECRET, algorithms=[ALGORITHM])
         sl_claims = cast(ShareableLinkClaims, ShareableLinkClaims(**decoded))
-        shareable_link = shareable_link_model.get_shareable_link_by_uuid(
-            cursor, sl_claims.shareable_link_uuid
+        shareable_link = await ShareableLink.find_one(
+            ShareableLink.uuid == UUID(sl_claims.shareable_link_uuid), fetch_links=True
         )
-
         if not shareable_link:
             raise Exception("Shareable link not found")
 
-        if extend == "user":
-            user = user_model.get_user_by_uuid(cursor, sl_claims.user_uuid)
-            shareable_link.creator = user.to_public_dict()
-
-        conn.close()
-
-        return create_response(success=True, data=shareable_link.to_public_dict())
+        return create_response(success=True, data=await shareable_link.to_public_dict())
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail="Something went wrong...")
@@ -168,14 +112,18 @@ async def get_shareable_links(
     user_claims: UserClaims = Depends(require_auth),
 ):
     try:
-        conn = shareable_link_model._get_connection()
-        cursor = conn.cursor()
-        shareable_links = shareable_link_model.get_shareable_links(
-            cursor, user_claims.user.id, limit, offset
+        shareable_links = (
+            await ShareableLink.find(
+                ShareableLink.created_by.id == user_claims.user.id,  # type:ignore
+                fetch_links=True,
+            )
+            .limit(limit)
+            .skip(offset)
+            .to_list()
         )
-
+        logger.debug(f"SHAREABLE LINKS: {shareable_links}")
         return create_response(
-            success=True, data=[link.to_public_dict() for link in shareable_links]
+            success=True, data=[await link.to_public_dict() for link in shareable_links]
         )
     except Exception as e:
         logger.error(e)

@@ -1,7 +1,9 @@
+from contextlib import asynccontextmanager
 import logging
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from database.init import init_db
 
 from routes.ws import router as ws_router
 from routes.role import router as role_router
@@ -17,8 +19,17 @@ load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
+# Init DB
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    client = await init_db()
+    yield
+    client.close()
+
+
 # Configure App
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 app.include_router(ws_router)
 app.include_router(role_router)
 app.include_router(auth_router)

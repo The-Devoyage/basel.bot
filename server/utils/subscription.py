@@ -2,13 +2,12 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from pydantic import BaseModel
-from classes.subscription import Subscription
-from database.subscription import SubscriptionModel
 import logging
+from database.subscription import Subscription
+
+from database.user import User
 
 logger = logging.getLogger(__name__)
-
-subscription_model = SubscriptionModel("basel.db")
 
 
 class SubscriptionStatus(BaseModel):
@@ -17,12 +16,18 @@ class SubscriptionStatus(BaseModel):
     is_free_trial: bool
 
 
-def verify_subscription(user_id: int, user_created_at: datetime) -> SubscriptionStatus:
+async def verify_subscription(
+    user: User, user_created_at: datetime
+) -> SubscriptionStatus:
+    logger.debug("VERIFY SUBSCRIPTION")
     try:
-        conn = subscription_model._get_connection()
-        cursor = conn.cursor()
-        subscriptions = subscription_model.get_subscriptions_by_user_id(cursor, user_id)
+        subscriptions = await Subscription.find_many(
+            Subscription.user.id == user.id  # type:ignore
+        ).to_list()
 
+        logger.debug(f"SUBSCRIPTIONS: {subscriptions}")
+
+        # Handle Active Subscriptions
         if len(subscriptions) > 0:
             active = False
             i = 0
@@ -31,10 +36,12 @@ def verify_subscription(user_id: int, user_created_at: datetime) -> Subscription
                     active = True
                     break
                 i += 1
-            return SubscriptionStatus(
-                subscriptions=subscriptions, active=active, is_free_trial=False
-            )
+            if active:
+                return SubscriptionStatus(
+                    subscriptions=subscriptions, active=active, is_free_trial=False
+                )
 
+        # Handle Free Trials
         user_created_at = user_created_at.replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
         if now < user_created_at + timedelta(days=30):
@@ -42,6 +49,7 @@ def verify_subscription(user_id: int, user_created_at: datetime) -> Subscription
                 subscriptions=None, is_free_trial=True, active=False
             )
 
+        # Inacive Subscriptions
         return SubscriptionStatus(
             subscriptions=subscriptions, active=False, is_free_trial=False
         )

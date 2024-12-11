@@ -1,8 +1,8 @@
-import json
 import logging
 from datetime import datetime
 from llama_index.llms.openai import OpenAI
 from pydantic import BaseModel, Field
+from database.message import Message
 
 
 from basel.indexing import (
@@ -10,14 +10,9 @@ from basel.indexing import (
     get_documents,
 )
 from classes.user_claims import UserClaims
-from database.message import MessageModel
-from database.user_meta import UserMetaModel
+from database.user_meta import UserMeta
 
 logger = logging.getLogger(__name__)
-
-# Database
-user_meta_model = UserMetaModel("basel.db")
-message_model = MessageModel("basel.db")
 
 
 class MetaSummary(BaseModel):
@@ -30,11 +25,12 @@ class MetaSummary(BaseModel):
     )
 
 
-def create_summary(user_claims: UserClaims, chat_start_time: datetime):
-    conn = user_meta_model._get_connection()
-    cursor = conn.cursor()
-
-    logs = message_model.get_messages(cursor, user_claims.user.id, chat_start_time)
+async def create_summary(user_claims: UserClaims, chat_start_time: datetime):
+    logs = await Message.find(
+        Message.user.id  # type:ignore
+        == user_claims.user.id,
+        Message.created_at > chat_start_time,
+    ).to_list()
 
     if not logs:
         return
@@ -45,7 +41,7 @@ def create_summary(user_claims: UserClaims, chat_start_time: datetime):
     logger.debug(f"LOGS: {logs_story}")
 
     llm = OpenAI(model="gpt-4o")
-    summary = llm.complete(
+    summary = await llm.acomplete(
         f"""
         Objective: Generate a concise summary of new career-related information provided by the user in today’s conversation.
 
@@ -53,8 +49,9 @@ def create_summary(user_claims: UserClaims, chat_start_time: datetime):
         - Focus only on facts explicitly shared by the user that relate to their career, skills, goals, qualifications, or personal hobbies/interests.
         - Use the bot's responses as context and do not include information that the bot introduces.
         - Exclude suggestions, questions, or comments made by the bot.
+        - Exclude recaps or conversation which references previous knowledge.
         - Do not repeat information already known or redundant. If there are no new details provided by the user, respond with "None" (without punctuation).
-        - Use third person statements, for example: "The user is interested in...."
+        - Use third person statements, for example: "The candidate is interested in...."
 
         # Conversation
         {logs_story}
@@ -64,17 +61,11 @@ def create_summary(user_claims: UserClaims, chat_start_time: datetime):
     logger.debug(f"SUMMARY: {summary}")
 
     if summary.text and summary.text != "None":
-        user_meta_model.create_user_meta(
-            cursor=cursor,
-            user_id=user_claims.user.id,
+        await UserMeta(
+            user=user_claims.user,  # type:ignore
             data=summary.text,
-            tags="",  # TODO: Populate tags if available
-            current_user_id=user_claims.user.id,
-        )
-        conn.commit()
-        conn.close()
+            created_by=user_claims.user,  # type:ignore
+        ).create()
         # Update Index
-        documents = get_documents(user_claims.user.id, chat_start_time)
+        documents = await get_documents(user_claims.user, chat_start_time)
         add_to_index(documents)
-    else:
-        conn.close()

@@ -1,20 +1,21 @@
 import logging
 from typing import Optional
-from classes.shareable_link import ShareableLink
-from classes.user import User
 from classes.user_claims import UserClaims
+from database.shareable_link import ShareableLink
+from database.user import User
 from utils.subscription import SubscriptionStatus
 
 logger = logging.getLogger(__name__)
 
 
-def get_system_prompt(
+async def get_system_prompt(
     subscription_status: SubscriptionStatus,
     user_claims: Optional[UserClaims],
     chatting_with: Optional[User],
     is_candidate: bool,
     shareable_link: ShareableLink | None,
 ):
+    logger.debug("GET SYSTEM PROMPT")
     prompt = ""
 
     # General
@@ -57,10 +58,11 @@ def get_system_prompt(
     # Populat details for authenticated users
     if user_claims:
         # Populate User Details
+        role = user_claims.user.role
         prompt += f"""
             Current User Email: {user_claims.user.email}
             Current User UUID: {user_claims.user.uuid}
-            Current User Role: {user_claims.role}
+            Current User Role: {role}
         """
 
     # Details regarding subscription.

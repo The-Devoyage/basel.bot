@@ -25,14 +25,19 @@ export const ChatInput = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [repetedMessage, setRepeatedMessage] = useState<Message | null>(null);
+  const authenticatedConnection = useRef<boolean | null>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, [inputRef.current, isAuthenticated]);
 
   useEffect(() => {
-    client?.handleClose();
-    client?.handleConnect();
+    // Only connect each time the value changes
+    if (authenticatedConnection.current !== isAuthenticated) {
+      client?.handleClose();
+      client?.handleConnect();
+    }
+    authenticatedConnection.current = isAuthenticated;
   }, [isAuthenticated]);
 
   const handleRepeatMessage = (previous = true) => {
@@ -161,7 +166,7 @@ export const ChatInput = () => {
             updateSuggestion(value);
           }}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            if (e.key === "Enter" && !e.shiftKey && !client?.loading) {
               e.preventDefault();
               handleMessage();
             } else if (e.key === "Tab" || e.key === "ArrowRight") {
@@ -179,7 +184,12 @@ export const ChatInput = () => {
           value={messageText}
         />
       </div>
-      <Button color="green" onClick={handleMessage} disabled={!messageText}>
+      <Button
+        color="green"
+        onClick={handleMessage}
+        disabled={!messageText || client?.loading}
+        isProcessing={client?.loading}
+      >
         <GrSend className="h-6 w-6" />
       </Button>
     </div>
