@@ -26,7 +26,11 @@ class MetaSummary(BaseModel):
 
 
 async def create_summary(user_claims: UserClaims, chat_start_time: datetime):
-    logs = await Message.find(Message.user == user_claims.user).to_list()
+    logs = await Message.find(
+        Message.user.id  # type:ignore
+        == user_claims.user.id,
+        Message.created_at > chat_start_time,
+    ).to_list()
 
     if not logs:
         return
@@ -37,7 +41,7 @@ async def create_summary(user_claims: UserClaims, chat_start_time: datetime):
     logger.debug(f"LOGS: {logs_story}")
 
     llm = OpenAI(model="gpt-4o")
-    summary = llm.complete(
+    summary = await llm.acomplete(
         f"""
         Objective: Generate a concise summary of new career-related information provided by the user in today’s conversation.
 
@@ -45,8 +49,9 @@ async def create_summary(user_claims: UserClaims, chat_start_time: datetime):
         - Focus only on facts explicitly shared by the user that relate to their career, skills, goals, qualifications, or personal hobbies/interests.
         - Use the bot's responses as context and do not include information that the bot introduces.
         - Exclude suggestions, questions, or comments made by the bot.
+        - Exclude recaps or conversation which references previous knowledge.
         - Do not repeat information already known or redundant. If there are no new details provided by the user, respond with "None" (without punctuation).
-        - Use third person statements, for example: "The user is interested in...."
+        - Use third person statements, for example: "The candidate is interested in...."
 
         # Conversation
         {logs_story}
@@ -56,9 +61,11 @@ async def create_summary(user_claims: UserClaims, chat_start_time: datetime):
     logger.debug(f"SUMMARY: {summary}")
 
     if summary.text and summary.text != "None":
-        user_meta = UserMeta(
-            user=user_claims.user, data=summary.text  # type:ignore
+        await UserMeta(
+            user=user_claims.user,  # type:ignore
+            data=summary.text,
+            created_by=user_claims.user,  # type:ignore
         ).create()
         # Update Index
-        # documents = get_documents(user_claims.user, chat_start_time)
-        # add_to_index(documents)
+        documents = await get_documents(user_claims.user, chat_start_time)
+        add_to_index(documents)

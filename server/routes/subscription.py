@@ -29,7 +29,7 @@ stripe.api_key = STRIPE_API_KEY
 async def get_subscriptions(user_claims: UserClaims = Depends(require_auth)):
     try:
         subscriptions = await Subscription.find_many(
-            Subscription.user == user_claims.user
+            Subscription.user.id == user_claims.user.id  # type:ignore
         ).to_list()
 
         return create_response(
@@ -75,6 +75,7 @@ async def subscribe_start(user_claims: UserClaims = Depends(require_auth)):
             user=user_claims.user,  # type:ignore
             checkout_session_id=checkout_session.id,
             status=False,
+            created_by=user_claims.user,  # type:ignore
         ).create()
 
         if not subscription:
@@ -112,6 +113,7 @@ async def subscribe_finish(
 
 
 async def handle_success_checkout(event: Event):
+    logger.debug("HANDLE SUCCESS CHECKOUT")
     checkout_session = stripe.checkout.Session.retrieve(
         event["data"]["object"]["id"],
         expand=["line_items"],
@@ -125,12 +127,13 @@ async def handle_success_checkout(event: Event):
         if not subscription:
             raise Exception("Subscription not found.")
 
-        subscription = subscription.update(
+        subscription = await subscription.update(
             Set({"status": True, "customer_id": event["data"]["object"]["customer"]})
         )
 
         if not subscription:
             raise Exception("Failed to retrieve updated subscription information.")
+        return create_response(success=True)
 
     else:
         raise Exception("Failed to verify payment.")

@@ -83,7 +83,11 @@ async def get_agent(
 
             # Populate Recent Chat History
             messages = (
-                await Message.find(Message.user == user_claims.user).limit(40).to_list()
+                await Message.find(
+                    Message.user.id == user_claims.user.id  # type:ignore
+                )
+                .limit(40)
+                .to_list()
             )
             for message in messages:
                 logger.debug(f"MESSAGE: {message}")

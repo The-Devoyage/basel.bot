@@ -1,5 +1,4 @@
 import logging
-from bson import UuidRepresentation
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import (
     init_beanie,
@@ -14,8 +13,13 @@ from database.message import Message
 from database.interview_question import InterviewQuestion
 from database.interview_question_response import InterviewQuestionResponse
 from database.interview import Interview
+from utils.environment import get_env_var
 
 logger = logging.getLogger(__name__)
+
+# Constants
+DB_URI = get_env_var("DB_URI")
+DB_DATABASE = get_env_var("DB_DATABASE")
 
 
 async def sync_roles():
@@ -31,7 +35,7 @@ async def sync_roles():
 async def init_db():
     logger.debug("INIT DB")
     client = AsyncIOMotorClient(
-        "mongodb://api:basel@localhost:27017/basel",
+        f"{DB_URI}",
         uuidRepresentation="standard",
     )
     await init_beanie(

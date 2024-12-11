@@ -1,8 +1,6 @@
 import logging
 from uuid import UUID
-from beanie import WriteRules
 import jwt
-from beanie.operators import Set
 from typing import Optional, cast
 from fastapi import APIRouter, HTTPException
 from fastapi.param_functions import Depends

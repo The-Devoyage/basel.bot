@@ -71,7 +71,9 @@ async def logout(user_claims: UserClaims = Depends(require_auth)):
         if not token_session:
             raise Exception("Failed to find token session")
 
-        await token_session.update(Set({TokenSession.status: False}))
+        token_session.status = False
+        token_session.updated_by = user_claims.user  # type:ignore
+        await token_session.save()
 
         return create_response(success=True, data=None)
     except Exception as e:
@@ -193,7 +195,8 @@ async def auth_finish(auth_finish: AuthFinish):
             raise Exception("Failed to activate user.")
 
         token_session = await TokenSession(
-            user=current_user  # type:ignore
+            user=current_user,  # type:ignore
+            created_by=current_user,  # type:ignore
         ).insert()
 
         if not token_session:

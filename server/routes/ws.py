@@ -111,9 +111,10 @@ async def websocket_endpoint(
                         user=chatting_with,  # type:ignore
                         sender=message.sender,
                         text=message.text,
+                        created_by=chatting_with,  # type:ignore
                     ).create()
 
-                chat_response = agent.chat(message.text)
+                chat_response = await agent.achat(message.text)
 
                 logger.debug(f"CHAT RESPONSE: {chat_response}")
 
@@ -139,6 +140,7 @@ async def websocket_endpoint(
                         user=chatting_with,  # type:ignore
                         sender=SenderIdentifer.BOT,
                         text=response.text,
+                        created_by=chatting_with,  # type:ignore
                     ).create()
 
             except Exception as e:
@@ -149,8 +151,6 @@ async def websocket_endpoint(
                     sender=SenderIdentifer.BOT,
                 )
                 await websocket.send_text(socket_response.model_dump_json())
-            finally:
-                logger.debug("CLOSING")
     except WebSocketDisconnect as e:
         logger.debug(f"WEBSOCKET DISCONNECT: {e}")
 

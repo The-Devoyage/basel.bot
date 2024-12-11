@@ -19,11 +19,15 @@ class SubscriptionStatus(BaseModel):
 async def verify_subscription(
     user: User, user_created_at: datetime
 ) -> SubscriptionStatus:
+    logger.debug("VERIFY SUBSCRIPTION")
     try:
         subscriptions = await Subscription.find_many(
-            Subscription.user == user
+            Subscription.user.id == user.id  # type:ignore
         ).to_list()
 
+        logger.debug(f"SUBSCRIPTIONS: {subscriptions}")
+
+        # Handle Active Subscriptions
         if len(subscriptions) > 0:
             active = False
             i = 0
@@ -32,10 +36,12 @@ async def verify_subscription(
                     active = True
                     break
                 i += 1
-            return SubscriptionStatus(
-                subscriptions=subscriptions, active=active, is_free_trial=False
-            )
+            if active:
+                return SubscriptionStatus(
+                    subscriptions=subscriptions, active=active, is_free_trial=False
+                )
 
+        # Handle Free Trials
         user_created_at = user_created_at.replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
         if now < user_created_at + timedelta(days=30):
@@ -43,6 +49,7 @@ async def verify_subscription(
                 subscriptions=None, is_free_trial=True, active=False
             )
 
+        # Inacive Subscriptions
         return SubscriptionStatus(
             subscriptions=subscriptions, active=False, is_free_trial=False
         )

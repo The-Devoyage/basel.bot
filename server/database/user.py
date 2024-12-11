@@ -18,4 +18,5 @@ class User(BaseMongoModel):
     status: bool = False
     auth_id: UUID = Field(default_factory=uuid4)
 
-    exclude_from_public_dict: Set[str] = {"id", "auth_id"}
+    def exclude_from_public_dict(self) -> Set[str]:
+        return {"id", "auth_id"}
