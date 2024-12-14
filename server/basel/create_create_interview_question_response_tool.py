@@ -1,13 +1,10 @@
-import logging
+from uuid import UUID
 from llama_index.core.bridge.pydantic import Field
 from llama_index.core.tools.function_tool import FunctionTool
 from database.interview_question import InterviewQuestion
 from database.interview_question_response import InterviewQuestionResponse
 
 from database.user import User
-
-
-logger = logging.getLogger(__name__)
 
 
 async def create_interview_question_response(
@@ -20,16 +17,23 @@ async def create_interview_question_response(
     ),
 ):
     interview_question = await InterviewQuestion.find_one(
-        InterviewQuestion.uuid == interview_question_uuid
+        InterviewQuestion.uuid == UUID(interview_question_uuid)
     )
+
+    if not interview_question:
+        raise Exception("Interview question not found.")
+
     interview_question_response = await InterviewQuestionResponse(
         user=user,  # type:ignore
         interview_question=interview_question,  # type:ignore
         response=response,
+        created_by=user,  # type:ignore
     ).create()
+
     # Handle Errors
     if not interview_question_response:
         raise Exception("Failed to create interview question response.")
+
     return await interview_question_response.to_public_dict()
 
 

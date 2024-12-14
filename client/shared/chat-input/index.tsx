@@ -34,10 +34,11 @@ export const ChatInput = () => {
   useEffect(() => {
     // Only connect each time the value changes
     if (authenticatedConnection.current !== isAuthenticated) {
-      client?.handleClose();
       client?.handleConnect();
     }
     authenticatedConnection.current = isAuthenticated;
+
+    return () => client?.handleClose();
   }, [isAuthenticated]);
 
   const handleRepeatMessage = (previous = true) => {
@@ -95,8 +96,6 @@ export const ChatInput = () => {
           setSuggestion("");
         } else if (matchingSubcommands.length > 0) {
           setSuggestion(matchingSubcommands.join(" | "));
-        } else {
-          setSuggestion("joejoe");
         }
       }
     } else {

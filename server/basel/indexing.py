@@ -58,7 +58,6 @@ async def get_documents(user: User, chat_start_time: Optional[datetime] = None):
     )
 
     for document in documents:
-        logger.debug(f"DOC FOUND: {document}")
         document.metadata = {"user_id": str(user.id)}
 
     return documents
@@ -79,7 +78,6 @@ def reset_index(user_id: PydanticObjectId):
 
 
 def get_index():
-    logger.debug("GETTING INDEX")
     chroma_collection = remote_db.get_or_create_collection("user_meta")
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
