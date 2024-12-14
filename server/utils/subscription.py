@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
+from beanie import PydanticObjectId
 
 from pydantic import BaseModel
 import logging
@@ -21,9 +22,8 @@ async def verify_subscription(
 ) -> SubscriptionStatus:
     logger.debug("VERIFY SUBSCRIPTION")
     try:
-        subscriptions = await Subscription.find_many(
+        subscriptions = await Subscription.find(
             Subscription.user.id == user.id,  # type:ignore
-            fetch_links=True,
         ).to_list()
 
         logger.debug(f"SUBSCRIPTIONS: {subscriptions}")

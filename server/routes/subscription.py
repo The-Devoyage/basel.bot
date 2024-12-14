@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import logging
 from beanie.operators import Set
 from fastapi import APIRouter, HTTPException, Header, Request
@@ -127,9 +128,11 @@ async def handle_success_checkout(event: Event):
         if not subscription:
             raise Exception("Subscription not found.")
 
-        subscription = await subscription.update(
-            Set({"status": True, "customer_id": event["data"]["object"]["customer"]})
-        )
+        subscription.status = True
+        subscription.customer_id = event["data"]["object"]["customer"]
+        subscription.updated_at = datetime.now(timezone.utc)
+
+        await subscription.save()
 
         if not subscription:
             raise Exception("Failed to retrieve updated subscription information.")
@@ -150,7 +153,9 @@ async def handle_subscription_cancel(event: Event):
             if not subscriptions:
                 return create_response(success=True)
             for subscription in subscriptions:
-                await subscription.update(Set({"status": False}))
+                subscription.status = False
+                subscription.updated_at = datetime.now(timezone.utc)
+                await subscription.save()
 
         if (
             not event["data"]["object"]["canceled_at"]
