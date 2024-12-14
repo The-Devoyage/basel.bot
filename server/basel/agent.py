@@ -56,7 +56,7 @@ async def get_agent(
         if user_claims:
             # Get Authenticated Tools
             # Handle Admin Role Tools
-            role = user_claims.user.role
+            role = await user_claims.user.role.fetch()
             if not role:
                 raise Exception("Can't find role")
 
