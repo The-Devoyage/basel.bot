@@ -22,7 +22,8 @@ async def verify_subscription(
     logger.debug("VERIFY SUBSCRIPTION")
     try:
         subscriptions = await Subscription.find_many(
-            Subscription.user.id == user.id  # type:ignore
+            Subscription.user.id == user.id,  # type:ignore
+            fetch_links=True,
         ).to_list()
 
         logger.debug(f"SUBSCRIPTIONS: {subscriptions}")
