@@ -31,9 +31,7 @@ async def handle_decode_token(token: str) -> UserClaims:
     try:
         decoded_token = jwt.decode(token, ACCESS_SECRET, algorithms=[ALGORITHM])
         # Populate User Service Context
-        user = await User.find_one(
-            User.uuid == UUID(decoded_token["user_uuid"]), fetch_links=True
-        )
+        user = await User.find_one(User.uuid == UUID(decoded_token["user_uuid"]))
         if not user:
             raise Exception("User not found")
         decoded_token["user"] = user
