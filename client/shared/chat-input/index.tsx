@@ -25,19 +25,13 @@ export const ChatInput = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [repetedMessage, setRepeatedMessage] = useState<Message | null>(null);
-  const authenticatedConnection = useRef<boolean | null>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, [inputRef.current, isAuthenticated]);
 
   useEffect(() => {
-    // Only connect each time the value changes
-    if (authenticatedConnection.current !== isAuthenticated) {
-      client?.handleConnect();
-    }
-    authenticatedConnection.current = isAuthenticated;
-
+    client?.handleConnect();
     return () => client?.handleClose();
   }, [isAuthenticated]);
 

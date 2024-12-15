@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timezone
 from typing import Optional, cast
+from uuid import UUID
 from fastapi import (
     APIRouter,
     Cookie,
@@ -62,7 +63,7 @@ async def websocket_endpoint(
             shareable_link = await ShareableLink.find_one(
                 ShareableLink.uuid == sl_claims.shareable_link_uuid
             )
-            chatting_with = await User.find_one(User.uuid == sl_claims.user_uuid)
+            chatting_with = await User.find_one(User.uuid == UUID(sl_claims.user_uuid))
             if not chatting_with:
                 logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
                 raise Exception("Shareable Link Token User Not Found")

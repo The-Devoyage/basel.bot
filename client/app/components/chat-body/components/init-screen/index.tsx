@@ -45,7 +45,7 @@ export const InitScreen = () => {
         break;
       case "candidate":
         text =
-          "Hey Basel! I am here to talk with you about the candidate you represent.";
+          "Hey Basel! I am here to talk with you about the candidate you represent. Can you give me a brief description about this candidate?";
         break;
       default:
         text = "Tell me a bit about the Basel platform.";
