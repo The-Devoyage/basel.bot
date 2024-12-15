@@ -63,6 +63,12 @@ async def get_agent(
         )
         tools.append(get_interview_question_responses_tool)
 
+        get_interview_questions_tool = create_get_interview_questions_tool()
+        tools.append(get_interview_questions_tool)
+
+        get_interviews_tool = create_get_interviews_tool()
+        tools.append(get_interviews_tool)
+
         if user_claims:
             # Get Authenticated Tools
             # Handle Admin Role Tools
@@ -80,12 +86,6 @@ async def get_agent(
                 tools.append(create_interview_question_tool)
 
             # Handle General User Role Tools
-            get_interviews_tool = create_get_interviews_tool()
-            tools.append(get_interviews_tool)
-
-            get_interview_questions_tool = create_get_interview_questions_tool()
-            tools.append(get_interview_questions_tool)
-
             create_interview_question_response = (
                 create_create_interview_question_response_tool(user_claims.user)
             )
