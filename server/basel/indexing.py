@@ -28,7 +28,7 @@ DB_PORT = get_env_var("DB_PORT")
 
 Settings.chunk_size = 512
 Settings.chunk_overlap = 64
-Settings.llm = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY)
+Settings.llm = OpenAI(model="gpt-4o", api_key=OPENAI_API_KEY)
 Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
 
@@ -39,28 +39,41 @@ async def get_documents(user: User, chat_start_time: Optional[datetime] = None):
 
     reader = SimpleMongoReader(host=DB_HOST, port=int(DB_PORT), uri=DB_URI)
 
-    query_dict = {"user.id": user.id, "created_at": None}
+    query_dict = {"user": {"$ref": "User", "$id": user.id}}
     if chat_start_time:
         query_dict["created_at"] = {"$gt": chat_start_time}
 
-    # Lazy load data from MongoDB
-    documents = reader.load_data(
+    # Get Data from DB
+    meta_documents = reader.load_data(
         db_name=DB_DATABASE,
         collection_name="UserMeta",  # Name of the collection
         field_names=[
             "data",
             "created_at",
         ],
-        separator="",  # Separator between fields (default: "")
-        query_dict=None,  # Query to filter documents (default: None)
-        max_docs=0,  # Maximum number of documents to load (default: 0)
-        metadata_names=None,  # Names of the fields to add to metadata attribute (default: None)
+        # separator="",  # Separator between fields (default: "")
+        query_dict=query_dict,
+        # max_docs=0,  # Maximum number of documents to load (default: 0)
+        # metadata_names=None,  # Names of the fields to add to metadata attribute (default: None)
     )
+    # interview_question_response_docs = reader.load_data(
+    #     db_name=DB_DATABASE,
+    #     collection_name="InterviewQuestionResponse",  # Name of the collection
+    #     field_names=[
+    #         "data",
+    #         "created_at",
+    #     ],
+    #     separator="",  # Separator between fields (default: "")
+    #     query_dict=None,  # Query to filter documents (default: None)
+    #     max_docs=0,  # Maximum number of documents to load (default: 0)
+    #     metadata_names=None,  # Names of the fields to add to metadata attribute (default: None)
+    # )
 
-    for document in documents:
+    # Add meta index
+    for document in meta_documents:
         document.metadata = {"user_id": str(user.id)}
 
-    return documents
+    return meta_documents
 
 
 def add_to_index(documents):
@@ -79,6 +92,9 @@ def reset_index(user_id: PydanticObjectId):
 
 def get_index():
     chroma_collection = remote_db.get_or_create_collection("user_meta")
+    meta = chroma_collection.get()
+    logger.debug(f"META: {meta}")
+
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
     return index
