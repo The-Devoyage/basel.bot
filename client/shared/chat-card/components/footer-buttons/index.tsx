@@ -51,6 +51,7 @@ export const FooterButtons: FC<{ buttons?: Button[] }> = ({ buttons }) => {
         <FlowbiteButton
           key={index}
           color="green"
+          size="sm"
           outline={themeMode.mode === "dark"}
           isProcessing={loading.includes(index)}
           onClick={() => handleAction(b.action, index)}

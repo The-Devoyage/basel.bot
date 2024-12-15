@@ -9,6 +9,9 @@ from basel.create_about_tool import create_about_tool
 from basel.create_create_interview_question_response_tool import (
     create_create_interview_question_response_tool,
 )
+from basel.create_get_interview_question_response_tool import (
+    create_get_interview_question_responses_tool,
+)
 from basel.create_interview_question_tool import create_create_interview_question_tool
 from basel.create_interview_tool import create_create_interview_tool
 from basel.get_interview_questions_tool import create_get_interview_questions_tool
@@ -80,6 +83,11 @@ async def get_agent(
                 create_create_interview_question_response_tool(user_claims.user)
             )
             tools.append(create_interview_question_response)
+
+            get_interview_question_responses_tool = (
+                create_get_interview_question_responses_tool(chatting_with)
+            )
+            tools.append(get_interview_question_responses_tool)
 
             # Populate Recent Chat History
             messages = (

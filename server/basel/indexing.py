@@ -43,7 +43,7 @@ async def get_documents(user: User, chat_start_time: Optional[datetime] = None):
     if chat_start_time:
         query_dict["created_at"] = {"$gt": chat_start_time}
 
-    # Get Data from DB
+    # Get Meta from DB
     meta_documents = reader.load_data(
         db_name=DB_DATABASE,
         collection_name="UserMeta",  # Name of the collection
@@ -56,18 +56,6 @@ async def get_documents(user: User, chat_start_time: Optional[datetime] = None):
         # max_docs=0,  # Maximum number of documents to load (default: 0)
         # metadata_names=None,  # Names of the fields to add to metadata attribute (default: None)
     )
-    # interview_question_response_docs = reader.load_data(
-    #     db_name=DB_DATABASE,
-    #     collection_name="InterviewQuestionResponse",  # Name of the collection
-    #     field_names=[
-    #         "data",
-    #         "created_at",
-    #     ],
-    #     separator="",  # Separator between fields (default: "")
-    #     query_dict=None,  # Query to filter documents (default: None)
-    #     max_docs=0,  # Maximum number of documents to load (default: 0)
-    #     metadata_names=None,  # Names of the fields to add to metadata attribute (default: None)
-    # )
 
     # Add meta index
     for document in meta_documents:
