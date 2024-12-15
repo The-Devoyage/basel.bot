@@ -52,9 +52,16 @@ async def get_agent(
     if chatting_with and (
         (shareable_link and shareable_link.status) or not shareable_link
     ):
+        tools: List[BaseTool] = []
+
+        # Global Tools
         candidate_profile_tool = create_candidate_profile_tool(chatting_with)
-        # Get Tools
-        tools: List[BaseTool] = [candidate_profile_tool]
+        tools.append(candidate_profile_tool)
+
+        get_interview_question_responses_tool = (
+            create_get_interview_question_responses_tool(chatting_with)
+        )
+        tools.append(get_interview_question_responses_tool)
 
         if user_claims:
             # Get Authenticated Tools
@@ -83,11 +90,6 @@ async def get_agent(
                 create_create_interview_question_response_tool(user_claims.user)
             )
             tools.append(create_interview_question_response)
-
-            get_interview_question_responses_tool = (
-                create_get_interview_question_responses_tool(chatting_with)
-            )
-            tools.append(get_interview_question_responses_tool)
 
             # Populate Recent Chat History
             messages = (
