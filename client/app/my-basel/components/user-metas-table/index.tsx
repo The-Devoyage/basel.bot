@@ -44,9 +44,6 @@ export const UserMetasTable = () => {
           totalPages: Math.ceil((res.total || 0) / pagination.limit),
         });
       },
-      callApiOptions: {
-        tags: ["get-user-metas"],
-      },
     },
   );
 
@@ -62,16 +59,8 @@ export const UserMetasTable = () => {
     setPagination({ ...pagination, currentPage: page, offset: 10 });
   };
 
-  if (loading) {
-    return (
-      <div className="rounded-md border border-gray-200 p-4 dark:text-white">
-        <Loader message="Loading your index metas." />
-      </div>
-    );
-  }
-
   return (
-    <>
+    <div className="relative">
       <Table className="mb-0" striped>
         <TableHead>
           <TableHeadCell>Status</TableHeadCell>
@@ -84,7 +73,7 @@ export const UserMetasTable = () => {
           {res?.data?.map((meta) => (
             <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
               <TableCell>
-                <StatusCell userMeta={meta} />
+                <StatusCell userMeta={meta} refetch={call} />
               </TableCell>
               <TableCell>{meta.data}</TableCell>
               <TableCell className="hidden md:table-cell">
@@ -101,6 +90,6 @@ export const UserMetasTable = () => {
           onPageChange={handlePageChange}
         />
       </div>
-    </>
+    </div>
   );
 };

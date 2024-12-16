@@ -7,3 +7,4 @@ class Response(BaseModel):
     data: Optional[Union[dict, list]]
     status: int
     message: Optional[str]
+    total: Optional[int]

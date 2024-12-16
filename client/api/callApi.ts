@@ -76,7 +76,7 @@ export const callApi = async <E extends Endpoint>(
     }
 
     if (options?.revalidationTag) {
-      console.log("REVALIDATING TAG: ", options.revalidationTag);
+      console.log("REVALIDATING TAG:", options.revalidationTag);
       revalidateTag(options.revalidationTag);
     }
 

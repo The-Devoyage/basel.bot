@@ -1,6 +1,6 @@
 "use client";
 
-import { Endpoint } from "@/api";
+import { Endpoint, Response } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
 import { UserMeta } from "@/types";
 import { ToggleSwitch } from "flowbite-react";
@@ -8,9 +8,10 @@ import { FC } from "react";
 
 interface StatusCellProps {
   userMeta: UserMeta;
+  refetch: () => Promise<Response<UserMeta[]> | undefined>;
 }
 
-export const StatusCell: FC<StatusCellProps> = ({ userMeta }) => {
+export const StatusCell: FC<StatusCellProps> = ({ userMeta, refetch }) => {
   const { call } = useCallApi(
     {
       endpoint: Endpoint.PatchUserMeta,
@@ -29,8 +30,8 @@ export const StatusCell: FC<StatusCellProps> = ({ userMeta }) => {
       },
       successMessage:
         "Updated Memory Index. Re-Train Basel in order to sync the memory.",
-      callApiOptions: {
-        revalidationTag: "get-user-metas",
+      onSuccess: () => {
+        refetch();
       },
     },
   );

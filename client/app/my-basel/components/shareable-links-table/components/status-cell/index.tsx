@@ -28,9 +28,9 @@ export const StatusCell: FC<StatusCellProps> = ({ shareableLink }) => {
       toast: {
         onSuccess: true,
       },
-      // callApiOptions: {
-      //   revalidationTag: "shareable-links",
-      // },
+      callApiOptions: {
+        revalidationTag: "shareable-links",
+      },
     },
   );
 

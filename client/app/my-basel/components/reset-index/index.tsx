@@ -19,6 +19,7 @@ export const ResetIndex = () => {
       toast: {
         onSuccess: true,
       },
+      successMessage: "Your Basel has been updated.",
     },
   );
 
@@ -35,7 +36,10 @@ export const ResetIndex = () => {
             onClick={call}
             isProcessing={loading}
           >
-            <LuRefreshCcwDot />
+            <div className="flex items-center gap-2">
+              <LuRefreshCcwDot />
+              <span>Retrain</span>
+            </div>
           </Button>
         </Tooltip>
       </div>

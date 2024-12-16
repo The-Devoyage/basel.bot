@@ -27,6 +27,7 @@ async def create_shareable_link(user_claims: UserClaims = Depends(require_auth))
         shareable_link = await ShareableLink(
             created_by=user_claims.user,  # type:ignore
             updated_by=user_claims.user,  # type:ignore
+            user=user_claims.user,  # type:ignore
         ).create()
 
         if shareable_link is None:
@@ -66,7 +67,10 @@ async def update_shareable_link(
     user_claims: UserClaims = Depends(require_auth),
 ):
     try:
-        shareable_link = await ShareableLink.find_one(ShareableLink.uuid == UUID(uuid))
+        shareable_link = await ShareableLink.find_one(
+            ShareableLink.uuid == UUID(uuid),
+            ShareableLink.user.id == user_claims.user.id,  # type:ignore
+        )
 
         if shareable_link is None:
             raise Exception("Failed to find shareable link.")
@@ -114,7 +118,7 @@ async def get_shareable_links(
     try:
         shareable_links = (
             await ShareableLink.find(
-                ShareableLink.created_by.id == user_claims.user.id,  # type:ignore
+                ShareableLink.user.id == user_claims.user.id,  # type:ignore
                 fetch_links=True,
             )
             .limit(limit)

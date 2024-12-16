@@ -26,9 +26,9 @@ const MyBaselPage = async () => {
       body: null,
       path: null,
     },
-    // {
-    //   tags: ['shareable-links'],
-    // },
+    {
+      tags: ["shareable-links"],
+    },
   );
 
   return (
