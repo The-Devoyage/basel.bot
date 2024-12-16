@@ -4,6 +4,7 @@ import {
   Response,
   Endpoint,
   EndpointResponse,
+  CallApiOptions,
 } from "@/api";
 import { GlobalContext } from "@/app/provider";
 import { useContext, useState, useEffect } from "react";
@@ -12,10 +13,13 @@ import { addToast } from "../useStore/toast";
 interface UseCallApiOptions<E extends Endpoint> {
   successMessage?: string;
   errorMessage?: string;
-  revalidationPath?: Endpoint;
   onSuccess?: (response: Response<EndpointResponse[E]>) => void;
   onError?: (error: unknown) => void;
   callOnMount?: boolean;
+  toast?: {
+    onSuccess: boolean;
+  };
+  callApiOptions?: CallApiOptions;
 }
 
 export const useCallApi = <E extends Endpoint>(
@@ -29,19 +33,21 @@ export const useCallApi = <E extends Endpoint>(
   const call = async () => {
     setLoading(true);
     try {
-      const res = await callApi(apiAction, options?.revalidationPath);
+      const res = await callApi(apiAction, options?.callApiOptions);
       setRes(res);
       if (!res.success) {
         dispatch(addToast({ type: "error", description: res.message || "" }));
         options?.onError?.(res);
         return;
       }
-      dispatch(
-        addToast({
-          type: "success",
-          description: options?.successMessage || "Success!",
-        }),
-      );
+      if (options?.toast?.onSuccess) {
+        dispatch(
+          addToast({
+            type: "success",
+            description: options?.successMessage || "Success!",
+          }),
+        );
+      }
       setLoading(false);
       options?.onSuccess?.(res);
       return res;

@@ -28,10 +28,10 @@ export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
             className="bg-white dark:border-gray-700 dark:bg-gray-800"
           >
             <TableCell>
-              <TagCell shareableLink={sl} />
+              <StatusCell shareableLink={sl} />
             </TableCell>
             <TableCell>
-              <StatusCell shareableLink={sl} />
+              <TagCell shareableLink={sl} />
             </TableCell>
             <TableCell className="hidden md:table-cell">
               {dayjs.utc(sl.created_at).local().format("MMM D, YYYY")}

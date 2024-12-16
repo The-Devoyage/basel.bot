@@ -2,35 +2,36 @@
 
 import { Endpoint } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
-import { ShareableLink } from "@/types/shareable-link";
+import { UserMeta } from "@/types";
 import { ToggleSwitch } from "flowbite-react";
 import { FC } from "react";
 
 interface StatusCellProps {
-  shareableLink: ShareableLink;
+  userMeta: UserMeta;
 }
 
-export const StatusCell: FC<StatusCellProps> = ({ shareableLink }) => {
+export const StatusCell: FC<StatusCellProps> = ({ userMeta }) => {
   const { call } = useCallApi(
     {
-      endpoint: Endpoint.UpdateShareableLink,
+      endpoint: Endpoint.PatchUserMeta,
       method: "PATCH",
       path: {
-        uuid: shareableLink.uuid,
+        uuid: userMeta.uuid,
       },
       body: {
-        status: !shareableLink.status,
+        status: !userMeta.status,
       },
       query: null,
     },
     {
-      successMessage: "Updated Shareable Link",
       toast: {
         onSuccess: true,
       },
-      // callApiOptions: {
-      //   revalidationTag: "shareable-links",
-      // },
+      successMessage:
+        "Updated Memory Index. Re-Train Basel in order to sync the memory.",
+      callApiOptions: {
+        revalidationTag: "get-user-metas",
+      },
     },
   );
 
@@ -40,7 +41,7 @@ export const StatusCell: FC<StatusCellProps> = ({ shareableLink }) => {
 
   return (
     <ToggleSwitch
-      checked={shareableLink.status}
+      checked={userMeta.status}
       onChange={handleChange}
       color="green"
     />

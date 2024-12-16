@@ -16,7 +16,6 @@ export const CreateShareableLinkButton = () => {
     },
     {
       successMessage: "Created Shareable Link",
-      revalidationPath: Endpoint.ShareableLinks,
     },
   );
 
@@ -25,7 +24,12 @@ export const CreateShareableLinkButton = () => {
   };
 
   return (
-    <Button color="success" onClick={handleClick} isProcessing={loading}>
+    <Button
+      outline
+      gradientDuoTone="purpleToBlue"
+      onClick={handleClick}
+      isProcessing={loading}
+    >
       <BsPlusLg />
     </Button>
   );

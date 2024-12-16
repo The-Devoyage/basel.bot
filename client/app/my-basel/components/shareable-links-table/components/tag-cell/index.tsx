@@ -4,7 +4,7 @@ import { Endpoint } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
 import { ShareableLink } from "@/types/shareable-link";
 import { TextInput } from "flowbite-react";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 interface TagCellProps {
   shareableLink: ShareableLink;
@@ -12,6 +12,7 @@ interface TagCellProps {
 
 export const TagCell: FC<TagCellProps> = ({ shareableLink }) => {
   const [tag, setTag] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { call, loading } = useCallApi(
     {
@@ -27,7 +28,11 @@ export const TagCell: FC<TagCellProps> = ({ shareableLink }) => {
     },
     {
       successMessage: "Updated Shareable Link",
-      revalidationPath: Endpoint.ShareableLinks,
+      onSuccess: () => {
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 300);
+      },
     },
   );
 
@@ -50,6 +55,7 @@ export const TagCell: FC<TagCellProps> = ({ shareableLink }) => {
       placeholder="Tag your link..."
       disabled={loading}
       value={tag}
+      ref={inputRef}
       onChange={(e) => setTag(e.currentTarget.value)}
     />
   );
