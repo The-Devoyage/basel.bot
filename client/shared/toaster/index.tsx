@@ -38,7 +38,7 @@ export const Toaster = () => {
       {toasts.map((toast) => (
         <Toast
           key={toast.uuid}
-          className={`bg-${toast.type === "error" ? "red" : "green"}-100 flex flex-col items-start`}
+          className={`border-2 border-${toast.type === "error" ? "red" : "green"}-300 flex flex-col items-start`}
           onMouseEnter={() => setHovering((curr) => [...curr, toast.uuid])}
           onMouseLeave={() =>
             setHovering((curr) => curr.filter((u) => u !== toast.uuid))

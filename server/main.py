@@ -11,6 +11,7 @@ from routes.auth import router as auth_router
 from routes.shareable_link import router as shareable_links_router
 from routes.subscription import router as subscription_router
 from routes.index import router as index_router
+from routes.user_meta import router as user_meta_router
 
 
 load_dotenv()
@@ -36,6 +37,7 @@ app.include_router(auth_router)
 app.include_router(shareable_links_router)
 app.include_router(subscription_router)
 app.include_router(index_router)
+app.include_router(user_meta_router)
 
 app.add_middleware(
     CORSMiddleware,

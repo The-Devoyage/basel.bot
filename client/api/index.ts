@@ -1,3 +1,4 @@
+import { UserMeta } from "@/types";
 import { ShareableLink } from "@/types/shareable-link";
 import { Subscription } from "@/types/subscription";
 import { User } from "@/types/user";
@@ -9,6 +10,7 @@ export interface Response<T> {
   data: T | null;
   message?: string;
   code?: number;
+  total?: number;
 }
 
 export enum Endpoint {
@@ -23,9 +25,11 @@ export enum Endpoint {
   SubscribeStart = "/subscribe-start",
   GetSubscriptions = "/subscriptions",
   ResetIndex = "/reset-index",
+  GetUserMetas = "/user-metas",
+  PatchUserMeta = "/user-meta/:uuid",
 }
 
-type ShareableLinksQuery = { limit?: number; offset?: number };
+type PaginationQuery = { limit?: number; offset?: number };
 
 interface EndpointParams {
   [Endpoint.ShareableLink]: {
@@ -36,7 +40,7 @@ interface EndpointParams {
     path: { sl_token: string };
   };
   [Endpoint.ShareableLinks]: {
-    query: ShareableLinksQuery;
+    query: PaginationQuery;
     body: undefined;
     path: undefined;
   };
@@ -73,6 +77,16 @@ interface EndpointParams {
     body: { chat_start_time?: string };
     path: undefined;
   };
+  [Endpoint.GetUserMetas]: {
+    query: PaginationQuery;
+    body: undefined;
+    path: undefined;
+  };
+  [Endpoint.PatchUserMeta]: {
+    query: undefined;
+    body: { status?: boolean };
+    path: { uuid: string };
+  };
 }
 
 export interface EndpointResponse {
@@ -87,6 +101,8 @@ export interface EndpointResponse {
   [Endpoint.SubscribeStart]: { url: string };
   [Endpoint.GetSubscriptions]: Subscription[];
   [Endpoint.ResetIndex]: null;
+  [Endpoint.GetUserMetas]: UserMeta[];
+  [Endpoint.PatchUserMeta]: UserMeta;
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

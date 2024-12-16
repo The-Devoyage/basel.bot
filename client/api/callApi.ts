@@ -3,11 +3,17 @@
 import { cookies } from "next/headers";
 import { ApiAction, Endpoint, EndpointResponse, Response } from ".";
 import qs from "qs";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+
+export interface CallApiOptions {
+  revalidationPath?: Endpoint;
+  revalidationTag?: string;
+  tags?: NextFetchRequestConfig["tags"];
+}
 
 export const callApi = async <E extends Endpoint>(
   { endpoint, method = "GET", query, body, path }: ApiAction<E>,
-  revalidationPath?: Endpoint,
+  options?: CallApiOptions,
 ): Promise<Response<EndpointResponse[E]>> => {
   // Handle Headers
   const cookieStore = cookies();
@@ -50,6 +56,9 @@ export const callApi = async <E extends Endpoint>(
         method,
         body: body ? JSON.stringify(body) : undefined,
         headers,
+        next: {
+          tags: options?.tags,
+        },
       },
     );
 
@@ -62,8 +71,13 @@ export const callApi = async <E extends Endpoint>(
 
     console.info("API Call Successful: ", data);
 
-    if (revalidationPath) {
-      revalidatePath(revalidationPath);
+    if (options?.revalidationPath) {
+      revalidatePath(options.revalidationPath);
+    }
+
+    if (options?.revalidationTag) {
+      console.log("REVALIDATING TAG:", options.revalidationTag);
+      revalidateTag(options.revalidationTag);
     }
 
     return data;

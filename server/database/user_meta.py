@@ -9,3 +9,4 @@ class UserMeta(BaseMongoModel):
     user: Link[User]
     data: str
     tags: Optional[str] = None
+    status: bool = True

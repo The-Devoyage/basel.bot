@@ -1,7 +1,6 @@
 from uuid import UUID
 from llama_index.core.bridge.pydantic import BaseModel, Field
 from llama_index.core.tools.function_tool import FunctionTool
-from database.interview_question import InterviewQuestion
 from database.interview_question_response import InterviewQuestionResponse
 
 from database.user import User

@@ -39,7 +39,7 @@ async def get_documents(user: User, chat_start_time: Optional[datetime] = None):
 
     reader = SimpleMongoReader(host=DB_HOST, port=int(DB_PORT), uri=DB_URI)
 
-    query_dict = {"user": {"$ref": "User", "$id": user.id}}
+    query_dict = {"user": {"$ref": "User", "$id": user.id}, "status": True}
     if chat_start_time:
         query_dict["created_at"] = {"$gt": chat_start_time}
 

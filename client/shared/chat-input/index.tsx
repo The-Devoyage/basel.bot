@@ -1,7 +1,7 @@
 "use client";
 
 import { useContext, useState, useEffect, useRef } from "react";
-import { Button } from "flowbite-react";
+import { Button, ToggleSwitch } from "flowbite-react";
 import { GrSend } from "react-icons/gr";
 import { GlobalContext } from "@/app/provider";
 import { Message } from "@/types";

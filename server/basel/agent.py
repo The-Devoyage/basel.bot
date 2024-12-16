@@ -92,22 +92,23 @@ async def get_agent(
             tools.append(create_interview_question_response)
 
             # Populate Recent Chat History
-            messages = (
-                await Message.find(
-                    Message.user.id == user_claims.user.id  # type:ignore
+            if chatting_with.id == user_claims.user.id:
+                messages = (
+                    await Message.find(
+                        Message.user.id == user_claims.user.id  # type:ignore
+                    )
+                    .limit(40)
+                    .to_list()
                 )
-                .limit(40)
-                .to_list()
-            )
-            for message in messages:
-                logger.debug(f"MESSAGE: {message}")
-                history = ChatMessage(
-                    role=MessageRole.ASSISTANT
-                    if message.sender == "bot"
-                    else MessageRole.USER,
-                    content=message.text,
-                )
-                chat_history.append(history)
+                for message in messages:
+                    logger.debug(f"MESSAGE: {message}")
+                    history = ChatMessage(
+                        role=MessageRole.ASSISTANT
+                        if message.sender == "bot"
+                        else MessageRole.USER,
+                        content=message.text,
+                    )
+                    chat_history.append(history)
 
     agent = OpenAIAgent.from_tools(
         tools=tools,
