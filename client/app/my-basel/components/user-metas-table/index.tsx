@@ -71,7 +71,10 @@ export const UserMetasTable = () => {
         </TableHead>
         <TableBody>
           {res?.data?.map((meta) => (
-            <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
+            <TableRow
+              key={meta.uuid}
+              className="bg-white dark:border-gray-700 dark:bg-gray-800"
+            >
               <TableCell>
                 <StatusCell userMeta={meta} refetch={call} />
               </TableCell>
