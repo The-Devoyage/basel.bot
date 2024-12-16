@@ -16,6 +16,9 @@ export const CreateShareableLinkButton = () => {
     },
     {
       successMessage: "Created Shareable Link",
+      callApiOptions: {
+        revalidationTag: "get-shareable-links",
+      },
     },
   );
 
