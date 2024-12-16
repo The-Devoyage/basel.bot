@@ -24,15 +24,14 @@ export const RecruiterWelcome: FC<RecruiterWelcomeProps> = ({
         sl_token: slToken!,
       },
       body: null,
-      query: {
-        extend: "user",
-      },
+      query: null,
     },
     {
       callOnMount: !!slToken,
     },
   );
   const shareableLink = res?.data;
+  const user = shareableLink?.user;
   const status = !!shareableLink?.status;
 
   if (!slToken || !shareableLink) return null;
@@ -50,7 +49,7 @@ export const RecruiterWelcome: FC<RecruiterWelcomeProps> = ({
       </Typography.Heading>
       <Typography.Paragraph className="my-2 dark:text-slate-600">
         {status
-          ? `It looks like you might be here to learn about a candidate! Tell Basel
+          ? `It looks like you might be here to learn about ${user?.first_name || "a candidate"}! Tell Basel
         about yourself, the organization you are with, and the position you are
         trying to fill.`
           : `The user has revoked access to their bot. Please try again later.`}
@@ -67,7 +66,7 @@ export const RecruiterWelcome: FC<RecruiterWelcomeProps> = ({
             onClick={() => handleMessage("candidate")}
             className="mt-4 w-full"
           >
-            Start Interview
+            Interview {user?.first_name || "the Candidate"}&apos;s Basel
           </Button>
         </>
       )}

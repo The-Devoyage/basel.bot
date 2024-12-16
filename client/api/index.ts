@@ -33,9 +33,7 @@ type PaginationQuery = { limit?: number; offset?: number };
 
 interface EndpointParams {
   [Endpoint.ShareableLink]: {
-    query: {
-      extend?: "user";
-    };
+    query: undefined;
     body: undefined;
     path: { sl_token: string };
   };

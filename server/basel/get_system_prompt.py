@@ -44,8 +44,11 @@ async def get_system_prompt(
 
     # User chatting with another user's bot
     if not is_candidate and chatting_with:
-        prompt += """
+        prompt += f"""
             You are a bot representing the candidate.
+
+            Candidate Email: {chatting_with.email}
+            Candidate Name: {chatting_with.first_name} {chatting_with.last_name}
 
             You are currently conversting with the employer or recruiter that wants to ask questions about the candidate that you represent.
 
@@ -61,6 +64,7 @@ async def get_system_prompt(
         role = user_claims.user.role
         prompt += f"""
             Current User Email: {user_claims.user.email}
+            Current User Name: {user_claims.user.first_name} {user_claims.user.last_name}
             Current User UUID: {user_claims.user.uuid}
             Current User Role: {role}
         """

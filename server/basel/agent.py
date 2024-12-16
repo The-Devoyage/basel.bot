@@ -13,6 +13,7 @@ from basel.create_get_interview_question_response_tool import (
     create_get_interview_question_responses_tool,
 )
 from basel.create_interview_question_tool import create_create_interview_question_tool
+from basel.create_update_user_tool import create_update_user_tool
 from basel.create_interview_tool import create_create_interview_tool
 from basel.get_interview_questions_tool import create_get_interview_questions_tool
 from basel.get_interviews_tool import (
@@ -91,8 +92,13 @@ async def get_agent(
             )
             tools.append(create_interview_question_response)
 
-            # Populate Recent Chat History
+            # Tools for the candidate
             if chatting_with.id == user_claims.user.id:
+                # Update User
+                update_user_tool = create_update_user_tool(user_claims.user)
+                tools.append(update_user_tool)
+
+                # Populate Recent Chat History
                 messages = (
                     await Message.find(
                         Message.user.id == user_claims.user.id  # type:ignore

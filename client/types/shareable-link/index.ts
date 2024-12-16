@@ -5,10 +5,8 @@ export interface ShareableLink {
   tag: string;
   link: string;
   status: boolean;
+  user: User;
   created_at: string;
   updated_at: string;
   deleted_at: string;
-
-  // Extended
-  creator?: User;
 }
