@@ -20,3 +20,14 @@ class User(BaseMongoModel):
 
     def exclude_from_public_dict(self) -> Set[str]:
         return {"id", "auth_id"}
+
+    def full_name(self) -> Optional[str]:
+        name = ""
+        if self.first_name:
+            name += self.first_name
+        if self.last_name:
+            name += f" {self.last_name}"
+        name = name.strip()
+        if not name:
+            return None
+        return name

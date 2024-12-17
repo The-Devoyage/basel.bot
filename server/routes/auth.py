@@ -1,3 +1,4 @@
+from typing import Optional
 from beanie import WriteRules
 import jwt
 import uuid
@@ -83,6 +84,8 @@ async def logout(user_claims: UserClaims = Depends(require_auth)):
 
 class AuthStart(BaseModel):
     email: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 @router.websocket("/auth-start")
@@ -119,6 +122,19 @@ async def auth_start(websocket: WebSocket):
                 logger.debug(f"USER CREATED: {current_user}")
                 if not current_user:
                     raise ValueError("Failed to create user")
+
+                # Send user created email
+                full_name = current_user.full_name()
+                send_email(
+                    "nickmclean@thedevoyage.com",
+                    "New User Added",
+                    "d-d526a9167b6240bbbc8a99a2fb1ab387",
+                    {
+                        "name": full_name if full_name else "the user",
+                        "email": current_user.email,
+                    },
+                )
+
             else:
                 logger.debug(f"UPDATING USER: {current_user}")
                 current_user = await current_user.update(Set({"auth_id": uuid.uuid4()}))
