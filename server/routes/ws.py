@@ -46,6 +46,7 @@ async def websocket_endpoint(
         active=False, subscriptions=None, is_free_trial=False
     )
     shareable_link = None
+    message_count = 0
 
     try:
         if token:
@@ -61,8 +62,9 @@ async def websocket_endpoint(
             )
             sl_claims = cast(ShareableLinkClaims, ShareableLinkClaims(**decoded))
             shareable_link = await ShareableLink.find_one(
-                ShareableLink.uuid == sl_claims.shareable_link_uuid
+                ShareableLink.uuid == UUID(sl_claims.shareable_link_uuid)
             )
+            logger.debug(f"SHAREABLE LINK 1: {shareable_link}")
             chatting_with = await User.find_one(User.uuid == UUID(sl_claims.user_uuid))
             if not chatting_with:
                 logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
@@ -135,7 +137,15 @@ async def websocket_endpoint(
                     or subscription_status.is_free_trial
                     else None,
                 )
+                # Respond to user
                 await websocket.send_text(response.model_dump_json())
+
+                # Track SL Views
+                if message_count == 0 and shareable_link:
+                    shareable_link.views = shareable_link.views + 1
+                    await shareable_link.save()
+
+                message_count += 1
                 if user_claims and subscription_status and chatting_with:
                     await Message(
                         user=chatting_with,  # type:ignore

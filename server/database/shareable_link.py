@@ -14,6 +14,7 @@ class ShareableLink(BaseMongoModel):
     token: Optional[str] = None
     user: Link[User]
     status: bool = True
+    views: int = 0
 
     def get_virtual_fields(self) -> dict:
         """

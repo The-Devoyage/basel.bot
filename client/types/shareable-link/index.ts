@@ -6,6 +6,7 @@ export interface ShareableLink {
   link: string;
   status: boolean;
   user: User;
+  views: number;
   created_at: string;
   updated_at: string;
   deleted_at: string;
