@@ -77,7 +77,7 @@ export const TagCell: FC<TagCellProps> = ({ shareableLink }) => {
         className="w-full"
         isProcessing={loading}
       >
-        {tag}
+        {tag || "--"}
       </Button>
     </div>
   );
