@@ -26,7 +26,7 @@ export const LinkCell: FC<LinkCellProps> = ({ shareableLink }) => {
         value={shareableLink.link}
         className="hidden w-full md:block"
       />
-      <Tooltip content="Copied!" trigger="click">
+      <Tooltip content="Copied Link!" trigger="click">
         <Button
           onClick={() => handleCopy(shareableLink.link)}
           className="h-full"

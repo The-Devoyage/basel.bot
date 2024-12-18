@@ -30,7 +30,7 @@ export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
             <TableCell>
               <StatusCell shareableLink={sl} />
             </TableCell>
-            <TableCell>{sl.views}</TableCell>
+            <TableCell className="hidden md:table-cell">{sl.views}</TableCell>
             <TableCell>
               <TagCell shareableLink={sl} />
             </TableCell>
