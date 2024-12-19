@@ -5,7 +5,6 @@ import { GlobalContext } from "@/app/provider";
 import { ChatCard } from "@/shared/chat-card";
 import { Loader } from "@/shared/loader";
 import { Alert, Spinner } from "flowbite-react";
-import { InitScreen } from "./components";
 
 export const ChatBody = () => {
   const { client } = useContext(GlobalContext);
@@ -17,6 +16,10 @@ export const ChatBody = () => {
       if (top > 0) {
         window.scrollTo(0, window.scrollY + top - 74);
       }
+    }
+    if (client?.messages.length === 1) {
+      const initScreen = document.getElementById("init_screen");
+      initScreen?.classList.add("hidden");
     }
   }, [ref.current, client?.messages]);
 
@@ -33,10 +36,6 @@ export const ChatBody = () => {
   }
 
   if (!client || client?.initializing) return <Loader />;
-
-  if (!client?.messages?.length && !client?.initializing) {
-    return <InitScreen />;
-  }
 
   if (client?.loading && !client?.messages.length) {
     return <Loader />;

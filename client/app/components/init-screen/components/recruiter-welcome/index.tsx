@@ -2,21 +2,16 @@
 
 import { Typography } from "@/shared/typography";
 import { Alert, Button } from "flowbite-react";
-import { MessageType } from "../..";
-import { FC } from "react";
+import { useContext } from "react";
 import { Endpoint } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
 import clsx from "clsx";
+import { useHandleMessage } from "..";
+import { GlobalContext } from "@/app/provider";
 
-interface RecruiterWelcomeProps {
-  handleMessage: (type: MessageType) => void;
-  slToken: string | null;
-}
-
-export const RecruiterWelcome: FC<RecruiterWelcomeProps> = ({
-  handleMessage,
-  slToken,
-}) => {
+export const RecruiterWelcome = () => {
+  const { slToken } = useContext(GlobalContext);
+  const { handleMessage } = useHandleMessage();
   const { res } = useCallApi(
     {
       endpoint: Endpoint.ShareableLink,
