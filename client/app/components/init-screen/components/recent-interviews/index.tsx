@@ -29,7 +29,10 @@ export const RecentInterviews = async () => {
       </Alert>
       <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
         {(interviews.data || []).map((interview) => (
-          <Card className="border-t-4 border-t-purple-200 dark:border-t-purple-400">
+          <Card
+            className="border-t-4 border-t-purple-200 dark:border-t-purple-400"
+            key={interview.uuid}
+          >
             <div className="flex h-48 flex-col justify-between">
               <div>
                 <Typography.Heading className="font-bold">
