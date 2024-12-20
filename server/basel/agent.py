@@ -1,5 +1,6 @@
 import logging
 from typing import List, Optional
+from beanie import SortDirection
 from llama_index.agent.openai import OpenAIAgent
 from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
@@ -103,9 +104,13 @@ async def get_agent(
                     await Message.find(
                         Message.user.id == user_claims.user.id  # type:ignore
                     )
-                    .limit(40)
+                    .limit(20)
+                    .sort(
+                        [(Message.created_at, SortDirection.DESCENDING)]  # type:ignore
+                    )
                     .to_list()
                 )
+                logger.debug(f"LENGTH: {len(messages)}")
                 for message in messages:
                     logger.debug(f"MESSAGE: {message}")
                     history = ChatMessage(

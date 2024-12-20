@@ -10,12 +10,13 @@ export type MessageType =
   | "search"
   | "resume"
   | "translations"
-  | "candidate";
+  | "candidate"
+  | "interview";
 
 export const useHandleMessage = () => {
   const { client } = useContext(GlobalContext);
 
-  const handleMessage = (type: MessageType) => {
+  const handleMessage = (type: MessageType, context?: string) => {
     let text = "";
     switch (type) {
       case "interviews":
@@ -40,6 +41,9 @@ export const useHandleMessage = () => {
         text =
           "Hey Basel! I am here to talk with you about the candidate you represent. Can you give me a brief description about this candidate?";
         break;
+      case "interview":
+        text = `I would love to take the ${context} interview.`;
+        break
       default:
         text = "Tell me a bit about the Basel platform.";
     }

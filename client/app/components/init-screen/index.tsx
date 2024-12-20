@@ -3,6 +3,7 @@ import {
   BreakBarriers,
   LearnAboutBasel,
   ProfileViews,
+  RecentInterviews,
   RecruiterWelcome,
 } from "./components";
 
@@ -25,6 +26,7 @@ export const InitScreen = () => {
         />
         <ProfileViews />
       </div>
+      <RecentInterviews />
       <LearnAboutBasel />
       <BreakBarriers />
     </div>

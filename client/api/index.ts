@@ -1,7 +1,10 @@
-import { UserMeta } from "@/types";
-import { ShareableLink } from "@/types/shareable-link";
-import { Subscription } from "@/types/subscription";
-import { User } from "@/types/user";
+import {
+  User,
+  UserMeta,
+  ShareableLink,
+  Subscription,
+  Interview,
+} from "@/types";
 
 export * from "./callApi";
 
@@ -27,6 +30,7 @@ export enum Endpoint {
   ResetIndex = "/reset-index",
   GetUserMetas = "/user-metas",
   PatchUserMeta = "/user-meta/:uuid",
+  GetInterviews = "/interviews",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -85,6 +89,11 @@ interface EndpointParams {
     body: { status?: boolean };
     path: { uuid: string };
   };
+  [Endpoint.GetInterviews]: {
+    query: PaginationQuery;
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -101,6 +110,7 @@ export interface EndpointResponse {
   [Endpoint.ResetIndex]: null;
   [Endpoint.GetUserMetas]: UserMeta[];
   [Endpoint.PatchUserMeta]: UserMeta;
+  [Endpoint.GetInterviews]: Interview[];
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

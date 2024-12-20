@@ -4,7 +4,7 @@ import { IoLanguage } from "react-icons/io5";
 import { ChatButton } from "./components";
 
 export const BreakBarriers = () => (
-  <div className="flex flex-col md:flex-row md:space-x-8">
+  <div className="flex flex-col rounded-md border-2 p-4 md:flex-row md:space-x-12">
     <div>
       <Typography.Heading className="text-4xl">
         Break Barriers, Build Opportunities

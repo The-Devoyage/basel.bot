@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional
-from beanie import PydanticObjectId
 
 from pydantic import BaseModel
 import logging
