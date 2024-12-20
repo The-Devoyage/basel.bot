@@ -61,7 +61,7 @@ export const ManageSubscription = async () => {
     <Card
       style={{
         boxShadow: "-11px 0 10px RGBA(118, 169, 250, 0.2)",
-        borderLeft: "4px solid #3B82F6",
+        borderLeft: "4px solid #c026d3",
       }}
     >
       <div className="flex justify-between">
@@ -72,8 +72,8 @@ export const ManageSubscription = async () => {
           {getSubscriptionStatus().label}
         </Badge>
       </div>
-      <Alert>
-        <Typography.Heading className="text-lg dark:!text-slate-900">
+      <Alert color="dark">
+        <Typography.Heading className="text-lg">
           Subscribing and Supporting
         </Typography.Heading>
         <ul role="list" className="list-inside list-disc">
@@ -97,9 +97,7 @@ export const ManageSubscription = async () => {
           <CiCreditCard1 className="text-4xl dark:text-white" />
         </div>
         <SubscribeButton
-          hasSubscribed={
-            !!subscriptionRes?.data?.find((s) => s.customer_id && s.status)
-          }
+          hasSubscribed={!!subscriptionRes?.data?.find((s) => s.status)}
         />
       </span>
     </Card>

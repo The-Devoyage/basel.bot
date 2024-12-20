@@ -34,7 +34,7 @@ export const SubscribeButton: FC<SubscribeButtonProps> = ({
   if (hasSubscribed) {
     return (
       <Link href={process.env.NEXT_PUBLIC_BILLING_PORTAL_URL} target="_blank">
-        <Button outline gradientDuoTone="greenToBlue">
+        <Button outline gradientDuoTone="purpleToPink">
           Manage Subscription
         </Button>
       </Link>
