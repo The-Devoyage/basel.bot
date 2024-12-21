@@ -2,6 +2,7 @@ import { ChatCard } from "@/shared/chat-card";
 import {
   BreakBarriers,
   LearnAboutBasel,
+  Onboarding,
   ProfileViews,
   RecentInterviews,
   RecruiterWelcome,
@@ -13,6 +14,7 @@ export const InitScreen = () => {
       className="mx-auto flex h-full flex-col items-center justify-center space-y-4"
       id="init_screen"
     >
+      <Onboarding />
       <RecruiterWelcome />
       <div className="flex w-full flex-col gap-4 md:flex-row">
         <ChatCard

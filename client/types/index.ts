@@ -4,3 +4,4 @@ export * from "./user";
 export * from "./subscription";
 export * from "./shareable-link";
 export * from "./interview";
+export * from "./onboarding";

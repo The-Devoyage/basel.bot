@@ -4,6 +4,7 @@ import {
   ShareableLink,
   Subscription,
   Interview,
+  Onboarding,
 } from "@/types";
 
 export * from "./callApi";
@@ -31,6 +32,7 @@ export enum Endpoint {
   GetUserMetas = "/user-metas",
   PatchUserMeta = "/user-meta/:uuid",
   GetInterviews = "/interviews",
+  GetOnboarding = "/onboarding",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -94,6 +96,11 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetOnboarding]: {
+    query: undefined;
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -111,6 +118,7 @@ export interface EndpointResponse {
   [Endpoint.GetUserMetas]: UserMeta[];
   [Endpoint.PatchUserMeta]: UserMeta;
   [Endpoint.GetInterviews]: Interview[];
+  [Endpoint.GetOnboarding]: Onboarding;
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams
