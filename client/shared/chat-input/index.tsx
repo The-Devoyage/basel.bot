@@ -16,6 +16,9 @@ const commandResponses: Record<string, Record<string, string>> = {
 
 export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
+  const [textareaHeight, setTextareaHeight] = useState<number | undefined>(
+    undefined,
+  );
   const [suggestion, setSuggestion] = useState<string>(""); // Current suggestion
   const {
     client,
@@ -34,6 +37,14 @@ export const ChatInput = () => {
     client?.handleConnect();
     return () => client?.handleClose();
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = "auto";
+      inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
+      setTextareaHeight(inputRef.current.scrollHeight);
+    }
+  }, [messageText]);
 
   const handleRepeatMessage = (previous = true) => {
     if (previous) {
@@ -153,6 +164,10 @@ export const ChatInput = () => {
           className="relative h-full w-full resize-none rounded bg-transparent focus:border-green-400 focus:ring-green-400 dark:bg-slate-950/5 dark:text-white"
           rows={1}
           ref={inputRef}
+          style={{
+            resize: "none",
+            height: textareaHeight,
+          }}
           onChange={(e) => {
             const value = e.target.value;
             setMessageText(value);

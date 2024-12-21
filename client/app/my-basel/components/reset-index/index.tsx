@@ -38,7 +38,7 @@ export const ResetIndex = () => {
           >
             <div className="flex items-center gap-2">
               <LuRefreshCcwDot />
-              <span>Retrain</span>
+              <span className="hidden md:block">Retrain</span>
             </div>
           </Button>
         </Tooltip>
