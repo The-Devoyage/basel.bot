@@ -44,10 +44,8 @@ export const Onboarding = async () => {
 
   return (
     <Card className="w-full">
-      <Typography.Heading className="text-lg">
-        Getting Started
-      </Typography.Heading>
-      <Progress progress={progress} color="green" />
+      <Typography.Heading className="text-lg">Profile Setup</Typography.Heading>
+      <Progress progress={progress} color="green" labelProgress size="large" />
       <Typography.Paragraph>Welcome to Basel! {msg}</Typography.Paragraph>
     </Card>
   );
