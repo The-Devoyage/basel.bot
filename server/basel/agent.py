@@ -14,6 +14,7 @@ from basel.create_create_standup_tool import create_create_standup_tool
 from basel.create_get_interview_question_response_tool import (
     create_get_interview_question_responses_tool,
 )
+from basel.create_get_standups_tool import create_get_standups_tool
 from basel.create_interview_question_tool import create_create_interview_question_tool
 from basel.create_update_user_tool import create_update_user_tool
 from basel.create_interview_tool import create_create_interview_tool
@@ -103,6 +104,10 @@ async def get_agent(
                 # Create Standup Tool
                 create_standup_tool = create_create_standup_tool(user_claims.user)
                 tools.append(create_standup_tool)
+
+                # Get Standups Tool
+                get_standups_tool = create_get_standups_tool(user_claims.user)
+                tools.append(get_standups_tool)
 
                 # Populate Recent Chat History
                 messages = (

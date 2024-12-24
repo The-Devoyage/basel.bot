@@ -36,6 +36,7 @@ def create_get_interview_question_responses_tool(user: User):
         description="""
         Useful to get interview question responses by interview for a specific user.
         """,
+        fn_schema=GetInterviewQuestionResponsesParams,
     )
 
     return get_interview_question_response_tool
