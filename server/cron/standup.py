@@ -1,5 +1,4 @@
 import logging
-import aiocron
 from database.user import User
 from mailer import send_email
 
@@ -20,8 +19,3 @@ async def send_daily_standup_reminder():
         )
     except Exception as e:
         logger.error(e)
-
-
-@aiocron.crontab("0 0 * * 1-5")
-async def trigger_send_daily_standup_reminder():
-    await send_daily_standup_reminder()
