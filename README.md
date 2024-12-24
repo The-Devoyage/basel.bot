@@ -59,3 +59,7 @@ cp ./server/example.env ./server/.env
 - Configure users and passwors in the docker compose file and start with docker compose.
 - Make sure to update server `.env` file
 
+
+## Cron
+
+Cron jobs are run from the cron folder. Populate the `.env` file and start with python.

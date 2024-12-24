@@ -1,6 +1,7 @@
 .env
 *.db
 /server/venv
+/cron/venv
 __pycache__/
 *.py[cod]
 /server/index
