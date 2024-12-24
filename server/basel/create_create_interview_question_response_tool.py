@@ -1,5 +1,5 @@
 from uuid import UUID
-from llama_index.core.bridge.pydantic import Field
+from llama_index.core.bridge.pydantic import BaseModel, Field
 from llama_index.core.tools.function_tool import FunctionTool
 from database.interview_question import InterviewQuestion
 from database.interview_question_response import InterviewQuestionResponse
@@ -7,14 +7,17 @@ from database.interview_question_response import InterviewQuestionResponse
 from database.user import User
 
 
-async def create_interview_question_response(
-    user: User,
+class CreateInterviewQuestionResponseParams(BaseModel):
     interview_question_uuid: str = Field(
         description="The UUID of the interview question being answered. Use the `get_interview_questions` tool to get the uuid, if needed."
-    ),
+    )
     response: str = Field(
         description="A summary of the response when the user has finished conversation concerning answering the interview question."
-    ),
+    )
+
+
+async def create_interview_question_response(
+    user: User, interview_question_uuid, response
 ):
     interview_question = await InterviewQuestion.find_one(
         InterviewQuestion.uuid == UUID(interview_question_uuid)
@@ -44,8 +47,9 @@ def create_create_interview_question_response_tool(user: User):
         ),
         name="create_interview_question_response_tool",
         description="""
-            Useful to log how a user responds to particular questions when taking an interview.
+            Useful for saving user responses to interview questions.
             """,
+        fn_schema=CreateInterviewQuestionResponseParams,
     )
 
     return create_interview_question_response_tool

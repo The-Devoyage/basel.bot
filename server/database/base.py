@@ -56,3 +56,6 @@ class BaseMongoModel(Document):
                 public_dict[key] = None
 
         return public_dict
+
+    class Settings:
+        name = None

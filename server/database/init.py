@@ -3,6 +3,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import (
     init_beanie,
 )
+from database.standup import Standup
 from database.user import User
 from database.user_meta import UserMeta
 from database.token_session import TokenSession
@@ -51,6 +52,7 @@ async def init_db():
             ShareableLink,
             Role,
             Message,
+            Standup,
         ],
         allow_index_dropping=True,
     )

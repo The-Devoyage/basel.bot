@@ -1,6 +1,7 @@
 import { ChatCard } from "@/shared/chat-card";
 import {
   BreakBarriers,
+  Standup,
   LearnAboutBasel,
   Onboarding,
   ProfileViews,
@@ -28,6 +29,7 @@ export const InitScreen = () => {
         />
         <ProfileViews />
       </div>
+      <Standup />
       <RecentInterviews />
       <LearnAboutBasel />
       <BreakBarriers />

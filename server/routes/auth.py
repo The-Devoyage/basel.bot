@@ -15,7 +15,7 @@ from database.role import Role, RoleIdentifier
 
 from utils.environment import get_env_var
 from utils.jwt import create_jwt, require_auth
-from utils.mailer import send_email
+from mailer import send_email
 from utils.responses import create_response
 
 router = APIRouter()
@@ -126,8 +126,7 @@ async def auth_start(websocket: WebSocket):
                 # Send user created email
                 full_name = current_user.full_name()
                 send_email(
-                    "nickmclean@thedevoyage.com",
-                    "New User Added",
+                    ["nickmclean@thedevoyage.com"],
                     "d-d526a9167b6240bbbc8a99a2fb1ab387",
                     {
                         "name": full_name if full_name else "the user",
@@ -164,8 +163,7 @@ async def auth_start(websocket: WebSocket):
             active_auth_connections[str(current_user.auth_id)] = websocket
 
             send_email(
-                current_user.email,
-                "Magic Link - Click to Authenticate",
+                [current_user.email],
                 "d-647b376beee74b30aff1b669af7a7392",
                 {"magic_link": magic_link},
             )

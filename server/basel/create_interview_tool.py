@@ -1,5 +1,5 @@
 import logging
-from llama_index.core.bridge.pydantic import Field
+from llama_index.core.bridge.pydantic import BaseModel, Field
 from llama_index.core.tools.function_tool import FunctionTool
 
 from database.interview import Interview
@@ -9,11 +9,12 @@ from database.user import User
 logger = logging.getLogger(__name__)
 
 
-async def create_interview(
-    current_user: User,
-    name: str = Field(description="The name of the interview."),
-    description: str = Field(description="The description of the interview."),
-):
+class CreateInterviewParams(BaseModel):
+    name: str = Field(description="The name of the interview.")
+    description: str = Field(description="The description of the interview.")
+
+
+async def create_interview(current_user: User, name, description):
     interview = await Interview(
         name=name, description=description, created_by=current_user  # type:ignore
     ).create()
@@ -33,6 +34,7 @@ def create_create_interview_tool(current_user: User):
         Once created interview questions may be created and associated with the interview.
         Always confirm before creating.
         """,
+        fn_schema=CreateInterviewParams,
     )
 
     return create_interview_tool

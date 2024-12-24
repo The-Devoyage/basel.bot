@@ -24,7 +24,7 @@ export const RecentInterviews = async () => {
       <Alert color="purple">
         <div className="flex items-center gap-2">
           <FaCircleCheck />
-          Train your bot by taking guided interviews!
+          Train your bot by taking guided interviews.
         </div>
       </Alert>
       <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">

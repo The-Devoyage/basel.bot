@@ -5,3 +5,4 @@ export * from "./break-barries";
 export * from "./profile-views";
 export * from "./recent-interviews";
 export * from "./onboarding";
+export * from "./standup";

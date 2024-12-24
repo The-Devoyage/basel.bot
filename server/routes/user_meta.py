@@ -1,6 +1,7 @@
 import logging
 from typing import Optional
 from uuid import UUID
+from beanie import SortDirection
 from fastapi import APIRouter, Depends, HTTPException
 from llama_index.core.bridge.pydantic import BaseModel
 
@@ -27,6 +28,9 @@ async def get_user_metas(
                 UserMeta.user.id  # type:ignore
                 == user_claims.user.id,
                 fetch_links=True,
+            )
+            .sort(
+                [(UserMeta.created_at, SortDirection.DESCENDING)]  # type:ignore
             )
             .limit(limit)
             .skip(offset)

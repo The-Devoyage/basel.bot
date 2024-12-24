@@ -1,10 +1,10 @@
-from contextlib import asynccontextmanager
 import logging
+import cron
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database.init import init_db
-
 from routes.ws import router as ws_router
 from routes.role import router as role_router
 from routes.auth import router as auth_router
@@ -14,7 +14,7 @@ from routes.index import router as index_router
 from routes.user_meta import router as user_meta_router
 from routes.interview import router as interview_router
 from routes.onboarding import router as onboarding_router
-
+from routes.mailer import router as mailer_router
 
 load_dotenv()
 
@@ -42,6 +42,7 @@ app.include_router(index_router)
 app.include_router(user_meta_router)
 app.include_router(interview_router)
 app.include_router(onboarding_router)
+app.include_router(mailer_router, prefix="/mailer")
 
 app.add_middleware(
     CORSMiddleware,

@@ -11,7 +11,8 @@ export type MessageType =
   | "resume"
   | "translations"
   | "candidate"
-  | "interview";
+  | "interview"
+  | "standup";
 
 export const useHandleMessage = () => {
   const { client } = useContext(GlobalContext);
@@ -43,7 +44,10 @@ export const useHandleMessage = () => {
         break;
       case "interview":
         text = `I would love to take the ${context} interview.`;
-        break
+        break;
+      case "standup":
+        text = `Can you please help me to log my next standup?`;
+        break;
       default:
         text = "Tell me a bit about the Basel platform.";
     }
