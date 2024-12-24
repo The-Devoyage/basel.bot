@@ -35,12 +35,31 @@ async def send_daily_standup_reminder():
             print(f"An error occurred while sending the reminder: {e}")
 
 
+async def health_check():
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(
+                SERVER_URL,
+            )
+            if response.status_code == 200:
+                print(f"HEALTH CHECK SUCCESS: {response.json()}")
+            else:
+                print(f"HEALTH CHECK FAIL - STATUS CODE: {response.status_code}")
+        except httpx.RequestError as e:
+            print(f"An error occurred while sending the request: {e}")
+
+
 @aiocron.crontab("0 0 * * 1-5")
 async def trigger_send_daily_standup_reminder():
     if is_holiday():
         print("Today is a holiday. Skipping the reminder.")
         return
     await send_daily_standup_reminder()
+
+
+@aiocron.crontab("* * * * *")
+async def trigger_health_check():
+    await health_check()
 
 
 asyncio.get_event_loop().run_forever()
