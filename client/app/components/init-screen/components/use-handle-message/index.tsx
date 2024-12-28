@@ -6,8 +6,8 @@ import { useContext } from "react";
 
 export type MessageType =
   | "interviews"
-  | "bot"
-  | "search"
+  | "describe_standup"
+  | "shareable_links"
   | "resume"
   | "translations"
   | "candidate"
@@ -17,18 +17,19 @@ export type MessageType =
 export const useHandleMessage = () => {
   const { client } = useContext(GlobalContext);
 
-  const handleMessage = (type: MessageType, context?: string) => {
+  const handleMessage = (type: MessageType, modifier?: string) => {
     let text = "";
     switch (type) {
       case "interviews":
         text =
-          "I am interested in learning about Automated Interviews. How do these work?";
+          "I am interested in learning about what Interviews are on the Basel Platform. How do these work?";
         break;
-      case "bot":
-        text = "Who are you, Basel? What is a Career Assistant Bot?";
+      case "describe_standup":
+        text = "Basel, what is a standup and how often should I participate?";
         break;
-      case "search":
-        text = "How do you help me find jobs?";
+      case "shareable_links":
+        text =
+          "What are shareable links and how do they help me share my bot with potential employers/recruiters?";
         break;
       case "resume":
         text =
@@ -40,10 +41,10 @@ export const useHandleMessage = () => {
         break;
       case "candidate":
         text =
-          "Hey Basel! I am here to talk with you about the candidate you represent. Can you give me a brief description about this candidate?";
+          "Hey Basel! I am here to talk with you about the candidate you represent. Can you give me a summary of this canidate&apos;s profile?";
         break;
       case "interview":
-        text = `I would love to take the ${context} interview.`;
+        text = `I would love to take the ${modifier} interview.`;
         break;
       case "standup":
         text = `Can you please help me to log my next standup?`;

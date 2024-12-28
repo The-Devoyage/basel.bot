@@ -41,7 +41,7 @@ export default async function RootLayout({
       >
         <Suspense
           fallback={
-            <Loader message="Your last interview just got that much easier." />
+            <Loader message="Your next interview just got much easier." />
           }
         >
           <GlobalProvider>

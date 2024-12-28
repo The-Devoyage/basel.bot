@@ -14,6 +14,7 @@ from routes.user_meta import router as user_meta_router
 from routes.interview import router as interview_router
 from routes.onboarding import router as onboarding_router
 from routes.mailer import router as mailer_router
+from routes.standup import router as standup_router
 
 load_dotenv()
 
@@ -42,6 +43,7 @@ app.include_router(user_meta_router)
 app.include_router(interview_router)
 app.include_router(onboarding_router)
 app.include_router(mailer_router, prefix="/mailer")
+app.include_router(standup_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -62,4 +64,4 @@ def describe_api():
     - version: str
 
     """
-    return {"version": "0.0.2"}
+    return {"version": "0.0.3"}

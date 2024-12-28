@@ -64,9 +64,9 @@ async def get_documents(user: User, chat_start_time: Optional[datetime] = None):
     return meta_documents
 
 
-def add_to_index(documents):
+def add_index(documents, collection: str):
     logger.debug(f"CREATING INDEX")
-    chroma_collection = remote_db.get_or_create_collection("user_meta")
+    chroma_collection = remote_db.get_or_create_collection(collection)
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     VectorStoreIndex.from_documents(documents, storage_context, show_progress=True)
@@ -78,11 +78,8 @@ def reset_index(user_id: PydanticObjectId):
     chroma_collection.delete(where={"user_id": str(user_id)})
 
 
-def get_index():
-    chroma_collection = remote_db.get_or_create_collection("user_meta")
-    meta = chroma_collection.get()
-    logger.debug(f"META: {meta}")
-
+def get_index(collection: str):
+    chroma_collection = remote_db.get_or_create_collection(collection)
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     index = VectorStoreIndex.from_vector_store(vector_store=vector_store)
     return index

@@ -6,7 +6,7 @@ from database.message import Message
 
 
 from basel.indexing import (
-    add_to_index,
+    add_index,
     get_documents,
 )
 from classes.user_claims import UserClaims
@@ -68,4 +68,4 @@ async def create_summary(user_claims: UserClaims, chat_start_time: datetime):
         ).create()
         # Update Index
         documents = await get_documents(user_claims.user, chat_start_time)
-        add_to_index(documents)
+        add_index(documents, "user_meta")

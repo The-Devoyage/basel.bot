@@ -28,17 +28,17 @@ export const LearnAboutBasel = () => {
           className="w-full md:w-auto"
           gradientDuoTone="greenToBlue"
           outline
-          onClick={() => handleMessage("bot")}
+          onClick={() => handleMessage("describe_standup")}
         >
-          Personalized Bot
+          Standups
         </Button>
         <Button
           className="w-full md:w-auto"
           gradientDuoTone="greenToBlue"
           outline
-          onClick={() => handleMessage("search")}
+          onClick={() => handleMessage("shareable_links")}
         >
-          Job Search
+          Shareable Links
         </Button>
         <Button
           className="w-full md:w-auto"

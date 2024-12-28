@@ -11,7 +11,7 @@ from database.user import User
 
 
 def create_candidate_profile_tool(chatting_with_id: User):
-    index = get_index()
+    index = get_index("user_meta")
 
     filters = MetadataFilters(
         filters=[

@@ -5,12 +5,16 @@ import { TfiWrite } from "react-icons/tfi";
 import { useHandleMessage } from "../../..";
 import { Typography } from "@/shared/typography";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FaX } from "react-icons/fa6";
+import { GlobalContext } from "@/app/provider";
 
 export const StartStandupButton = () => {
   const [visible, setVisible] = useState(false);
+  const {
+    store: { isAuthenticated },
+  } = useContext(GlobalContext);
   const { handleMessage } = useHandleMessage();
   const searchParams = useSearchParams();
   const standup = searchParams.get("standup");
@@ -21,7 +25,7 @@ export const StartStandupButton = () => {
   }, [standup]);
 
   const handleClick = () => {
-    handleMessage("standup");
+    handleMessage(isAuthenticated ? "standup" : "describe_standup");
     setVisible(false);
   };
 

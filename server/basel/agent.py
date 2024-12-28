@@ -5,24 +5,14 @@ from llama_index.agent.openai import OpenAIAgent
 from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
 from llama_index.core.tools import BaseTool
-from basel.candidate_profile_tool import create_candidate_profile_tool
-from basel.create_about_tool import create_about_tool
-from basel.create_create_interview_question_response_tool import (
-    create_create_interview_question_response_tool,
-)
-from basel.create_create_standup_tool import create_create_standup_tool
-from basel.create_get_interview_question_response_tool import (
-    create_get_interview_question_responses_tool,
-)
-from basel.create_get_standups_tool import create_get_standups_tool
-from basel.create_interview_question_tool import create_create_interview_question_tool
-from basel.create_update_user_tool import create_update_user_tool
-from basel.create_interview_tool import create_create_interview_tool
-from basel.get_interview_questions_tool import create_get_interview_questions_tool
-from basel.get_interviews_tool import (
-    create_get_interviews_tool,
-)
 from basel.get_system_prompt import get_system_prompt
+from basel.tools import (
+    get_admin_tools,
+    get_candidate_tools,
+    get_general_tools,
+    get_global_tools,
+    get_unauthenticated_tools,
+)
 from classes.user_claims import UserClaims
 from database.role import RoleIdentifier
 from database.message import Message
@@ -49,29 +39,14 @@ async def get_agent(
     tools: List[BaseTool] = []
     chat_history: List[ChatMessage] = []
 
-    # Get the About Basel Tool
-    about_tool = create_about_tool()
-    tools.append(about_tool)
+    # Unauthenticated Tools
+    tools.extend(get_unauthenticated_tools())
 
+    # Authenticated Tools + Setup Agent
     if chatting_with and (
         (shareable_link and shareable_link.status) or not shareable_link
     ):
-        tools: List[BaseTool] = []
-
-        # Global Tools
-        candidate_profile_tool = create_candidate_profile_tool(chatting_with)
-        tools.append(candidate_profile_tool)
-
-        get_interview_question_responses_tool = (
-            create_get_interview_question_responses_tool(chatting_with)
-        )
-        tools.append(get_interview_question_responses_tool)
-
-        get_interview_questions_tool = create_get_interview_questions_tool()
-        tools.append(get_interview_questions_tool)
-
-        get_interviews_tool = create_get_interviews_tool()
-        tools.append(get_interviews_tool)
+        tools: List[BaseTool] = get_global_tools(chatting_with)
 
         if user_claims:
             # Get Authenticated Tools
@@ -81,33 +56,14 @@ async def get_agent(
                 raise Exception("Can't find role")
 
             if role.identifier == RoleIdentifier.ADMIN:  # type:ignore
-                create_interview_tool = create_create_interview_tool(user_claims.user)
-                tools.append(create_interview_tool)
-
-                create_interview_question_tool = create_create_interview_question_tool(
-                    user_claims.user
-                )
-                tools.append(create_interview_question_tool)
+                tools.extend(get_admin_tools(user_claims.user))
 
             # Handle General User Role Tools
-            create_interview_question_response = (
-                create_create_interview_question_response_tool(user_claims.user)
-            )
-            tools.append(create_interview_question_response)
+            tools.extend(get_general_tools(user_claims.user))
 
             # Tools for the candidate
             if chatting_with.id == user_claims.user.id:
-                # Update User
-                update_user_tool = create_update_user_tool(user_claims.user)
-                tools.append(update_user_tool)
-
-                # Create Standup Tool
-                create_standup_tool = create_create_standup_tool(user_claims.user)
-                tools.append(create_standup_tool)
-
-                # Get Standups Tool
-                get_standups_tool = create_get_standups_tool(user_claims.user)
-                tools.append(get_standups_tool)
+                tools.extend(get_candidate_tools(user_claims.user))
 
                 # Populate Recent Chat History
                 messages = (
@@ -120,9 +76,7 @@ async def get_agent(
                     )
                     .to_list()
                 )
-                logger.debug(f"LENGTH: {len(messages)}")
                 for message in messages:
-                    logger.debug(f"MESSAGE: {message}")
                     history = ChatMessage(
                         role=MessageRole.ASSISTANT
                         if message.sender == "bot"

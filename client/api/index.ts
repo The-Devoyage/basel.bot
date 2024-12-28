@@ -6,6 +6,7 @@ import {
   Interview,
   Onboarding,
 } from "@/types";
+import { Standup } from "@/types/standup";
 
 export * from "./callApi";
 
@@ -33,6 +34,7 @@ export enum Endpoint {
   PatchUserMeta = "/user-meta/:uuid",
   GetInterviews = "/interviews",
   GetOnboarding = "/onboarding",
+  GetStandups = "/standups",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -101,6 +103,14 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetStandups]: {
+    query: PaginationQuery & {
+      start_date?: Date;
+      end_date?: Date;
+    };
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -119,6 +129,7 @@ export interface EndpointResponse {
   [Endpoint.PatchUserMeta]: UserMeta;
   [Endpoint.GetInterviews]: Interview[];
   [Endpoint.GetOnboarding]: Onboarding;
+  [Endpoint.GetStandups]: Standup[];
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

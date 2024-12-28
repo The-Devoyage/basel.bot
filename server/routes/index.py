@@ -3,7 +3,7 @@ import logging
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from llama_index.core.bridge.pydantic import BaseModel
-from basel.indexing import add_to_index, get_documents, reset_index
+from basel.indexing import add_index, get_documents, reset_index
 from classes.user_claims import UserClaims
 from utils.jwt import require_auth
 
@@ -25,7 +25,7 @@ async def index(body: PostIndexBody, user_claims: UserClaims = Depends(require_a
             raise Exception("Login Required.")
         documents = await get_documents(user_claims.user, body.chat_start_time)
         reset_index(user_claims.user.id)
-        add_to_index(documents)
+        add_index(documents, "user_meta")
         return create_response(success=True)
     except Exception as e:
         logger.error(e)

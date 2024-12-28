@@ -1,4 +1,5 @@
 from typing import Optional
+from beanie import SortDirection
 from chromadb.api.models.Collection import logging
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -16,10 +17,17 @@ logger = logging.getLogger(__name__)
 async def get_interviews(
     limit: Optional[int] = 10,
     offset: Optional[int] = 0,
-    _: UserClaims = Depends(require_auth),
 ):
     try:
-        interviews = await Interview.find().limit(limit).skip(offset).to_list()
+        interviews = (
+            await Interview.find()
+            .limit(limit)
+            .skip(offset)
+            .sort(
+                [(Interview.created_at, SortDirection.DESCENDING)]  # type:ignore
+            )
+            .to_list()
+        )
         return create_response(
             success=True,
             data=[await interview.to_public_dict() for interview in interviews],
