@@ -51,13 +51,12 @@ export const StandupHeatmap = () => {
 
   const value = standups.res?.data?.reduce(
     (acc: { date: string; count: number }[], curr) => {
-      const exists = acc.findIndex(
-        (v) => v.date === curr.created_at.toString(),
-      );
+      const date = dayjs(curr.created_at).format("YYYY/MM/DD");
+      const exists = acc.findIndex((v) => v.date === date.toString());
       if (exists >= 0) {
         acc[exists] = { ...acc[exists], count: acc[exists].count + 1 };
       } else {
-        acc.push({ date: curr.created_at.toString(), count: 1 });
+        acc.push({ date: date.toString(), count: 1 });
       }
       return acc;
     },
