@@ -15,7 +15,6 @@ import { StatusCell } from "./components";
 import { useCallApi } from "@/shared/useCallApi";
 import { useEffect, useState } from "react";
 import utc from "dayjs/plugin/utc";
-import { Loader } from "@/shared/loader";
 dayjs.extend(utc);
 
 export const UserMetasTable = () => {

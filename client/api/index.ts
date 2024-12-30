@@ -5,6 +5,7 @@ import {
   Subscription,
   Interview,
   Onboarding,
+  Notification,
 } from "@/types";
 import { Standup } from "@/types/standup";
 
@@ -35,6 +36,7 @@ export enum Endpoint {
   GetInterviews = "/interviews",
   GetOnboarding = "/onboarding",
   GetStandups = "/standups",
+  GetNotifications = "/notifications",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -111,6 +113,13 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetNotifications]: {
+    query: PaginationQuery & {
+      read?: boolean;
+    };
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -130,6 +139,7 @@ export interface EndpointResponse {
   [Endpoint.GetInterviews]: Interview[];
   [Endpoint.GetOnboarding]: Onboarding;
   [Endpoint.GetStandups]: Standup[];
+  [Endpoint.GetNotifications]: Notification[];
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

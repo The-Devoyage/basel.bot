@@ -1,12 +1,12 @@
 "use client";
 
 import { GlobalContext } from "@/app/provider";
-import { Progress, Toast } from "flowbite-react";
+import { Toast } from "flowbite-react";
 import { useContext, useEffect, useState } from "react";
 import { Typography } from "../typography";
 import { removeToast } from "../useStore/toast";
 
-export interface Notification {
+export interface NotificationToast {
   uuid: string;
   type: "error" | "success";
   title?: string;
@@ -14,7 +14,7 @@ export interface Notification {
 }
 
 export const Toaster = () => {
-  const [hovering, setHovering] = useState<Notification["uuid"][]>([]);
+  const [hovering, setHovering] = useState<NotificationToast["uuid"][]>([]);
   const {
     store: { toasts },
     dispatch,
