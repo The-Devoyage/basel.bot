@@ -36,7 +36,10 @@ class BaseMongoModel(Document):
         """
         return {}
 
-    async def to_public_dict(self, exclude: Optional[Set[str]] = None) -> dict:
+    async def to_public_dict(
+        self, exclude: Optional[Set[str]] = None, json: bool = False
+    ) -> dict:
+        logger.debug("CONVERTING TO PUBLIC DICT")
         # Combine class-level and method-level excludes
         exclude = exclude or set()
         exclude = exclude.union(self.exclude_from_public_dict())
@@ -50,8 +53,17 @@ class BaseMongoModel(Document):
 
         # Convert linked objects recursively
         for key, value in self:
+            # Make UUIDs JSON Serializable
+            if key == "uuid" and json:
+                public_dict["uuid"] = str(value)
+
+            # Make datetimes JSON Serializable
+            if isinstance(value, datetime):
+                public_dict[key] = str(value)
+
+            # Recursively Replace
             if hasattr(value, "to_public_dict"):
-                public_dict[key] = await value.to_public_dict()  # type:ignore
+                public_dict[key] = await value.to_public_dict(json=json)  # type:ignore
             elif isinstance(value, Link):
                 public_dict[key] = None
 

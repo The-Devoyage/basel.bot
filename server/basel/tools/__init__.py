@@ -21,6 +21,7 @@ from basel.tools.create_update_user_tool import create_update_user_tool
 from basel.tools.get_interview_questions_tool import create_get_interview_questions_tool
 from basel.tools.get_interviews_tool import create_get_interviews_tool
 from basel.tools.scrape_webpage_tool import scrape_webpage_tool
+from basel.tools.create_insert_user_meta_tool import create_insert_user_meta_tool
 
 # DB
 from database.user import User
@@ -101,5 +102,9 @@ def get_candidate_tools(current_user: User):
     # Get Standups Tool
     get_standups_tool = create_get_standups_tool(current_user)
     tools.append(get_standups_tool)
+
+    # Create meta tool
+    insert_user_meta_tool = create_insert_user_meta_tool(current_user)
+    tools.append(insert_user_meta_tool)
 
     return tools
