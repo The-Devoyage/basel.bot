@@ -7,6 +7,7 @@ export enum NotificationType {
 
 export interface Notification {
   user: User;
+  uuid: string;
   text: string;
   type: NotificationType;
   read: boolean;

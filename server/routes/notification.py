@@ -1,6 +1,8 @@
 import logging
-from typing import Optional
+from typing import List, Optional
+from uuid import UUID
 from beanie import SortDirection
+from beanie.operators import Set, In
 from fastapi import (
     APIRouter,
     Cookie,
@@ -11,6 +13,7 @@ from fastapi import (
     WebSocketException,
     status,
 )
+from llama_index.core.bridge.pydantic import BaseModel
 from classes.user_claims import UserClaims
 from database.notification import Notification
 
@@ -22,6 +25,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 active_channels = {}
+
+
+class ReadPayload(BaseModel):
+    uuids: List[str]
 
 
 @router.websocket("/notification")
@@ -47,10 +54,17 @@ async def socket_notification(
     try:
         active_channels[str(current_user.uuid)] = websocket
         while True:
-            # TODO: mark the notification read in real time
-            # For now, play ping pong.
             data = await websocket.receive_text()
-            return data
+            read_data = ReadPayload.model_validate_json(data)
+            notifications = await Notification.find(
+                In(Notification.uuid, [UUID(uuid) for uuid in read_data.uuids])
+            ).to_list()
+            logger.debug(f"NOTIFICATION COUNT: {notifications}")
+            for notification in notifications:
+                logger.debug(f"READ NOTIFICATION: {notification}")
+                await notification.update(Set({"read": True}))
+
+            return True
 
     except WebSocketDisconnect as e:
         logger.debug("REMOVING CONNECTION")
@@ -70,25 +84,27 @@ async def get_notifications(
     user_claims: UserClaims = Depends(require_auth),
 ):
     try:
-        notifications = Notification.find_many(
+        query = Notification.find(
             Notification.user.id == user_claims.user.id,  # type:ignore
             fetch_links=True,
         )
 
         if read is not None:
-            notifications.find(Notification.read == read)
+            query.find(Notification.read == read)
 
+        total = await query.count()
         notifications = (
-            await notifications.limit(limit)
+            await query.limit(limit)
             .skip(offset)
             .sort(
                 [(Notification.created_at, SortDirection.DESCENDING)]  # type:ignore
             )
             .to_list()
         )
-
         return create_response(
-            success=True, data=[await n.to_public_dict() for n in notifications]
+            success=True,
+            data=[await n.to_public_dict() for n in notifications],
+            total=total,
         )
     except Exception as e:
         logger.error(e)

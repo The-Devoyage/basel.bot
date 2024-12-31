@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Mono } from "next/font/google";
+import { NotificationDrawer } from "@/shared/notification-drawer";
 import { ThemeModeScript } from "flowbite-react";
 import { GlobalProvider } from "./provider";
 import { ChatInput } from "@/shared/chat-input";
@@ -47,6 +48,7 @@ export default async function RootLayout({
           <GlobalProvider>
             <Toaster />
             <Nav />
+            <NotificationDrawer />
             <main
               className="container relative top-16 mx-auto mb-16 flex p-4 dark:bg-slate-900"
               style={{

@@ -12,7 +12,7 @@ import { useSearchParams } from "next/navigation";
 
 interface GlobalContext {
   client: SocketClient<Message, Message> | null;
-  notificationClient: SocketClient<unknown, Notification> | null;
+  notificationClient: SocketClient<{ uuids: string[] }, Notification> | null;
   store: ReturnType<typeof useStore>[0];
   dispatch: ReturnType<typeof useStore>[1];
   slToken: string | null;
@@ -44,7 +44,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${slToken ? "?sl_token=" + slToken : ""}`,
   );
-  const notificationClient = useSocket<unknown, Notification>(
+  const notificationClient = useSocket<{ uuids: string[] }, Notification>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/notification`,
   );
 
