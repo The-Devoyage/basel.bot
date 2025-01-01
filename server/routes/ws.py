@@ -12,6 +12,7 @@ from fastapi import (
 )
 import jwt
 from basel.agent import get_agent
+from basel.indexing import add_index, get_documents
 
 from classes.user_claims import ShareableLinkClaims
 from classes.socket_message import Button, ButtonAction, SocketMessage
@@ -165,22 +166,23 @@ async def websocket_endpoint(
     except WebSocketDisconnect as e:
         logger.debug(f"WEBSOCKET DISCONNECT: {e}")
 
-        # try:
-        #     if (
-        #         not user_claims
-        #         or not chatting_with
-        #         or user_claims.user.id != chatting_with.id
-        #         or (
-        #             not subscription_status.active
-        #             and not subscription_status.is_free_trial
-        #         )
-        #     ):
-        #         logger.debug("CLOSING WITHOUT SUMMERIZING")
-        #         return
-        #     # CREATE SUMMARY
-        #     await create_summary(user_claims, chat_start_time)
+        try:
+            if (
+                not user_claims
+                or not chatting_with
+                or user_claims.user.id != chatting_with.id
+                or (
+                    not subscription_status.active
+                    and not subscription_status.is_free_trial
+                )
+            ):
+                logger.debug("CLOSING WITHOUT SUMMERIZING")
+                return
+            documents = await get_documents(user_claims.user, chat_start_time)
+            add_index(documents, "user_meta")
 
-        # except Exception as e:
-        #     logger.error(f"FAILED TO SAVE SUMMARY: {e}")
+        except Exception as e:
+            logger.error(e)
+
     except Exception as e:
         logger.error(f"UNKNOWN ERROR: {e}")
