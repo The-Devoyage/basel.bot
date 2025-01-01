@@ -1,12 +1,12 @@
 "use client";
 
 import { GlobalContext } from "@/app/provider";
-import { Progress, Toast } from "flowbite-react";
+import { Toast } from "flowbite-react";
 import { useContext, useEffect, useState } from "react";
 import { Typography } from "../typography";
 import { removeToast } from "../useStore/toast";
 
-export interface Notification {
+export interface NotificationToast {
   uuid: string;
   type: "error" | "success";
   title?: string;
@@ -14,7 +14,7 @@ export interface Notification {
 }
 
 export const Toaster = () => {
-  const [hovering, setHovering] = useState<Notification["uuid"][]>([]);
+  const [hovering, setHovering] = useState<NotificationToast["uuid"][]>([]);
   const {
     store: { toasts },
     dispatch,
@@ -33,6 +33,18 @@ export const Toaster = () => {
     }
   }, [toasts, hovering, dispatch]);
 
+  const getTitle = (toast: NotificationToast) => {
+    if (toast.title) return toast.title;
+    else {
+      switch (toast.type) {
+        case "success":
+          return "Success";
+        case "error":
+          return "Error";
+      }
+    }
+  };
+
   return (
     <div className="fixed right-4 top-4 space-y-4" style={{ zIndex: 999 }}>
       {toasts.map((toast) => (
@@ -47,7 +59,7 @@ export const Toaster = () => {
           <div className="flex">
             <div>
               <Typography.Heading className="mb-1">
-                {toast?.title ?? toast.type === "error" ? "Error" : "Success"}
+                {getTitle(toast)}
               </Typography.Heading>
               <Typography.Paragraph className="text-sm">
                 {toast.description}

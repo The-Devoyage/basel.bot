@@ -15,6 +15,7 @@ from routes.interview import router as interview_router
 from routes.onboarding import router as onboarding_router
 from routes.mailer import router as mailer_router
 from routes.standup import router as standup_router
+from routes.notification import router as notification_router
 
 load_dotenv()
 
@@ -44,6 +45,7 @@ app.include_router(interview_router)
 app.include_router(onboarding_router)
 app.include_router(mailer_router, prefix="/mailer")
 app.include_router(standup_router)
+app.include_router(notification_router)
 
 app.add_middleware(
     CORSMiddleware,

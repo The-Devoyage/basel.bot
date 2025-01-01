@@ -8,6 +8,7 @@ import {
   NavbarBrand,
 } from "flowbite-react";
 import {
+  NotificationToggle,
   SignoutDropdownItem,
   ThemeModeItem,
   UnauthenticatedCta,
@@ -39,7 +40,8 @@ export const Nav = async () => {
         <span className="text-green-400">basel.bot</span>
       </NavbarBrand>
       {isAuthenticated.success ? (
-        <div className="flex md:order-2">
+        <div className="flex gap-2 md:order-3">
+          <NotificationToggle />
           <Dropdown
             arrowIcon={false}
             inline
@@ -48,6 +50,8 @@ export const Nav = async () => {
                 alt="User settings"
                 rounded
                 placeholderInitials={me?.data?.email.at(0)?.toUpperCase()}
+                bordered
+                color="success"
               />
             }
           >

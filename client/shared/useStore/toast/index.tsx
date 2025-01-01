@@ -1,4 +1,4 @@
-import { Notification } from "@/shared/toaster";
+import { NotificationToast } from "@/shared/toaster";
 import { Reducer } from "react";
 import { v4 } from "uuid";
 
@@ -8,19 +8,19 @@ export const REMOVE_TOAST = "REMOVE_TOAST";
 export type AddToastAction = {
   type: typeof ADD_TOAST;
   payload: {
-    notification: Notification;
+    notification: NotificationToast;
   };
 };
 
 export type RemoveToastAction = {
   type: typeof REMOVE_TOAST;
   payload: {
-    notification: Notification;
+    notification: NotificationToast;
   };
 };
 
 export type Action = AddToastAction | RemoveToastAction;
-export type State = { toasts: Notification[] };
+export type State = { toasts: NotificationToast[] };
 
 export const toastReducer: Reducer<State, Action> = (
   state: State,
@@ -46,7 +46,7 @@ export const toastReducer: Reducer<State, Action> = (
 
 // Actions
 export const addToast = (
-  notification: Omit<Notification, "uuid">,
+  notification: Omit<NotificationToast, "uuid">,
 ): AddToastAction => ({
   type: ADD_TOAST,
   payload: {
@@ -57,7 +57,9 @@ export const addToast = (
   },
 });
 
-export const removeToast = (notification: Notification): RemoveToastAction => ({
+export const removeToast = (
+  notification: NotificationToast,
+): RemoveToastAction => ({
   type: REMOVE_TOAST,
   payload: { notification },
 });

@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from typing import Optional
 from uuid import UUID
@@ -27,6 +28,7 @@ async def get_user_metas(
             await UserMeta.find(
                 UserMeta.user.id  # type:ignore
                 == user_claims.user.id,
+                UserMeta.deleted_at == None,
                 fetch_links=True,
             )
             .sort(
@@ -53,6 +55,7 @@ async def get_user_metas(
 
 class UpdateUserMetaBody(BaseModel):
     status: Optional[bool] = None
+    delete: Optional[bool] = None
 
 
 @router.patch("/user-meta/{uuid}")
@@ -67,6 +70,11 @@ async def patch_user_meta(
         if user_meta is None:
             raise Exception("Failed to find User Meta")
         user_meta.status = body.status if body.status is not None else user_meta.status
+
+        if body.delete:
+            user_meta.deleted_at = datetime.utcnow()
+            user_meta.deleted_by = user_claims.user  # type:ignore
+
         await user_meta.save()
 
         return create_response(success=True, data=await user_meta.to_public_dict())

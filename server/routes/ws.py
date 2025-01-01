@@ -165,22 +165,22 @@ async def websocket_endpoint(
     except WebSocketDisconnect as e:
         logger.debug(f"WEBSOCKET DISCONNECT: {e}")
 
-        try:
-            if (
-                not user_claims
-                or not chatting_with
-                or user_claims.user.id != chatting_with.id
-                or (
-                    not subscription_status.active
-                    and not subscription_status.is_free_trial
-                )
-            ):
-                logger.debug("CLOSING WITHOUT SUMMERIZING")
-                return
-            # CREATE SUMMARY
-            await create_summary(user_claims, chat_start_time)
+        # try:
+        #     if (
+        #         not user_claims
+        #         or not chatting_with
+        #         or user_claims.user.id != chatting_with.id
+        #         or (
+        #             not subscription_status.active
+        #             and not subscription_status.is_free_trial
+        #         )
+        #     ):
+        #         logger.debug("CLOSING WITHOUT SUMMERIZING")
+        #         return
+        #     # CREATE SUMMARY
+        #     await create_summary(user_claims, chat_start_time)
 
-        except Exception as e:
-            logger.error(f"FAILED TO SAVE SUMMARY: {e}")
+        # except Exception as e:
+        #     logger.error(f"FAILED TO SAVE SUMMARY: {e}")
     except Exception as e:
         logger.error(f"UNKNOWN ERROR: {e}")

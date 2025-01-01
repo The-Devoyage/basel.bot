@@ -11,38 +11,29 @@ import {
   TableHeadCell,
   TableRow,
 } from "flowbite-react";
-import { StatusCell } from "./components";
+import { DeleteCell, StatusCell } from "./components";
 import { useCallApi } from "@/shared/useCallApi";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import utc from "dayjs/plugin/utc";
-import { Loader } from "@/shared/loader";
+import { usePagination } from "@/shared/usePagination";
 dayjs.extend(utc);
 
 export const UserMetasTable = () => {
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
-    totalPages: 1,
-    limit: 10,
-    offset: 0,
-  });
-
-  const { call, loading, res } = useCallApi(
+  const { pagination, handlePageChange, handleSetTotal, nextOffset } =
+    usePagination();
+  const { call, res } = useCallApi(
     {
       endpoint: Endpoint.GetUserMetas,
       body: null,
       path: null,
       query: {
         limit: pagination.limit,
-        offset: (pagination.currentPage - 1) * pagination.limit,
+        offset: nextOffset,
       },
     },
     {
       onSuccess: (res) => {
-        console.log(res);
-        setPagination({
-          ...pagination,
-          totalPages: Math.ceil((res.total || 0) / pagination.limit),
-        });
+        handleSetTotal(res.total);
       },
     },
   );
@@ -55,10 +46,6 @@ export const UserMetasTable = () => {
     handleFetch();
   }, [pagination.currentPage]);
 
-  const handlePageChange = (page: number) => {
-    setPagination({ ...pagination, currentPage: page, offset: 10 });
-  };
-
   return (
     <div className="relative">
       <Table className="mb-0" striped>
@@ -68,6 +55,7 @@ export const UserMetasTable = () => {
           <TableHeadCell className="hidden md:table-cell">
             Created At
           </TableHeadCell>
+          <TableHeadCell>Delete</TableHeadCell>
         </TableHead>
         <TableBody>
           {res?.data?.map((meta) => (
@@ -81,6 +69,9 @@ export const UserMetasTable = () => {
               <TableCell>{meta.data}</TableCell>
               <TableCell className="hidden md:table-cell">
                 {dayjs.utc(meta.created_at).local().format("MMM D, YYYY")}
+              </TableCell>
+              <TableCell>
+                <DeleteCell userMeta={meta} refetch={call} />
               </TableCell>
             </TableRow>
           ))}

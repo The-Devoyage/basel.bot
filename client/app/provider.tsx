@@ -2,7 +2,7 @@
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
 import { FC, createContext, useEffect, useMemo } from "react";
-import { Message } from "@/types";
+import { Message, Notification } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
 import { addToast } from "@/shared/useStore/toast";
@@ -12,6 +12,7 @@ import { useSearchParams } from "next/navigation";
 
 interface GlobalContext {
   client: SocketClient<Message, Message> | null;
+  notificationClient: SocketClient<{ uuids: string[] }, Notification> | null;
   store: ReturnType<typeof useStore>[0];
   dispatch: ReturnType<typeof useStore>[1];
   slToken: string | null;
@@ -19,9 +20,15 @@ interface GlobalContext {
 
 export const GlobalContext = createContext<GlobalContext>({
   client: null,
-  store: { toasts: [], isAuthenticated: false, me: null },
+  store: {
+    toasts: [],
+    isAuthenticated: false,
+    me: null,
+    notifications: { open: false },
+  },
   dispatch: () => {},
   slToken: null,
+  notificationClient: null,
 });
 
 interface GlobalProviderProps {
@@ -36,6 +43,9 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
 
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${slToken ? "?sl_token=" + slToken : ""}`,
+  );
+  const notificationClient = useSocket<{ uuids: string[] }, Notification>(
+    `${process.env.NEXT_PUBLIC_SOCKET_URL}/notification`,
   );
 
   useEffect(() => {
@@ -68,7 +78,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   }, [store.isAuthenticated]);
 
   const value = useMemo(
-    () => ({ client, store, dispatch, slToken }),
+    () => ({ client, store, dispatch, slToken, notificationClient }),
     [
       client.socket,
       client.messages,
