@@ -11,7 +11,7 @@ import {
   TableHeadCell,
   TableRow,
 } from "flowbite-react";
-import { StatusCell } from "./components";
+import { DeleteCell, StatusCell } from "./components";
 import { useCallApi } from "@/shared/useCallApi";
 import { useEffect } from "react";
 import utc from "dayjs/plugin/utc";
@@ -55,6 +55,7 @@ export const UserMetasTable = () => {
           <TableHeadCell className="hidden md:table-cell">
             Created At
           </TableHeadCell>
+          <TableHeadCell>Delete</TableHeadCell>
         </TableHead>
         <TableBody>
           {res?.data?.map((meta) => (
@@ -68,6 +69,9 @@ export const UserMetasTable = () => {
               <TableCell>{meta.data}</TableCell>
               <TableCell className="hidden md:table-cell">
                 {dayjs.utc(meta.created_at).local().format("MMM D, YYYY")}
+              </TableCell>
+              <TableCell>
+                <DeleteCell userMeta={meta} refetch={call} />
               </TableCell>
             </TableRow>
           ))}

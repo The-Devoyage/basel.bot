@@ -64,8 +64,6 @@ async def socket_notification(
                 logger.debug(f"READ NOTIFICATION: {notification}")
                 await notification.update(Set({"read": True}))
 
-            return True
-
     except WebSocketDisconnect as e:
         logger.debug("REMOVING CONNECTION")
         if current_user and current_user.uuid in active_channels:

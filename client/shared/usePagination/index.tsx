@@ -18,7 +18,7 @@ export const usePagination = (limit: number = 10) => {
   const handleSetTotal = (total: number = 0) => {
     setPagination({
       ...pagination,
-      totalPages: Math.ceil((total || 0) / pagination.limit),
+      totalPages: Math.ceil((total || 0) / pagination.limit) || 1,
     });
   };
 

@@ -40,7 +40,7 @@ export const NotificationToggle = () => {
 
   useEffect(() => {
     call();
-  }, [notificationClient?.messages]);
+  }, [notificationClient?.messages.length, open]);
 
   const handleClick = () => {
     dispatch(toggleNotificationDrawer(!open));

@@ -92,7 +92,7 @@ interface EndpointParams {
   };
   [Endpoint.PatchUserMeta]: {
     query: undefined;
-    body: { status?: boolean };
+    body: { status?: boolean; delete?: boolean };
     path: { uuid: string };
   };
   [Endpoint.GetInterviews]: {

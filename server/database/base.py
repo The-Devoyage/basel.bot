@@ -39,7 +39,6 @@ class BaseMongoModel(Document):
     async def to_public_dict(
         self, exclude: Optional[Set[str]] = None, json: bool = False
     ) -> dict:
-        logger.debug("CONVERTING TO PUBLIC DICT")
         # Combine class-level and method-level excludes
         exclude = exclude or set()
         exclude = exclude.union(self.exclude_from_public_dict())

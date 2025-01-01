@@ -5,7 +5,7 @@ import { useState, useRef, MutableRefObject } from "react";
 export interface SocketClient<Send, Receive> {
   socket: MutableRefObject<WebSocket | null>;
   messages: Send[] | Receive[];
-  handleSend: (message: Send, appendMessage: boolean) => void;
+  handleSend: (message: Send, appendMessage?: boolean) => void;
   handleClose: () => void;
   handleConnect: () => void;
   loading: boolean;

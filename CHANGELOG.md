@@ -1,5 +1,12 @@
 # Basel Changelog
 
+## v0.0.4
+
+## Added
+
+- Notificatioons
+- Improved meta indexing.
+
 ## v0.0.3
 
 ### Changed

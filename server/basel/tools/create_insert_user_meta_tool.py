@@ -23,6 +23,7 @@ class InsertUserMetaToolParams(BaseModel):
 
 
 async def insert_user_meta(user: User, fact: str):
+    user_meta = None
     try:
         user_meta = UserMeta(
             user=user,  # type:ignore
@@ -42,7 +43,9 @@ async def insert_user_meta(user: User, fact: str):
                 user=user,  # type:ignore
                 created_by=user,  # type:ignore
                 type=NotificationType.META_ADDED,
-                text="Basel added a new memory to your index.",
+                text=user_meta.data
+                if user_meta
+                else "Basel has added a new memory to your index.",
             )
             await notification.save()
 

@@ -1,8 +1,16 @@
 "use client";
 
 import { GlobalContext } from "@/app/provider";
-import { Drawer, Pagination, Timeline } from "flowbite-react";
-import { useContext, useEffect } from "react";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Drawer,
+  Label,
+  Pagination,
+  Timeline,
+} from "flowbite-react";
+import { useContext, useEffect, useState } from "react";
 import { AiTwotoneNotification } from "react-icons/ai";
 import { toggleNotificationDrawer } from "../useStore/notification";
 import { useCallApi } from "../useCallApi";
@@ -13,12 +21,15 @@ import { NotificationType, Notification } from "@/types";
 import { MdMarkEmailUnread } from "react-icons/md";
 import { addToast } from "../useStore/toast";
 import { usePagination } from "../usePagination";
+import { Typography } from "../typography";
+import { HiOutlineInbox } from "react-icons/hi";
 
 dayjs.extend(utc);
 
 export const NotificationDrawer = () => {
   const { pagination, handlePageChange, handleSetTotal, nextOffset } =
     usePagination();
+  const [showUnread, setShowUnread] = useState(true);
   const {
     dispatch,
     notificationClient,
@@ -34,20 +45,14 @@ export const NotificationDrawer = () => {
       query: {
         limit: pagination.limit,
         offset: nextOffset,
+        read: !showUnread,
       },
       body: null,
       path: null,
     },
     {
-      callOnMount: true,
       onSuccess: async (res) => {
         handleSetTotal(res?.total);
-
-        // Mark messages as read when user has seen them
-        const uuids = (res.data || [])
-          .filter((n) => !n.read)
-          .map((n) => n.uuid);
-        if (uuids.length) notificationClient?.handleSend({ uuids }, false);
       },
     },
   );
@@ -61,7 +66,7 @@ export const NotificationDrawer = () => {
       dispatch(
         addToast({
           type: "success",
-          title: last.type,
+          title: matchTitle(last.type),
           description: last.text,
         }),
       );
@@ -78,7 +83,12 @@ export const NotificationDrawer = () => {
     if (notificationDrawer) {
       notificationDrawer.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [pagination.currentPage]);
+  }, [pagination.currentPage, showUnread]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    call();
+  }, [open]);
 
   const handleClose = () => {
     dispatch(toggleNotificationDrawer(false));
@@ -95,6 +105,15 @@ export const NotificationDrawer = () => {
     }
   };
 
+  const handleClearAll = () => {
+    const uuids = (res?.data || []).filter((n) => !n.read).map((n) => n.uuid);
+    if (uuids.length) notificationClient?.handleSend({ uuids });
+  };
+
+  const handleRead = (uuid: string) => {
+    notificationClient?.handleSend({ uuids: [uuid] });
+  };
+
   return (
     <Drawer open={open} onClose={handleClose} id="notification_drawer">
       <Drawer.Header
@@ -103,28 +122,56 @@ export const NotificationDrawer = () => {
       />
       <Drawer.Items className="pl-2">
         <Timeline>
-          {res?.data?.map((n) => (
-            <Timeline.Item>
-              <Timeline.Point
-                icon={() => <MdMarkEmailUnread />}
-                theme={{
-                  marker: {
-                    icon: {
-                      wrapper: `absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full ${n.read ? "bg-slate-200" : "bg-green-200"} ring-8 ring-white ${n.read ? "dark:bg-slate-400" : "dark:bg-green-400"} dark:ring-gray-900`,
+          {!res?.data?.length ? (
+            <Card className="mb-2">
+              <div className="flex w-full items-center justify-center gap-2">
+                <HiOutlineInbox className="text-xl dark:text-white" />
+                <Typography.Heading className="text-xl">
+                  All caught up!
+                </Typography.Heading>
+              </div>
+            </Card>
+          ) : (
+            res?.data?.map((n) => (
+              <Timeline.Item key={n.uuid}>
+                <Timeline.Point
+                  icon={() => <MdMarkEmailUnread />}
+                  theme={{
+                    marker: {
+                      icon: {
+                        wrapper: `absolute -left-3 flex h-6 w-6 items-center justify-center rounded-full ${n.read ? "bg-slate-200" : "bg-green-200"} ring-8 ring-white ${n.read ? "dark:bg-slate-400" : "dark:bg-green-400"} dark:ring-gray-900`,
+                      },
                     },
-                  },
-                }}
-              />
-              <Timeline.Content>
-                <Timeline.Time>
-                  {dayjs.utc(n.created_at).local().format("MMM D YYYY h:mma")}
-                </Timeline.Time>
-                <Timeline.Title>{matchTitle(n.type)}</Timeline.Title>
-                <Timeline.Body>{n.text}</Timeline.Body>
-              </Timeline.Content>
-            </Timeline.Item>
-          ))}
+                  }}
+                />
+                <Timeline.Content>
+                  <Timeline.Time>
+                    {dayjs.utc(n.created_at).local().format("MMM D YYYY h:mma")}
+                  </Timeline.Time>
+                  <Timeline.Title>{matchTitle(n.type)}</Timeline.Title>
+                  <Timeline.Body className="flex flex-col">
+                    {n.text}
+                    {showUnread && (
+                      <Typography.Link
+                        className="cursor-pointer underline dark:text-slate-200"
+                        onClick={() => handleRead(n.uuid)}
+                      >
+                        Mark Read
+                      </Typography.Link>
+                    )}
+                  </Timeline.Body>
+                </Timeline.Content>
+              </Timeline.Item>
+            ))
+          )}
         </Timeline>
+        <div className="flex items-center justify-center gap-2">
+          <Checkbox
+            checked={showUnread}
+            onChange={() => setShowUnread((curr) => !curr)}
+          />
+          <Label>Show Unread</Label>
+        </div>
         <div className="mb-6 flex justify-center text-center">
           <Pagination
             currentPage={pagination.currentPage}
@@ -134,6 +181,11 @@ export const NotificationDrawer = () => {
             showIcons
           />
         </div>
+        {showUnread && (
+          <Button className="w-full" outline onClick={handleClearAll}>
+            Mark Page Read
+          </Button>
+        )}
       </Drawer.Items>
     </Drawer>
   );
