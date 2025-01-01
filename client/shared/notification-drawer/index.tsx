@@ -62,14 +62,17 @@ export const NotificationDrawer = () => {
     call();
     if (notificationClient?.messages.length) {
       // Dispatch toast on new messages
-      const last = notificationClient.messages.at(-1) as Notification;
-      dispatch(
-        addToast({
-          type: "success",
-          title: matchTitle(last.type),
-          description: last.text,
-        }),
-      );
+      const last = notificationClient.messages.at(-1);
+
+      if (last && "type" in last && "text" in last) {
+        dispatch(
+          addToast({
+            type: "success",
+            title: matchTitle(last.type),
+            description: last.text,
+          }),
+        );
+      }
     }
   }, [notificationClient?.messages.length]);
 
