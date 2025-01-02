@@ -20,13 +20,28 @@ class GetInterviewsParams(BaseModel):
     offset: Optional[int] = Field(
         default=0, description="The number of results skipped for pagination. Default 0"
     )
+    tags: Optional[List[str]] = Field(
+        description="An optional list of tags to search by."
+    )
+    url: Optional[str] = Field(
+        description="Search by the URL associated with the posting."
+    )
 
 
-async def get_interviews(search_term=None, limit=10, offset=0):
-    interviews = Interview.find().limit(limit).skip(offset)
+async def get_interviews(search_term=None, limit=10, offset=0, tags=None, url=None):
+    interviews = (
+        Interview.find(Interview.status == True, Interview.deleted_at == None)
+        .limit(limit)
+        .skip(offset)
+    )
 
     if search_term:
         interviews.find({"name": {"$regex": search_term, "$options": "i"}})
+    if tags:
+        tags_query = [{"tags": {"$regex": tag, "$options": "i"}} for tag in tags]
+        interviews.find({"$or": tags_query})
+    if url:
+        interviews.find({"url": url})
 
     interviews = await interviews.to_list()
 

@@ -22,6 +22,7 @@ from basel.tools.get_interview_questions_tool import create_get_interview_questi
 from basel.tools.get_interviews_tool import create_get_interviews_tool
 from basel.tools.scrape_webpage_tool import scrape_webpage_tool
 from basel.tools.create_insert_user_meta_tool import create_insert_user_meta_tool
+from basel.tools.create_update_interview_tool import create_update_interview_tool
 
 # DB
 from database.user import User
@@ -65,6 +66,10 @@ def get_admin_tools(current_user: User):
     # Create Interview Tool
     create_interview_tool = create_create_interview_tool(current_user)
     tools.append(create_interview_tool)
+
+    # Update Interview Tool
+    update_interview_tool = create_update_interview_tool(current_user)
+    tools.append(update_interview_tool)
 
     # Create Interview Question Tool
     create_interview_question_tool = create_create_interview_question_tool(current_user)

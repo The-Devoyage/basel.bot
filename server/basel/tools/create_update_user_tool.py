@@ -22,7 +22,7 @@ async def update_user(
     if last_name:
         user.last_name = last_name
     await user.save()
-    return user.to_public_dict()
+    return await user.to_public_dict()
 
 
 def create_update_user_tool(user: User):

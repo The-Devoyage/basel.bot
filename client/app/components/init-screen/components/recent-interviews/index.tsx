@@ -56,7 +56,7 @@ export const RecentInterviews = async () => {
               </Typography.Paragraph>
               <div className="flex w-full items-end justify-between">
                 <Badge color="green">{interview.organization_name}</Badge>
-                <Tooltip content="Take interview.">
+                <Tooltip content="Learn More">
                   <TakeInterviewButton interview={interview} />
                 </Tooltip>
               </div>

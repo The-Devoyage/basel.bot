@@ -40,19 +40,23 @@ async def create_interview(
     position,
     tags,
 ):
-    interview = await Interview(
-        name=name,
-        description=description,
-        created_by=current_user,  # type:ignore
-        organization_name=organization_name,
-        url=url,
-        interview_type=interview_type,
-        position=position,
-        tags=tags,
-    ).create()
-    if not interview:
-        raise Exception("Failed to create interview.")
-    return await interview.to_public_dict()
+    try:
+        interview = await Interview(
+            name=name,
+            description=description,
+            created_by=current_user,  # type:ignore
+            organization_name=organization_name,
+            url=url,
+            interview_type=interview_type,
+            position=position,
+            tags=tags,
+        ).create()
+        if not interview:
+            raise Exception("Failed to create interview.")
+        return await interview.to_public_dict()
+    except Exception as e:
+        logger.error(e)
+        return e
 
 
 def create_create_interview_tool(current_user: User):

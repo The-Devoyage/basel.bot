@@ -1,8 +1,15 @@
 # Basel Changelog
 
+## v0.0.5
+
+### Changed
+- Filter interviews by tags
+- Unique index on interview URL
+- Update Interview Tool
+
 ## v0.0.4
 
-## Added
+### Added
 
 - Notificatioons
 - Improved meta indexing.

@@ -46,7 +46,7 @@ async def update_interview_question(interview_question_uuid: str, question, stat
 def create_update_interview_question_tool():
     update_interview_question_tool = FunctionTool.from_defaults(
         name="update_interview_question_tool",
-        description="Useful to update a question or status of a question associated with an interview.",
+        description="Useful to update a question or status of a question associated with an interview but not the interview itself.",
         async_fn=update_interview_question,
         fn_schema=UpdateInterviewQuestionParams,
     )

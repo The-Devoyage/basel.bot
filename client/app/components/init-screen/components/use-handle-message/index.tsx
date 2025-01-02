@@ -44,7 +44,7 @@ export const useHandleMessage = () => {
           "Hey Basel! I am here to talk with you about the candidate you represent. Can you give me a summary of this canidate&apos;s profile?";
         break;
       case "interview":
-        text = `I would love to take the ${modifier} interview.`;
+        text = `Please tell me about the '${modifier}' interview.`;
         break;
       case "standup":
         text = `Can you please help me to log my next standup?`;
