@@ -20,7 +20,7 @@ async def get_interviews(
 ):
     try:
         interviews = (
-            await Interview.find()
+            await Interview.find(Interview.status == True, Interview.deleted_at == None)
             .limit(limit)
             .skip(offset)
             .sort(
