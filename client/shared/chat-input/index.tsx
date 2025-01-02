@@ -16,9 +16,6 @@ const commandResponses: Record<string, Record<string, string>> = {
 
 export const ChatInput = () => {
   const [messageText, setMessageText] = useState<string>("");
-  const [textareaHeight, setTextareaHeight] = useState<number | undefined>(
-    undefined,
-  );
   const [suggestion, setSuggestion] = useState<string>(""); // Current suggestion
   const {
     client,
@@ -42,7 +39,6 @@ export const ChatInput = () => {
     if (inputRef.current) {
       inputRef.current.style.height = "auto";
       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
-      setTextareaHeight(inputRef.current.scrollHeight);
     }
   }, [messageText]);
 
@@ -147,7 +143,7 @@ export const ChatInput = () => {
 
   return (
     <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
-      <div className="relative w-full">
+      <div className="relative flex w-full items-end">
         {suggestion && (
           <div
             className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden whitespace-pre-wrap text-gray-400 dark:text-gray-600"
@@ -161,12 +157,12 @@ export const ChatInput = () => {
         )}
         <textarea
           placeholder="Message Basel"
-          className="relative h-full w-full resize-none rounded bg-transparent focus:border-green-400 focus:ring-green-400 dark:bg-slate-950/5 dark:text-white"
+          className="no-scrollbar relative h-full w-full resize-none rounded bg-transparent focus:border-green-400 focus:ring-green-400 dark:bg-slate-950/5 dark:text-white"
           rows={1}
           ref={inputRef}
           style={{
             resize: "none",
-            height: textareaHeight,
+            minHeight: "47px",
           }}
           onChange={(e) => {
             const value = e.target.value;
@@ -192,14 +188,16 @@ export const ChatInput = () => {
           value={messageText}
         />
       </div>
-      <Button
-        color="green"
-        onClick={handleMessage}
-        disabled={!messageText || client?.loading}
-        isProcessing={client?.loading}
-      >
-        <GrSend className="h-6 w-6" />
-      </Button>
+      <div className="flex items-end">
+        <Button
+          color="green"
+          onClick={handleMessage}
+          disabled={!messageText || client?.loading}
+          isProcessing={client?.loading}
+        >
+          <GrSend className="h-6 w-6" />
+        </Button>
+      </div>
     </div>
   );
 };
