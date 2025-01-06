@@ -17,7 +17,7 @@ import { useCallApi } from "../useCallApi";
 import { Endpoint } from "@/api";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { NotificationType, Notification } from "@/types";
+import { NotificationType } from "@/types";
 import { MdMarkEmailUnread } from "react-icons/md";
 import { addToast } from "../useStore/toast";
 import { usePagination } from "../usePagination";

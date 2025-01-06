@@ -5,15 +5,16 @@ import { useCallApi } from "@/shared/useCallApi";
 import { useWindowSize } from "@/shared/useWindowSize";
 import HeatMap from "@uiw/react-heat-map";
 import dayjs, { Dayjs } from "dayjs";
-import { useThemeMode } from "flowbite-react";
+import utc from "dayjs/plugin/utc";
 import { Tooltip } from "react-tooltip";
 import { useEffect, useState } from "react";
 
+dayjs.extend(utc);
+
 export const StandupHeatmap = () => {
-  const themeMode = useThemeMode();
   const { windowSize } = useWindowSize();
   const [startDate, setStartDate] = useState<Dayjs>(
-    dayjs().subtract(1, "year"),
+    dayjs.utc().local().subtract(1, "year"),
   );
   const standups = useCallApi(
     {
@@ -51,7 +52,7 @@ export const StandupHeatmap = () => {
 
   const value = standups.res?.data?.reduce(
     (acc: { date: string; count: number }[], curr) => {
-      const date = dayjs(curr.created_at).format("YYYY/MM/DD");
+      const date = dayjs.utc(curr.created_at).local().format("YYYY/MM/DD");
       const exists = acc.findIndex((v) => v.date === date.toString());
       if (exists >= 0) {
         acc[exists] = { ...acc[exists], count: acc[exists].count + 1 };
