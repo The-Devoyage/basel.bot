@@ -107,6 +107,7 @@ export const ChatInput = () => {
   const handleMessage = () => {
     if (pathname !== "/") router.push("/");
     if (!messageText) return;
+    if (!client?.connected) client?.handleConnect();
 
     // Check if the message is a command and format it accordingly
     const [baseCommand, subCommand] = messageText.split(" ");

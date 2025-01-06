@@ -1,14 +1,24 @@
 import { Endpoint, callApi } from "@/api";
 import { Typography } from "@/shared/typography";
-import { Alert, Badge, Card, Tooltip } from "flowbite-react";
+import { Alert, Badge, Button, Card, Tooltip } from "flowbite-react";
 import { FaCircleCheck } from "react-icons/fa6";
 import { TbReportAnalytics } from "react-icons/tb";
-import { TakeInterviewButton } from "./components";
+import {
+  AddInterviewButton,
+  SearchInterviewsButton,
+  TakeInterviewButton,
+} from "./components";
 
 export const RecentInterviews = async () => {
+  const isAuthenticated = await callApi({
+    endpoint: Endpoint.Verify,
+    query: null,
+    body: null,
+    path: null,
+  });
   const interviews = await callApi({
     endpoint: Endpoint.GetInterviews,
-    query: { limit: 6 },
+    query: { limit: 6, created_by_me: isAuthenticated.success },
     body: null,
     path: null,
   });
@@ -19,7 +29,12 @@ export const RecentInterviews = async () => {
         <Typography.Heading className="flex text-lg">
           <TbReportAnalytics className="mr-2 text-2xl" />
         </Typography.Heading>
-        <Typography.Heading className="text-xl">Interviews</Typography.Heading>
+        <div className="flex w-full items-center justify-between">
+          <Typography.Heading className="text-xl">
+            Interviews
+          </Typography.Heading>
+          <AddInterviewButton />
+        </div>
       </div>
       <Alert color="purple">
         <div className="flex items-center gap-2">
@@ -29,7 +44,7 @@ export const RecentInterviews = async () => {
         </div>
       </Alert>
       <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
-        {(interviews.data || []).map((interview) => (
+        {(interviews?.data || []).map((interview) => (
           <Card
             className="border-t-4 border-t-purple-200 dark:border-t-purple-400"
             key={interview.uuid}
@@ -65,6 +80,7 @@ export const RecentInterviews = async () => {
           </Card>
         ))}
       </div>
+      <SearchInterviewsButton />
     </div>
   );
 };

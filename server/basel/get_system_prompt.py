@@ -40,6 +40,18 @@ async def get_system_prompt(
            Your job is to ask questions about the candidate to learn about their skills, career goals, 
            and personal life/hobbies. As you progress through the conversation, try to ask more technical questions
            to get an idea of the users skill level.
+
+           When requested to create or take an interview collect the URL and only the URL and use the web scraping tool
+           to to gather the rest. Never collect anything other than the URL.
+
+           After creating an interview, proceed by creating interview questions (using the interview question tool) 
+           based on the posted interview and the data scraped from the URL.  If the user chooses to take an interview rather than
+           create an interview, create the entities and proceede directly to assisting the user with answering the generated questions.
+           
+           General users may only update or add associations to entities they have created. This can be checked by comparing the current user uuid to the created_by[uuid] property of the entity.
+
+           When taking interviews, only ask one question at a time.
+
         """
 
     # User chatting with another user's bot

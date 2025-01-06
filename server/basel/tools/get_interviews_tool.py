@@ -30,7 +30,9 @@ class GetInterviewsParams(BaseModel):
 
 async def get_interviews(search_term=None, limit=10, offset=0, tags=None, url=None):
     interviews = (
-        Interview.find(Interview.status == True, Interview.deleted_at == None)
+        Interview.find(
+            Interview.status == True, Interview.deleted_at == None, fetch_links=True
+        )
         .limit(limit)
         .skip(offset)
     )

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useRef, MutableRefObject } from "react";
+import { useState, useRef, MutableRefObject, useEffect } from "react";
 
 export interface SocketClient<Send, Receive> {
   socket: MutableRefObject<WebSocket | null>;
   messages: Send[] | Receive[];
   handleSend: (message: Send, appendMessage?: boolean) => void;
   handleClose: () => void;
-  handleConnect: () => void;
+  handleConnect: () => WebSocket;
   loading: boolean;
   initializing: boolean;
   connected: boolean;
@@ -18,7 +18,6 @@ export const useSocket = <Send, Receive>(
   options?: {
     onReceive?: (s: Receive) => void;
     onError?: (e: Event) => void;
-    onRetryFailed?: () => void;
     onClose?: () => void;
   },
 ) => {
@@ -26,18 +25,19 @@ export const useSocket = <Send, Receive>(
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [messages, setMessages] = useState<(Send | Receive)[]>([]);
+  const [messageQueue, setMessageQueue] = useState<Send[]>([]);
   const [connected, setConnected] = useState(false);
-  const reconnectTimeout = useRef(1000);
   const closed = useRef(false);
 
-  const retryConnection = () => {
-    if (closed.current) return;
-    setTimeout(() => {
-      options?.onRetryFailed?.();
-      handleConnect();
-      reconnectTimeout.current = Math.min(reconnectTimeout.current * 2, 30000); // Exponential backoff up to 30 seconds
-    }, reconnectTimeout.current);
-  };
+  useEffect(() => {
+    if (socket.current?.readyState === WebSocket.OPEN) {
+      console.log("OPENED QUEUE");
+      for (const m of messageQueue) {
+        socket?.current?.send(JSON.stringify(m));
+      }
+      setMessageQueue([]);
+    }
+  }, [socket.current?.readyState]);
 
   const handleConnect = () => {
     setInitializing(true);
@@ -60,7 +60,6 @@ export const useSocket = <Send, Receive>(
     ws.onclose = () => {
       console.log("Disconnected from server");
       setConnected(false);
-      retryConnection();
       options?.onClose?.();
     };
 
@@ -80,9 +79,12 @@ export const useSocket = <Send, Receive>(
   };
 
   const handleSend = (message: Send, appendMessage = true) => {
-    if (!connected) return;
-    setLoading(true);
     if (appendMessage) setMessages((prev) => [...prev, message]);
+    if (!connected) {
+      setMessageQueue((curr) => [...curr, message]);
+      return;
+    }
+    setLoading(true);
     socket?.current?.send(JSON.stringify(message));
   };
 

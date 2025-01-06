@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Optional, cast
 from uuid import UUID
 from fastapi import Cookie
 from fastapi.exceptions import HTTPException
@@ -59,6 +59,15 @@ async def verify_token_session(token_session_uuid: str) -> bool:
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=401, detail="Invalid token")
+
+
+async def optional_auth(token: Optional[str] = Cookie(None)) -> Optional[UserClaims]:
+    """Verify a Optional JWT token."""
+    logger.debug(f"Optional Token: {token}")
+    if not token:
+        return None
+    user_claims = await handle_decode_token(token)
+    return user_claims
 
 
 async def require_auth(token: str = Cookie(None)) -> UserClaims:

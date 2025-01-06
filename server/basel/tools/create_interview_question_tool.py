@@ -4,6 +4,7 @@ from llama_index.core.tools.function_tool import FunctionTool
 from database.interview import Interview
 
 from database.interview_question import InterviewQuestion
+from database.role import Role, RoleIdentifier
 from database.user import User
 
 
@@ -14,8 +15,14 @@ class CreateInterviewQuestionParams(BaseModel):
     question: str = Field(description="The question associated with an interview.")
 
 
-async def create_interview_question(current_user: User, interview_uuid, question):
-    interview = await Interview.find_one(Interview.uuid == UUID(interview_uuid))
+async def create_interview_question(current_user: User, interview_uuid, question, role):
+    if role.identifier == RoleIdentifier.ADMIN:
+        interview = await Interview.find_one(Interview.uuid == UUID(interview_uuid))
+    else:
+        interview = await Interview.find_one(
+            Interview.uuid == UUID(interview_uuid),
+            Interview.created_by.id == current_user.id,  # type:ignore
+        )
 
     if not interview:
         raise Exception("Interview not found.")
@@ -32,13 +39,17 @@ async def create_interview_question(current_user: User, interview_uuid, question
     return await interview_question.to_public_dict()
 
 
-def create_create_interview_question_tool(current_user: User):
+def create_create_interview_question_tool(current_user: User, role: Role):
     create_interview_question_tool = FunctionTool.from_defaults(
         async_fn=lambda interview_uuid, question: create_interview_question(
-            current_user, interview_uuid, question
+            current_user, interview_uuid, question, role=role
         ),
         name="create_interview_question_tool",
-        description="Useful to create an associate a question to an intervview.",
+        description="""
+        Useful to create an associate a question to an interview. 
+        General users may only add questions to interviews they have created.
+        Admin users may add questions to any interview.
+        """,
         fn_schema=CreateInterviewQuestionParams,
     )
     return create_interview_question_tool

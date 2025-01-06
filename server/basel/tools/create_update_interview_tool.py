@@ -3,6 +3,7 @@ from uuid import UUID
 from chromadb.api.models.Collection import logging
 from llama_index.core.tools import FunctionTool
 from pydantic import BaseModel, Field
+from database.role import Role, RoleIdentifier
 from database.user import User
 from database.interview import Interview, InterviewType
 
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class UpdateInterviewToolParams(BaseModel):
     interview_uuid: str = Field(
-        description="The UUID of the interview of which to update."
+        description="The UUID of the interview of which to update. Can be fetched using the get_interviews tool if needed."
     )
     name: Optional[str] = Field(description="The given logical name of the interview.")
     description: Optional[str] = Field(description="The description of the interview.")
@@ -28,6 +29,7 @@ class UpdateInterviewToolParams(BaseModel):
 async def update_interview(
     interview_uuid: str,
     user: User,
+    role: Role,
     name: Optional[str] = None,
     description: Optional[str] = None,
     interview_type: Optional[InterviewType] = None,
@@ -36,7 +38,13 @@ async def update_interview(
     status: Optional[bool] = None,
 ):
     try:
-        interview = await Interview.find_one(Interview.uuid == UUID(interview_uuid))
+        if role.identifier == RoleIdentifier.ADMIN:  # type:ignore
+            interview = await Interview.find_one(Interview.uuid == UUID(interview_uuid))
+        else:
+            interview = await Interview.find_one(
+                Interview.uuid == UUID(interview_uuid),
+                Interview.created_by.id == user.id,  # type:ignore
+            )
 
         if not interview:
             raise Exception("Interview not found.")
@@ -65,13 +73,14 @@ async def update_interview(
         return e
 
 
-def create_update_interview_tool(current_user: User):
+def create_update_interview_tool(current_user: User, role: Role):
     update_interview_tool = FunctionTool.from_defaults(
         name="update_interview_tool",
         description="Update an existing interview including name, organization name, description, interview type, tags, position and status.",
         async_fn=lambda interview_uuid, name, description, interview_type, tags, position, status: update_interview(
             interview_uuid=interview_uuid,
             user=current_user,
+            role=role,
             name=name,
             description=description,
             interview_type=interview_type,

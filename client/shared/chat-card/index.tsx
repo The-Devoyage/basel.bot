@@ -65,7 +65,13 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
                 h5: (props) => (
                   <h5 {...props} className="dark:text-slate-300" />
                 ),
-                a: (props) => <a {...props} className="dark:text-slate-400" />,
+                a: (props) => (
+                  <a
+                    {...props}
+                    className="dark:text-slate-400"
+                    target="_blank"
+                  />
+                ),
               }}
             >
               {message.text}

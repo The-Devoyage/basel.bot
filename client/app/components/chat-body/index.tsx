@@ -4,7 +4,6 @@ import { useContext, useEffect, useRef } from "react";
 import { GlobalContext } from "@/app/provider";
 import { ChatCard } from "@/shared/chat-card";
 import { Loader } from "@/shared/loader";
-import { Alert, Spinner } from "flowbite-react";
 
 export const ChatBody = () => {
   const { client } = useContext(GlobalContext);
@@ -22,18 +21,6 @@ export const ChatBody = () => {
       initScreen?.classList.add("hidden");
     }
   }, [ref.current, client?.messages]);
-
-  if (client?.messages.length && !client.connected) {
-    return (
-      <Alert color="warning" className="flex space-x-4">
-        <Spinner />
-        <span className="ml-3">
-          We are having trouble connecting, please wait while we try to
-          reconnect!
-        </span>
-      </Alert>
-    );
-  }
 
   if (!client || client?.initializing) return <Loader />;
 

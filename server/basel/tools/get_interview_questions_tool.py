@@ -8,7 +8,7 @@ from database.interview_question import InterviewQuestion
 
 class GetInterviewQuestionsParams(BaseModel):
     interview_uuid: str = Field(
-        description="The UUID of the interview to get questions for."
+        description="The UUID of the interview to get questions for. Get the UUID using the get_interval_tool if needed."
     )
 
 

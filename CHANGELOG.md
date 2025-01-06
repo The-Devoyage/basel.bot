@@ -1,5 +1,9 @@
 # Basel Changelog
 
+## v0.0.6
+- Update interview process.
+- Update websocket reconnect.
+
 ## v0.0.5
 
 ### Changed

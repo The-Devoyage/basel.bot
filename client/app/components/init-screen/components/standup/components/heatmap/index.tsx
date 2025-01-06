@@ -71,7 +71,7 @@ export const StandupHeatmap = () => {
         height="100%"
         weekLabels={false}
         style={{
-          color: themeMode.mode === "dark" ? "#FCE96A" : undefined,
+          color: "#9CA3AF",
         }}
         legendCellSize={0}
         rectSize={24}

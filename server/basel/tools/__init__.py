@@ -23,6 +23,7 @@ from basel.tools.get_interviews_tool import create_get_interviews_tool
 from basel.tools.scrape_webpage_tool import scrape_webpage_tool
 from basel.tools.create_insert_user_meta_tool import create_insert_user_meta_tool
 from basel.tools.create_update_interview_tool import create_update_interview_tool
+from database.role import Role
 
 # DB
 from database.user import User
@@ -57,27 +58,8 @@ def get_global_tools(chatting_with: User):
     return tools
 
 
-def get_admin_tools(current_user: User):
+def get_admin_tools():
     tools: List[BaseTool] = []
-
-    # Scrape Webpage Tool
-    tools.append(scrape_webpage_tool)
-
-    # Create Interview Tool
-    create_interview_tool = create_create_interview_tool(current_user)
-    tools.append(create_interview_tool)
-
-    # Update Interview Tool
-    update_interview_tool = create_update_interview_tool(current_user)
-    tools.append(update_interview_tool)
-
-    # Create Interview Question Tool
-    create_interview_question_tool = create_create_interview_question_tool(current_user)
-    tools.append(create_interview_question_tool)
-
-    # Update Interview Question Tool
-    update_interview_question_tool = create_update_interview_question_tool()
-    tools.append(update_interview_question_tool)
 
     return tools
 
@@ -94,7 +76,7 @@ def get_general_tools(current_user: User):
     return tools
 
 
-def get_candidate_tools(current_user: User):
+def get_candidate_tools(current_user: User, role: Role):
     tools: List[BaseTool] = []
     # Update User
     update_user_tool = create_update_user_tool(current_user)
@@ -112,4 +94,26 @@ def get_candidate_tools(current_user: User):
     insert_user_meta_tool = create_insert_user_meta_tool(current_user)
     tools.append(insert_user_meta_tool)
 
+    # Scrape Webpage Tool
+    tools.append(scrape_webpage_tool)
+
+    # Create Interview Tool
+    create_interview_tool = create_create_interview_tool(current_user)
+    tools.append(create_interview_tool)
+
+    # Update Interview Tool
+    update_interview_tool = create_update_interview_tool(current_user, role)
+    tools.append(update_interview_tool)
+
+    # Create Interview Question Tool
+    create_interview_question_tool = create_create_interview_question_tool(
+        current_user, role
+    )
+    tools.append(create_interview_question_tool)
+
+    # Update Interview Question Tool
+    update_interview_question_tool = create_update_interview_question_tool(
+        current_user, role
+    )
+    tools.append(update_interview_question_tool)
     return tools

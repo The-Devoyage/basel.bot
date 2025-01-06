@@ -56,14 +56,14 @@ async def get_agent(
                 raise Exception("Can't find role")
 
             if role.identifier == RoleIdentifier.ADMIN:  # type:ignore
-                tools.extend(get_admin_tools(user_claims.user))
+                tools.extend(get_admin_tools())
 
             # Handle General User Role Tools
             tools.extend(get_general_tools(user_claims.user))
 
             # Tools for the candidate
             if chatting_with.id == user_claims.user.id:
-                tools.extend(get_candidate_tools(user_claims.user))
+                tools.extend(get_candidate_tools(user_claims.user, role))  # type:ignore
 
                 # Populate Recent Chat History
                 messages = (

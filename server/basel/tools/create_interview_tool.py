@@ -13,20 +13,25 @@ logger = logging.getLogger(__name__)
 class CreateInterviewParams(BaseModel):
     name: str = Field(description="The name of the interview.")
     description: str = Field(description="The description of the interview.")
-    url: str = Field(
-        description="The URL of the job posting associated with the interview you are creating."
+    url: Optional[str] = Field(
+        description="The URL of the job posting associated with the interview you are creating.",
+        default=None,
     )
     organization_name: Optional[str] = Field(
-        description="The organization or company name of which the interview belongs to."
+        description="The organization or company name of which the interview belongs to.",
+        default=None,
     )
     interview_type: InterviewType = Field(
-        description="The type of interview being created. Default to `general`."
+        description="The type of interview being created. Default to `general`.",
+        default=None,
     )
     position: Optional[str] = Field(
-        description="The position associated with the application or interview."
+        description="The position associated with the application or interview.",
+        default=None,
     )
     tags: List[str] = Field(
-        description="Tags, categories, and descriptors of the organziation, position, and interview."
+        description="Tags, categories, and descriptors of the organziation, position, and interview.",
+        default=[],
     )
 
 
@@ -73,7 +78,7 @@ def create_create_interview_tool(current_user: User):
         ),
         name="create_interiew_tool",
         description="""
-        Useful to create an interview object by the request of a user. 
+        Useful to insert an interview into the database by the request of a user. 
         Once created interview questions may be created and associated with the interview.
         Always confirm before creating.
         """,

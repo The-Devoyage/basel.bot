@@ -96,7 +96,9 @@ interface EndpointParams {
     path: { uuid: string };
   };
   [Endpoint.GetInterviews]: {
-    query: PaginationQuery;
+    query: PaginationQuery & {
+      created_by_me?: boolean;
+    };
     body: undefined;
     path: undefined;
   };
