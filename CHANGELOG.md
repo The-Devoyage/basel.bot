@@ -1,5 +1,8 @@
 # Basel Changelog
 
+## v0.0.7
+- Click heatmap for specific standup.
+
 ## v0.0.6
 - Update interview process.
 - Update websocket reconnect.
