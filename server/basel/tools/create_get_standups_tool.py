@@ -18,10 +18,10 @@ class GetStandupsParams(BaseModel):
         description="How many to skip for pagination. Default 0"
     )
     start_date: Optional[str] = Field(
-        description="Search for interviews created on or after this date."
+        description="Search for interviews created on or after this date. UTC."
     )
     end_date: Optional[str] = Field(
-        description="Search for interviews created before or equivelant to this date.",
+        description="Search for interviews created before or equivelant to this date. UTC.",
     )
 
 

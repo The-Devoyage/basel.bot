@@ -67,7 +67,7 @@ export const StandupHeatmap = () => {
   );
 
   const handleClick = (date: string) => {
-    handleMessage("summerize_standups", dayjs(date).format("MMMM D, YYYY"));
+    handleMessage("summerize_standups", dayjs(date).format("MMMM D, YYYY (Z)"));
   };
 
   return (
