@@ -1,6 +1,6 @@
+import logging
 from datetime import datetime
 from typing import Optional
-from chromadb.api.models.Collection import logging
 from classes.user_claims import UserClaims
 from database.standup import Standup
 from fastapi import APIRouter, Depends, HTTPException
