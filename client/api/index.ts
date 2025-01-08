@@ -37,6 +37,7 @@ export enum Endpoint {
   GetOnboarding = "/onboarding",
   GetStandups = "/standups",
   GetNotifications = "/notifications",
+  GetSuggestion = "/suggest",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -122,6 +123,11 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetSuggestion]: {
+    query: undefined;
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -142,6 +148,7 @@ export interface EndpointResponse {
   [Endpoint.GetOnboarding]: Onboarding;
   [Endpoint.GetStandups]: Standup[];
   [Endpoint.GetNotifications]: Notification[];
+  [Endpoint.GetSuggestion]: { text: string };
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

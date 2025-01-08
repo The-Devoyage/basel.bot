@@ -6,11 +6,19 @@ import { GrSend } from "react-icons/gr";
 import { GlobalContext } from "@/app/provider";
 import { Message } from "@/types";
 import { useRouter, usePathname } from "next/navigation";
+import { ChatAutocomplete } from "./components";
 
 // Command map with primary commands and subcommands
 const commandResponses: Record<string, Record<string, string>> = {
   "/interviews": {
     list: "Can you please list interviews available for me to take?",
+    take: "I'd like to take an interview based on a job posting I have found.",
+    create:
+      "Can you help me create a custom interview that does not have a job posting?",
+  },
+  "/standup": {
+    log: "Can you assist me with logging a new standup?",
+    list: "Can you list my recent standups?",
   },
 };
 
@@ -145,6 +153,7 @@ export const ChatInput = () => {
   return (
     <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
       <div className="relative flex w-full items-end">
+        <ChatAutocomplete setMessageText={setMessageText} />
         {suggestion && (
           <div
             className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden whitespace-pre-wrap text-gray-400 dark:text-gray-600"

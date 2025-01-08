@@ -1,5 +1,9 @@
 # Basel Changelog
 
+## v0.0.8
+
+- Auto suggest responses for interviews based on candidate profile.
+
 ## v0.0.7
 - Click heatmap for specific standup.
 
