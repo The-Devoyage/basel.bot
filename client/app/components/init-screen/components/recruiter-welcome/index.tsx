@@ -50,8 +50,8 @@ export const RecruiterWelcome = () => {
       {status && (
         <>
           <Typography.Paragraph className="dark:text-slate-600">
-            Ask me anything you'd like to know about the candidate, and I'll do
-            my best to answer on their behalf.
+            Ask me anything you&apos;d like to know about the candidate, and
+            I&apos;ll do my best to answer on their behalf.
           </Typography.Paragraph>
           <div className="flex gap-2">
             <Button
