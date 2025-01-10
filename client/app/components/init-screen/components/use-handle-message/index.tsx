@@ -15,7 +15,8 @@ export type MessageType =
   | "standup"
   | "create_interview"
   | "search_interviews"
-  | "summerize_standups";
+  | "summerize_standups"
+  | "generate_resume";
 
 export const useHandleMessage = () => {
   const { client } = useContext(GlobalContext);
@@ -61,6 +62,9 @@ export const useHandleMessage = () => {
         break;
       case "summerize_standups":
         text = `Can you please summerize the standups I submitted from ${modifier}.`;
+        break;
+      case "generate_resume":
+        text = `Generate a resume for the candidate.`;
         break;
       default:
         text = "Tell me a bit about the Basel platform.";

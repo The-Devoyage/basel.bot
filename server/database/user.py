@@ -21,6 +21,9 @@ class User(BaseMongoModel):
     def exclude_from_public_dict(self) -> Set[str]:
         return {"id", "auth_id"}
 
+    def get_virtual_fields(self) -> dict:
+        return {"full_name": self.full_name()}
+
     def full_name(self) -> Optional[str]:
         name = ""
         if self.first_name:

@@ -7,7 +7,9 @@ import {
   ProfileViews,
   RecentInterviews,
   RecruiterWelcome,
+  UserWelcome,
 } from "./components";
+import { message } from "./message";
 
 export const InitScreen = () => {
   return (
@@ -20,14 +22,19 @@ export const InitScreen = () => {
       <div className="flex w-full flex-col gap-4 md:flex-row">
         <ChatCard
           message={{
-            text: `Hello there! I'm Basel, your personal career assistant. I am 
-                   ready to help you find jobs, prepare for interviews, and keep 
-                   your dynamic resume up to date. **How can I help you today?**`,
+            text: message,
             sender: "bot",
             timestamp: new Date(),
           }}
         />
-        <ProfileViews />
+        <div className="flex flex-col gap-2">
+          <div>
+            <UserWelcome />
+          </div>
+          <div>
+            <ProfileViews />
+          </div>
+        </div>
       </div>
       <Standup />
       <RecentInterviews />

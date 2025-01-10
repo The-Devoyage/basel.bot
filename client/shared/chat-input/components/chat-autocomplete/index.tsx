@@ -32,12 +32,9 @@ export const ChatAutocomplete: FC<{
       <Tooltip content="Suggest a Response." placement="top">
         <button
           onClick={handleClick}
-          className={clsx(
-            "p-3 text-slate-400 hover:text-slate-600 dark:hover:text-white",
-            {
-              "animate-shake animate-bounce": loading,
-            },
-          )}
+          className={clsx("p-3 text-slate-400 hover:text-yellow-300", {
+            "animate-shake animate-bounce": loading,
+          })}
         >
           <PiLightningDuotone className="h-6 w-6" />
         </button>

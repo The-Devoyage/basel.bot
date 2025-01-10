@@ -44,25 +44,33 @@ export const RecruiterWelcome = () => {
       </Typography.Heading>
       <Typography.Paragraph className="my-2 dark:text-slate-600">
         {status
-          ? `It looks like you might be here to learn about ${user?.first_name || "a candidate"}! Tell Basel
-        about yourself, the organization you are with, and the position you are
-        trying to fill.`
+          ? `It looks like you might be here to learn about ${user?.first_name || "a candidate"}!`
           : `The user has revoked access to their bot. Please try again later.`}
       </Typography.Paragraph>
       {status && (
         <>
           <Typography.Paragraph className="dark:text-slate-600">
-            Basel will help you learn about this candidate so that you may
-            determine if they are a good fit or not.
+            Ask me anything you'd like to know about the candidate, and I'll do
+            my best to answer on their behalf.
           </Typography.Paragraph>
-          <Button
-            gradientDuoTone="purpleToBlue"
-            outline
-            onClick={() => handleMessage("candidate")}
-            className="mt-4 w-full"
-          >
-            Interview {user?.first_name || "the Candidate"}&apos;s Basel
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              gradientDuoTone="greenToBlue"
+              outline
+              onClick={() => handleMessage("generate_resume")}
+              className="mt-4 w-full"
+            >
+              Generate Resume
+            </Button>
+            <Button
+              gradientDuoTone="purpleToBlue"
+              outline
+              onClick={() => handleMessage("candidate")}
+              className="mt-4 w-full"
+            >
+              Interview {user?.first_name || "the Candidate"}&apos;s Basel
+            </Button>
+          </div>
         </>
       )}
     </Alert>

@@ -6,3 +6,4 @@ export * from "./profile-views";
 export * from "./recent-interviews";
 export * from "./onboarding";
 export * from "./standup";
+export * from "./user-welcome";

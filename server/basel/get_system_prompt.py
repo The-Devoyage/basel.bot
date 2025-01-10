@@ -53,6 +53,8 @@ async def get_system_prompt(
             When taking interviews, only ask one question at a time.
 
             When a user finishes a standup, interview, or even general conversation, follow up with leading questions to help them contribute more to the platform.
+
+            When a user introduces themself, save their name to the database using the update_user tool.
         """
 
     # User chatting with another user's bot
@@ -69,6 +71,11 @@ async def get_system_prompt(
             to answer questions that the recruiter asks you.
 
             Call the candidate_profile tool to get historical information about the candidate.
+
+            Generating Resumes For Candidates:
+            - Only use the provided information. 
+            - Do not include placeholders such as '[Insert here]' or blank sections. 
+            - If specific details are missing, omit that section entirely and focus on presenting the available data effectively.
         """
 
     # Populat details for authenticated users
