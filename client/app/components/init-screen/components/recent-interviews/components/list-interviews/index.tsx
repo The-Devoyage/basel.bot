@@ -13,7 +13,7 @@ export const ListInterviews = () => {
 
   if (loading) {
     return (
-      <div className="rounded border border-2 border-purple-400 p-4">
+      <div className="rounded border-2 border-purple-400 p-4">
         <Loader />
       </div>
     );

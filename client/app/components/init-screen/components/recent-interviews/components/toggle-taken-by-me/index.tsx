@@ -18,7 +18,7 @@ export const ToggleTakenByMe = () => {
   if (!isAuthenticated) return null;
 
   return (
-    <div className="flex w-full items-center justify-center rounded-md border border-2 border-purple-300 p-2 md:w-1/5">
+    <div className="flex w-full items-center justify-center rounded-md border-2 border-purple-300 p-2 md:w-1/5">
       <ToggleSwitch
         checked={isTakenByMe}
         onChange={(c) => handleTakenByMe(c)}
