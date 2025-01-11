@@ -22,7 +22,7 @@ export const GlobalContext = createContext<GlobalContext>({
   client: null,
   store: {
     toasts: [],
-    isAuthenticated: false,
+    isAuthenticated: null,
     me: null,
     notifications: { open: false },
   },

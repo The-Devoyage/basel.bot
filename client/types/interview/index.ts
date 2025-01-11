@@ -11,6 +11,8 @@ export interface Interview {
   organization_name?: string;
   position?: string;
   description: string;
+  question_count: number;
+  response_count: number;
   status: boolean;
   created_at: string;
   updated_at: string;

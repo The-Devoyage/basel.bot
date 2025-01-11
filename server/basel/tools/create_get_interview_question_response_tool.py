@@ -1,13 +1,15 @@
 from uuid import UUID
+from chromadb.api.models.Collection import logging
 from llama_index.core.bridge.pydantic import BaseModel, Field
 from llama_index.core.tools.function_tool import FunctionTool
 from database.interview_question_response import InterviewQuestionResponse
 
 from database.user import User
 
+logger = logging.getLogger(__name__)
+
 
 class GetInterviewQuestionResponsesParams(BaseModel):
-    user: User
     interview_uuid: str = Field(
         description="The UUID of the interview the interview that the questions belong to."
     )

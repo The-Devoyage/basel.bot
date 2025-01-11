@@ -1,10 +1,11 @@
 from typing import List, Optional
 from beanie import SortDirection
+from beanie.operators import Or
 from chromadb.api.models.Collection import logging
 from fastapi import APIRouter, Depends, HTTPException
 
 from classes.user_claims import UserClaims
-from database.interview import Interview
+from database.interview import Interview, get_pipeline
 from utils.jwt import optional_auth
 from utils.responses import create_response
 
@@ -19,6 +20,7 @@ async def get_interviews(
     tags: Optional[List[str]] = None,
     url: Optional[str] = None,
     created_by_me: Optional[bool] = None,
+    taken_by_me: bool = False,
     limit: Optional[int] = 10,
     offset: Optional[int] = 0,
     user_claims: Optional[UserClaims] = Depends(optional_auth),
@@ -36,24 +38,34 @@ async def get_interviews(
             query.find({"$or": tags_query})
         if url:
             query.find({"url": url})
-        if created_by_me:
-            query.find(
-                Interview.created_by.id == user_claims.user.id,  # type:ignore
-                fetch_links=True,
-            )
-        total = await query.count()
+        if created_by_me is not None:
+            if created_by_me:
+                query.find(
+                    Interview.created_by.id == user_claims.user.id,  # type:ignore
+                    fetch_links=True,
+                )
+            else:
+                query.find(
+                    Interview.created_by.id != user_claims.user.id,  # type:ignore
+                    fetch_links=True,
+                )
+
+        pipeline = get_pipeline(user_claims, taken_by_me)
+
+        total = await query.aggregate(pipeline).to_list()
 
         interviews = (
             await query.limit(limit)
             .skip(offset)
             .sort([(Interview.created_at, SortDirection.DESCENDING)])  # type:ignore
+            .aggregate(pipeline)
             .to_list()
         )
 
         return create_response(
             success=True,
-            data=[await interview.to_public_dict() for interview in interviews],
-            total=total,
+            data=interviews,
+            total=len(total),
         )
 
     except Exception as e:

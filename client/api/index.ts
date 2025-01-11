@@ -99,6 +99,7 @@ interface EndpointParams {
   [Endpoint.GetInterviews]: {
     query: PaginationQuery & {
       created_by_me?: boolean;
+      taken_by_me?: boolean;
     };
     body: undefined;
     path: undefined;

@@ -7,7 +7,7 @@ export const SET_ME = "SET_ME";
 export type SetAuthenticatedAction = {
   type: typeof SET_AUTHENTICATED;
   payload: {
-    isAuthenticated: boolean;
+    isAuthenticated: boolean | null;
   };
 };
 export type SetMeAction = {
@@ -18,7 +18,7 @@ export type SetMeAction = {
 };
 
 export type Action = SetAuthenticatedAction | SetMeAction;
-export type State = { isAuthenticated: boolean; me: User | null };
+export type State = { isAuthenticated: boolean | null; me: User | null };
 
 export const authReducer: Reducer<State, Action> = (
   state: State,
@@ -36,7 +36,7 @@ export const authReducer: Reducer<State, Action> = (
 
 // Actions
 export const setAuthenticated = (
-  isAuthenticated: boolean,
+  isAuthenticated: boolean | null,
 ): SetAuthenticatedAction => ({
   type: SET_AUTHENTICATED,
   payload: { isAuthenticated },

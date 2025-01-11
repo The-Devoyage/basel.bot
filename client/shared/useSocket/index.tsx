@@ -31,7 +31,6 @@ export const useSocket = <Send, Receive>(
 
   useEffect(() => {
     if (socket.current?.readyState === WebSocket.OPEN) {
-      console.log("OPENED QUEUE");
       for (const m of messageQueue) {
         socket?.current?.send(JSON.stringify(m));
       }
@@ -43,11 +42,10 @@ export const useSocket = <Send, Receive>(
     setInitializing(true);
     const ws = new WebSocket(url);
 
-    ws.onopen = (e) => {
+    ws.onopen = () => {
       setLoading(false);
       setInitializing(false);
       setConnected(true);
-      console.log("Connected to server", e);
     };
 
     ws.onmessage = (message: { data: Receive }) => {
@@ -58,13 +56,11 @@ export const useSocket = <Send, Receive>(
     };
 
     ws.onclose = () => {
-      console.log("Disconnected from server");
       setConnected(false);
       options?.onClose?.();
     };
 
     ws.onerror = (error) => {
-      console.error("WebSocket Error:", error);
       options?.onError?.(error);
     };
 

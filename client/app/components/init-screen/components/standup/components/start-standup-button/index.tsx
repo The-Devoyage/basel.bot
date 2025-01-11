@@ -20,7 +20,6 @@ export const StartStandupButton = () => {
   const standup = searchParams.get("standup");
 
   useEffect(() => {
-    console.log(standup);
     if (standup) setVisible(true);
   }, [standup]);
 

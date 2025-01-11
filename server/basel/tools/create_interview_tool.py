@@ -39,11 +39,11 @@ async def create_interview(
     current_user: User,
     name,
     description,
-    url,
-    organization_name,
-    interview_type,
-    position,
-    tags,
+    url=None,
+    organization_name=None,
+    interview_type: InterviewType = InterviewType.GENERAL,
+    position=None,
+    tags: List[str] = [],
 ):
     try:
         interview = await Interview(
@@ -67,14 +67,14 @@ async def create_interview(
 def create_create_interview_tool(current_user: User):
     create_interview_tool = FunctionTool.from_defaults(
         async_fn=lambda name, description, url, organization_name, interview_type, position, tags: create_interview(
-            current_user,
-            name,
-            description,
-            url,
-            organization_name,
-            interview_type,
-            position,
-            tags,
+            current_user=current_user,
+            name=name,
+            description=description,
+            url=url,
+            organization_name=organization_name,
+            interview_type=interview_type,
+            position=position,
+            tags=tags,
         ),
         name="create_interiew_tool",
         description="""
