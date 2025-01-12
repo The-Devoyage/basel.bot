@@ -1,12 +1,11 @@
 "use client";
 
 import { useContext, useState, useEffect, useRef } from "react";
-import { Button } from "flowbite-react";
-import { GrSend } from "react-icons/gr";
 import { GlobalContext } from "@/app/provider";
 import { Message } from "@/types";
 import { useRouter, usePathname } from "next/navigation";
 import { ChatAutocomplete } from "./components";
+import clsx from "clsx";
 
 // Command map with primary commands and subcommands
 const commandResponses: Record<string, Record<string, string>> = {
@@ -33,6 +32,7 @@ export const ChatInput = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [repetedMessage, setRepeatedMessage] = useState<Message | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -150,63 +150,72 @@ export const ChatInput = () => {
     }
   };
 
+  const checkFocus = () => {
+    setIsFocused(document.activeElement === inputRef.current);
+  };
+
   return (
-    <div className="container mx-auto flex w-full space-x-4 p-4 px-4 dark:bg-slate-950">
-      <div className="relative flex w-full items-end">
-        <ChatAutocomplete setMessageText={setMessageText} />
-        {suggestion && (
-          <div
-            className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden whitespace-pre-wrap text-gray-400 dark:text-gray-600"
+    <div className="container mx-auto flex w-full flex-col p-4 px-4 dark:bg-slate-950">
+      <div
+        className={clsx("rounded border border-slate-200", {
+          "border-green-400": isFocused,
+          flex: !isFocused,
+        })}
+      >
+        <div className="relative flex w-full items-end">
+          {suggestion && (
+            <div
+              className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden whitespace-pre-wrap text-gray-400 dark:text-gray-600"
+              style={{
+                padding: "0.5rem 0.75rem",
+              }}
+            >
+              {messageText}
+              <span className="ml-2">{suggestion}</span>
+            </div>
+          )}
+          <textarea
+            placeholder="Message Basel"
+            className="no-scrollbar relative h-full w-full resize-none rounded-t-md border-none bg-transparent ring-transparent dark:bg-slate-950/5 dark:text-white"
+            rows={1}
+            ref={inputRef}
             style={{
-              padding: "0.5rem 0.75rem",
+              resize: "none",
+              minHeight: 50,
             }}
-          >
-            {messageText}
-            <span className="ml-2">{suggestion}</span>
-          </div>
-        )}
-        <textarea
-          placeholder="Message Basel"
-          className="no-scrollbar relative h-full w-full resize-none rounded bg-transparent focus:border-green-400 focus:ring-green-400 dark:bg-slate-950/5 dark:text-white"
-          rows={1}
-          ref={inputRef}
-          style={{
-            resize: "none",
-            minHeight: "47px",
-          }}
-          onChange={(e) => {
-            const value = e.target.value;
-            setMessageText(value);
-            updateSuggestion(value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey && !client?.loading) {
-              e.preventDefault();
-              handleMessage();
-            } else if (e.key === "Tab" || e.key === "ArrowRight") {
-              e.preventDefault();
-              const newMessageText = handleAutocomplete();
-              if (newMessageText) updateSuggestion(newMessageText);
-            } else if (e.key === "ArrowUp") {
-              e.preventDefault();
-              handleRepeatMessage(true);
-            } else if (e.key === "ArrowDown") {
-              e.preventDefault();
-              handleRepeatMessage(false);
-            }
-          }}
-          value={messageText}
-        />
-      </div>
-      <div className="flex items-end">
-        <Button
-          color="green"
-          onClick={handleMessage}
-          disabled={!messageText || client?.loading}
-          isProcessing={client?.loading}
-        >
-          <GrSend className="h-6 w-6" />
-        </Button>
+            onChange={(e) => {
+              const value = e.target.value;
+              setMessageText(value);
+              updateSuggestion(value);
+            }}
+            onFocus={checkFocus}
+            onBlur={checkFocus}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !client?.loading) {
+                e.preventDefault();
+                handleMessage();
+              } else if (e.key === "Tab" || e.key === "ArrowRight") {
+                e.preventDefault();
+                const newMessageText = handleAutocomplete();
+                if (newMessageText) updateSuggestion(newMessageText);
+              } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                handleRepeatMessage(true);
+              } else if (e.key === "ArrowDown") {
+                e.preventDefault();
+                handleRepeatMessage(false);
+              }
+            }}
+            value={messageText}
+          />
+        </div>
+        <div className="flex items-end justify-end">
+          <ChatAutocomplete
+            setMessageText={setMessageText}
+            handleMessage={handleMessage}
+            messageText={messageText}
+          />
+        </div>
       </div>
     </div>
   );
