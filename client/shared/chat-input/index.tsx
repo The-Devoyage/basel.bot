@@ -35,11 +35,8 @@ export const ChatInput = () => {
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
-    inputRef.current?.focus();
-  }, [inputRef.current, isAuthenticated]);
-
-  useEffect(() => {
     client?.handleConnect();
+    inputRef.current?.focus();
     return () => client?.handleClose();
   }, [isAuthenticated]);
 

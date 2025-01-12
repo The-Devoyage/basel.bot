@@ -72,7 +72,7 @@ export const ManageSubscription = async () => {
           {getSubscriptionStatus().label}
         </Badge>
       </div>
-      <Alert color="dark">
+      <Alert color="light">
         <Typography.Heading className="text-lg">
           Subscribing and Supporting
         </Typography.Heading>
