@@ -36,7 +36,6 @@ export const ChatInput = () => {
 
   useEffect(() => {
     client?.handleConnect();
-    inputRef.current?.focus();
     return () => client?.handleClose();
   }, [isAuthenticated]);
 

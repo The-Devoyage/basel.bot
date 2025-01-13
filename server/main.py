@@ -17,6 +17,7 @@ from routes.mailer import router as mailer_router
 from routes.standup import router as standup_router
 from routes.notification import router as notification_router
 from routes.suggest import router as suggest_router
+from routes.file import router as file_router
 
 load_dotenv()
 
@@ -48,6 +49,7 @@ app.include_router(mailer_router, prefix="/mailer")
 app.include_router(standup_router)
 app.include_router(notification_router)
 app.include_router(suggest_router)
+app.include_router(file_router)
 
 app.add_middleware(
     CORSMiddleware,

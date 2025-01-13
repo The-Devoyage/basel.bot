@@ -38,6 +38,7 @@ export enum Endpoint {
   GetStandups = "/standups",
   GetNotifications = "/notifications",
   GetSuggestion = "/suggest",
+  GetFileUploadLink = "/file-upload-link",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -129,6 +130,14 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetFileUploadLink]: {
+    query: {
+      file_name: string;
+      file_size: number;
+    };
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -150,6 +159,7 @@ export interface EndpointResponse {
   [Endpoint.GetStandups]: Standup[];
   [Endpoint.GetNotifications]: Notification[];
   [Endpoint.GetSuggestion]: { text: string };
+  [Endpoint.GetFileUploadLink]: { upload_link: string };
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

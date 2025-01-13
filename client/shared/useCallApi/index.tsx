@@ -30,10 +30,15 @@ export const useCallApi = <E extends Endpoint>(
   const [res, setRes] = useState<Response<EndpointResponse[E]> | null>(null);
   const { dispatch } = useContext(GlobalContext);
 
-  const call = async () => {
+  const call = async (
+    override?: Pick<ApiAction<E>, "body" | "path" | "query">,
+  ) => {
     setLoading(true);
     try {
-      const res = await callApi(apiAction, options?.callApiOptions);
+      const res = await callApi(
+        { ...apiAction, ...override },
+        options?.callApiOptions,
+      );
       setRes(res);
       if (!res.success) {
         dispatch(addToast({ type: "error", description: res.message || "" }));
