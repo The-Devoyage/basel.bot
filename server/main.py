@@ -18,6 +18,7 @@ from routes.standup import router as standup_router
 from routes.notification import router as notification_router
 from routes.suggest import router as suggest_router
 from routes.file import router as file_router
+from routes.user import router as user_router
 
 load_dotenv()
 
@@ -50,6 +51,7 @@ app.include_router(standup_router)
 app.include_router(notification_router)
 app.include_router(suggest_router)
 app.include_router(file_router, prefix="/file")
+app.include_router(user_router, prefix="/user")
 
 app.add_middleware(
     CORSMiddleware,

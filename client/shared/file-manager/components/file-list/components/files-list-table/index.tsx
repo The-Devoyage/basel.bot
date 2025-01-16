@@ -24,7 +24,7 @@ export const FilesListTable = () => {
         <Table.HeadCell className="hidden md:table-cell">
           Created At
         </Table.HeadCell>
-        <Table.HeadCell className="text-center">Preview</Table.HeadCell>
+        <Table.HeadCell className="text-center">Download</Table.HeadCell>
       </Table.Head>
       <Table.Body>
         {files.map((f) => (
@@ -32,7 +32,7 @@ export const FilesListTable = () => {
             key={f.uuid}
             className={clsx({
               "cursor-pointer": !!handleSelect,
-              "bg-green-200 hover:dark:bg-green-100":
+              "bg-green-100 bg-green-200 hover:bg-green-100 hover:dark:bg-green-50":
                 selectedFiles.findIndex((sf) => sf.uuid === f.uuid) > -1,
             })}
             onClick={() => !!handleSelect && handleSelectFile(f)}

@@ -22,6 +22,7 @@ export const FileManager: FC<{
       tabsRef={tabsRef.current}
       multiple={multiple}
       onSelect={onSelect}
+      handleClose={onClose}
     >
       <Modal show={show} size="5xl" onClose={onClose}>
         <Modal.Header>File Manager</Modal.Header>
@@ -79,6 +80,7 @@ export const FileManager: FC<{
                       outline
                       color="green"
                       disabled={!selectedFiles.length && !handleSelect}
+                      onClick={handleSelect}
                     >
                       Select
                     </Button>

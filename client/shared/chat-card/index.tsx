@@ -1,12 +1,14 @@
-import { Card } from "flowbite-react";
+"use client";
+
+import { Avatar, Card } from "flowbite-react";
 import { BiSolidLeaf } from "react-icons/bi";
-import { forwardRef } from "react";
+import { forwardRef, useContext } from "react";
 import { Typography } from "../typography";
 import { Message } from "@/types";
-import { PiUserCircleDuotone } from "react-icons/pi";
 import Markdown from "react-markdown";
 import "./module.styles.css";
 import { FooterButtons } from "./components";
+import { GlobalContext } from "@/app/provider";
 
 interface ChatCardProps {
   message: Message;
@@ -16,14 +18,34 @@ interface ChatCardProps {
 
 export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
   ({ message, icon, loading }, ref) => {
+    const {
+      store: { me },
+    } = useContext(GlobalContext);
     const isBot = message.sender === "bot";
     const getIcon = () => {
       if (icon) return icon;
       switch (message.sender) {
         case "bot":
-          return <BiSolidLeaf className="h-6 w-6 text-green-400" />;
-        default:
-          return <PiUserCircleDuotone className="h-8 w-8 text-blue-400" />;
+          return <BiSolidLeaf className="ml-2 h-6 w-6 text-green-400" />;
+        default: {
+          return (
+            <Avatar
+              alt="User settings"
+              rounded
+              placeholderInitials={me?.email.at(0)?.toUpperCase()}
+              bordered
+              color="success"
+              img={me?.profile_image?.url}
+              theme={{
+                root: {
+                  img: {
+                    on: "object-cover",
+                  },
+                },
+              }}
+            />
+          );
+        }
       }
     };
 
@@ -40,7 +62,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
               : "-7px 3px 20px RGBA(118, 169, 250, 0.2)",
           }}
         >
-          <div className="flex flex-row items-center space-x-2">
+          <div className="flex flex-row items-center space-x-4">
             {getIcon()}
             <Typography.Heading className="text-xl capitalize">
               {isBot ? "Basel" : "You"}

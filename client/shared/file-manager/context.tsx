@@ -29,7 +29,7 @@ interface FileManagerContext {
   handleSelectFile: (file: File) => void;
   handleDownloadFile: (file: File) => Promise<void>;
   multiple: boolean;
-  handleSelect?: (files: File[]) => void;
+  handleSelect?: () => void;
 }
 
 export const FileManagerContext = createContext<FileManagerContext>({
@@ -55,7 +55,8 @@ export const FileManagerContextProvider: FC<{
   tabsRef: TabsRef | null;
   multiple?: boolean;
   onSelect?: (files: File[]) => void;
-}> = ({ children, show, tabsRef, multiple, onSelect }) => {
+  handleClose: () => void;
+}> = ({ children, show, tabsRef, multiple, onSelect, handleClose }) => {
   const {
     dispatch,
     store: { isAuthenticated },
@@ -253,7 +254,9 @@ export const FileManagerContextProvider: FC<{
   };
 
   const handleSelect = () => {
+    console.log(selectedFiles, onSelect);
     onSelect?.(selectedFiles);
+    handleClose();
   };
 
   const value = useMemo(

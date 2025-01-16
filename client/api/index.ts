@@ -43,11 +43,12 @@ export enum Endpoint {
   ActivateFile = "/file/activate",
   GetFiles = "/file/list",
   GetFileDownloadLink = "/file/download-link",
+  UpdateUser = "/user/update",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
 
-interface EndpointParams {
+export interface EndpointParams {
   [Endpoint.ShareableLink]: {
     query: undefined;
     body: undefined;
@@ -158,6 +159,16 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.UpdateUser]: {
+    query: undefined;
+    body: {
+      first_name?: string;
+      last_name?: string;
+      email?: string;
+      profile_image?: File;
+    };
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -183,6 +194,7 @@ export interface EndpointResponse {
   [Endpoint.ActivateFile]: File;
   [Endpoint.GetFiles]: File[];
   [Endpoint.GetFileDownloadLink]: { download_link: string };
+  [Endpoint.UpdateUser]: User;
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

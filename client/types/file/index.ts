@@ -3,6 +3,7 @@ export interface File {
   file_name: string;
   key: string;
   file_type: string;
+  url: string;
   status: boolean;
   created_at: string;
   updated_at: string;
