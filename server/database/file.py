@@ -3,9 +3,8 @@ from database.base import BaseMongoModel
 
 
 class File(BaseMongoModel):
-    name: str
-    description: str
+    file_name: str
     key: str
-    extension: str
+    file_type: str
     tags: List[str] = []
     status: bool = True

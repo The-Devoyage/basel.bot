@@ -49,7 +49,7 @@ app.include_router(mailer_router, prefix="/mailer")
 app.include_router(standup_router)
 app.include_router(notification_router)
 app.include_router(suggest_router)
-app.include_router(file_router)
+app.include_router(file_router, prefix="/file")
 
 app.add_middleware(
     CORSMiddleware,
