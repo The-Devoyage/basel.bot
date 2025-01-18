@@ -35,7 +35,7 @@ export const NotificationDrawer = () => {
     notificationClient,
     store: {
       notifications: { open },
-      isAuthenticated,
+      auth: { isAuthenticated },
     },
   } = useContext(GlobalContext);
 

@@ -10,7 +10,9 @@ import { FormEvent, useContext, useEffect, useState } from "react";
 
 export const Profile = () => {
   const {
-    store: { me },
+    store: {
+      auth: { me },
+    },
   } = useContext(GlobalContext);
   const [form, setForm] = useState<EndpointParams["/user/update"]["body"]>({});
   const [showFileManager, setShowFileManager] = useState(false);
@@ -27,6 +29,9 @@ export const Profile = () => {
         onSuccess: true,
       },
       successMessage: "User updated.",
+      callApiOptions: {
+        revalidationTag: "me",
+      },
     },
   );
 

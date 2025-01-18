@@ -13,7 +13,9 @@ import { GlobalContext } from "@/app/provider";
 export const StartStandupButton = () => {
   const [visible, setVisible] = useState(false);
   const {
-    store: { isAuthenticated },
+    store: {
+      auth: { isAuthenticated },
+    },
   } = useContext(GlobalContext);
   const { handleMessage } = useHandleMessage();
   const searchParams = useSearchParams();

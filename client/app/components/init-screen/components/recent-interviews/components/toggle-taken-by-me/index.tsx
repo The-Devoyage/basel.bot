@@ -8,7 +8,9 @@ import { GlobalContext } from "@/app/provider";
 export const ToggleTakenByMe = () => {
   const { isTakenByMe, setIsTakenByMe } = useContext(InterviewsContext);
   const {
-    store: { isAuthenticated },
+    store: {
+      auth: { isAuthenticated },
+    },
   } = useContext(GlobalContext);
 
   const handleTakenByMe = (checked: boolean) => {

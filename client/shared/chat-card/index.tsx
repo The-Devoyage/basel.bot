@@ -19,7 +19,9 @@ interface ChatCardProps {
 export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
   ({ message, icon, loading }, ref) => {
     const {
-      store: { me },
+      store: {
+        auth: { me },
+      },
     } = useContext(GlobalContext);
     const isBot = message.sender === "bot";
     const getIcon = () => {

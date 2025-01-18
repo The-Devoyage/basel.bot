@@ -59,7 +59,9 @@ export const FileManagerContextProvider: FC<{
 }> = ({ children, show, tabsRef, multiple, onSelect, handleClose }) => {
   const {
     dispatch,
-    store: { isAuthenticated },
+    store: {
+      auth: { isAuthenticated },
+    },
   } = useContext(GlobalContext);
   const [activeTab, setActiveTab] = useState<"list" | "upload">("list");
   const [uploads, setUploads] = useState<FileList | null>(null);

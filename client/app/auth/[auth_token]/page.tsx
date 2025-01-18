@@ -13,7 +13,9 @@ export default function Page({ params }: { params: { auth_token: string } }) {
   const router = useRouter();
   const {
     dispatch,
-    store: { isAuthenticated },
+    store: {
+      auth: { isAuthenticated },
+    },
   } = useContext(GlobalContext);
   const [message, setMessage] = useState<{
     type: "error" | "success";

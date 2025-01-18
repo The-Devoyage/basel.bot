@@ -9,6 +9,7 @@ import { addToast } from "@/shared/useStore/toast";
 import { setMe } from "@/shared/useStore/auth";
 import { Endpoint, callApi } from "@/api";
 import { useSearchParams } from "next/navigation";
+import { useCallApi } from "@/shared/useCallApi";
 
 interface GlobalContext {
   client: SocketClient<Message, Message> | null;
@@ -22,8 +23,10 @@ export const GlobalContext = createContext<GlobalContext>({
   client: null,
   store: {
     toasts: [],
-    isAuthenticated: null,
-    me: null,
+    auth: {
+      isAuthenticated: null,
+      me: null,
+    },
     notifications: { open: false },
   },
   dispatch: () => {},
@@ -40,6 +43,20 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const searchParams = useSearchParams();
   const slToken = searchParams.get("sl_token");
   useVerifyLogin(dispatch);
+  useCallApi(
+    {
+      endpoint: Endpoint.Me,
+      query: null,
+      body: null,
+      path: null,
+    },
+    {
+      callOnMount: true,
+      onSuccess: (res) => {
+        if (res.data) dispatch(setMe(res.data));
+      },
+    },
+  );
 
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${slToken ? "?sl_token=" + slToken : ""}`,
@@ -47,35 +64,6 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const notificationClient = useSocket<{ uuids: string[] }, Notification>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/notification`,
   );
-
-  useEffect(() => {
-    if (!store.isAuthenticated || store.me) return;
-
-    const handleFetchMe = async () => {
-      try {
-        const me = await callApi({
-          endpoint: Endpoint.Me,
-          query: null,
-          body: null,
-          path: null,
-        });
-        if (!me.success || !me.data) {
-          throw new Error("Failed to fetch user.");
-        }
-        dispatch(setMe(me.data));
-      } catch (error) {
-        console.error(error);
-        dispatch(
-          addToast({
-            type: "error",
-            description: "An error occurred while fetching user.",
-          }),
-        );
-      }
-    };
-
-    handleFetchMe();
-  }, [store.isAuthenticated]);
 
   const value = useMemo(
     () => ({ client, store, dispatch, slToken, notificationClient }),

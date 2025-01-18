@@ -26,7 +26,9 @@ export const ChatInput = () => {
   const [suggestion, setSuggestion] = useState<string>(""); // Current suggestion
   const {
     client,
-    store: { isAuthenticated },
+    store: {
+      auth: { isAuthenticated },
+    },
   } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();

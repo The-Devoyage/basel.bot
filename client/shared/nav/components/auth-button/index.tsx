@@ -18,7 +18,9 @@ export const AuthButton = () => {
   });
   const {
     dispatch,
-    store: { isAuthenticated },
+    store: {
+      auth: { isAuthenticated },
+    },
   } = useContext(GlobalContext);
   const emailInput = useRef<HTMLInputElement>(null);
 
