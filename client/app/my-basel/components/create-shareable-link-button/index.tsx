@@ -11,7 +11,7 @@ export const CreateShareableLinkButton = () => {
       endpoint: Endpoint.CreateShareableLink,
       method: "POST",
       query: null,
-      body: { tag: "" },
+      body: null,
       path: null,
     },
     {
