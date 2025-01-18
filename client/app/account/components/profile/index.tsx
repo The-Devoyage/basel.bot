@@ -1,53 +1,15 @@
-"use client";
+import { Endpoint, callApi } from "@/api";
+import { Card } from "flowbite-react";
+import { UpdateUserForm } from "./components";
 
-import { Endpoint, EndpointParams } from "@/api";
-import { GlobalContext } from "@/app/provider";
-import { FileManager } from "@/shared/file-manager";
-import { Typography } from "@/shared/typography";
-import { useCallApi } from "@/shared/useCallApi";
-import { Avatar, Button, Card, Label, TextInput } from "flowbite-react";
-import { FormEvent, useContext, useEffect, useState } from "react";
+export const Profile = async () => {
+  const me = await callApi({
+    endpoint: Endpoint.Me,
+    query: null,
+    body: null,
+    path: null,
+  });
 
-export const Profile = () => {
-  const {
-    store: {
-      auth: { me },
-    },
-  } = useContext(GlobalContext);
-  const [form, setForm] = useState<EndpointParams["/user/update"]["body"]>({});
-  const [showFileManager, setShowFileManager] = useState(false);
-  const updateUser = useCallApi(
-    {
-      endpoint: Endpoint.UpdateUser,
-      method: "PATCH",
-      body: {},
-      query: null,
-      path: null,
-    },
-    {
-      toast: {
-        onSuccess: true,
-      },
-      successMessage: "User updated.",
-      callApiOptions: {
-        revalidationTag: "me",
-      },
-    },
-  );
-
-  useEffect(() => {
-    setForm({
-      first_name: me?.first_name,
-      last_name: me?.last_name,
-      email: me?.email,
-      profile_image: me?.profile_image,
-    });
-  }, [me]);
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    await updateUser.call({ body: form, query: null, path: null });
-  };
   return (
     <Card
       className="mb-4"
@@ -56,81 +18,7 @@ export const Profile = () => {
         borderLeft: "4px solid #10B981",
       }}
     >
-      <form onSubmit={handleSubmit}>
-        <div className="flex justify-between">
-          <Typography.Heading className="mb-2 text-2xl">
-            Profile
-          </Typography.Heading>
-        </div>
-        <div className="flex w-full flex-col items-center justify-center space-y-4 text-4xl">
-          <Avatar
-            bordered
-            size="xl"
-            rounded
-            placeholderInitials={
-              form?.first_name?.at(0) ||
-              form?.email?.at(0) ||
-              me?.full_name?.at(0) ||
-              me?.email.at(0)
-            }
-            color="success"
-            img={form?.profile_image?.url}
-            theme={{
-              root: {
-                img: {
-                  on: "object-cover",
-                },
-              },
-            }}
-          />
-          <FileManager
-            show={showFileManager}
-            onClose={() => setShowFileManager(false)}
-            onSelect={(files) =>
-              setForm({ ...form, profile_image: files?.at(0) })
-            }
-          />
-          <Button
-            color="green"
-            outline
-            onClick={() => setShowFileManager(true)}
-          >
-            Update Profile Image
-          </Button>
-        </div>
-        <Label>Email</Label>
-        <TextInput
-          placeholder="email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.currentTarget.value })}
-        />
-        <Label>First Name</Label>
-        <TextInput
-          placeholder="Jane"
-          value={form.first_name}
-          onChange={(e) =>
-            setForm({ ...form, first_name: e.currentTarget.value })
-          }
-        />
-        <Label>Last Name</Label>
-        <TextInput
-          placeholder="Doe"
-          value={form.last_name}
-          onChange={(e) =>
-            setForm({ ...form, last_name: e.currentTarget.value })
-          }
-        />
-        <div className="mt-2 flex justify-end">
-          <Button
-            color="green"
-            outline
-            type="submit"
-            isProcessing={updateUser.loading}
-          >
-            Save
-          </Button>
-        </div>
-      </form>
+      <UpdateUserForm me={me.data} />
     </Card>
   );
 };
