@@ -1,23 +1,21 @@
 "use client";
 
-import { Button, Tooltip } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { PiLightningDuotone } from "react-icons/pi";
 import { Endpoint } from "@/api";
 import {
   Dispatch,
   FC,
+  MouseEventHandler,
   SetStateAction,
   useContext,
   useEffect,
-  useState,
 } from "react";
 import { useCallApi } from "@/shared/useCallApi";
-import clsx from "clsx";
 import { GlobalContext } from "@/app/provider";
 import { GrSend } from "react-icons/gr";
-import { HiOutlineChevronLeft, HiOutlineChevronRight } from "react-icons/hi";
 
-export const ChatAutocomplete: FC<{
+export const ActionItems: FC<{
   setMessageText: Dispatch<SetStateAction<string>>;
   messageText: string;
   handleMessage: () => void;

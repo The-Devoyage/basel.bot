@@ -4,7 +4,7 @@ import { useContext, useState, useEffect, useRef } from "react";
 import { GlobalContext } from "@/app/provider";
 import { Message } from "@/types";
 import { useRouter, usePathname } from "next/navigation";
-import { ChatAutocomplete } from "./components";
+import { ActionItems } from "./components";
 import clsx from "clsx";
 
 // Command map with primary commands and subcommands
@@ -217,8 +217,11 @@ export const ChatInput = () => {
             value={messageText}
           />
         </div>
-        <div className="flex items-end justify-end">
-          <ChatAutocomplete
+        <div
+          className="flex items-end justify-end"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ActionItems
             setMessageText={setMessageText}
             handleMessage={handleMessage}
             messageText={messageText}
