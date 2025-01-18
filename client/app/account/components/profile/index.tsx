@@ -1,31 +1,24 @@
-"use client";
-import { GlobalContext } from "@/app/provider";
-import { Typography } from "@/shared/typography";
-import { Card, Label } from "flowbite-react";
-import { useContext } from "react";
+import { Endpoint, callApi } from "@/api";
+import { Card } from "flowbite-react";
+import { UpdateUserForm } from "./components";
 
-export const Profile = () => {
-  const {
-    store: { me },
-  } = useContext(GlobalContext);
+export const Profile = async () => {
+  const me = await callApi({
+    endpoint: Endpoint.Me,
+    query: null,
+    body: null,
+    path: null,
+  });
 
   return (
-    <Card className="mb-4">
-      <div className="flex justify-between">
-        <Typography.Heading className="mb-2 text-2xl">
-          Profile
-        </Typography.Heading>
-        {/* <Button size="sm" color="green" outline> */}
-        {/*   Save */}
-        {/* </Button> */}
-      </div>
-      <Label>Email</Label>
-      {/* <TextInput placeholder="email" value={me?.email} readOnly /> */}
-      <Typography.Paragraph>{me?.email}</Typography.Paragraph>
-      {/* <Label>First Name</Label> */}
-      {/* <TextInput placeholder="Jane" /> */}
-      {/* <Label>Last Name</Label> */}
-      {/* <TextInput placeholder="Doe" /> */}
+    <Card
+      className="mb-4"
+      style={{
+        boxShadow: "-11px 0 10px RGBA(118, 169, 250, 0.2)",
+        borderLeft: "4px solid #10B981",
+      }}
+    >
+      <UpdateUserForm me={me.data} />
     </Card>
   );
 };

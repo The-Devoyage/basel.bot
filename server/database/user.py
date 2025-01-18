@@ -5,6 +5,7 @@ from beanie import Link
 from llama_index.core.bridge.pydantic import Field
 from database.base import BaseMongoModel
 from database.role import Role
+from database.file import File
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class User(BaseMongoModel):
     role: Link[Role]
     status: bool = False
     auth_id: UUID = Field(default_factory=uuid4)
+    profile_image: Optional[Link[File]] = None
 
     def exclude_from_public_dict(self) -> Set[str]:
         return {"id", "auth_id"}

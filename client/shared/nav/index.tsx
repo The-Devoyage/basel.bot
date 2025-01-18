@@ -52,6 +52,14 @@ export const Nav = async () => {
                 placeholderInitials={me?.data?.email.at(0)?.toUpperCase()}
                 bordered
                 color="success"
+                img={me?.data?.profile_image?.url}
+                theme={{
+                  root: {
+                    img: {
+                      on: "object-cover",
+                    },
+                  },
+                }}
               />
             }
           >

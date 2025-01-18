@@ -15,6 +15,7 @@ from database.interview_question import InterviewQuestion
 from database.interview_question_response import InterviewQuestionResponse
 from database.interview import Interview
 from database.notification import Notification
+from database.file import File
 from utils.environment import get_env_var
 
 logger = logging.getLogger(__name__)
@@ -55,6 +56,7 @@ async def init_db():
             Message,
             Standup,
             Notification,
+            File,
         ],
         allow_index_dropping=True,
     )

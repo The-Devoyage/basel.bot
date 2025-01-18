@@ -6,6 +6,7 @@ import {
   Interview,
   Onboarding,
   Notification,
+  File,
 } from "@/types";
 import { Standup } from "@/types/standup";
 
@@ -38,11 +39,16 @@ export enum Endpoint {
   GetStandups = "/standups",
   GetNotifications = "/notifications",
   GetSuggestion = "/suggest",
+  GetFileUploadLink = "/file/upload-link",
+  ActivateFile = "/file/activate",
+  GetFiles = "/file/list",
+  GetFileDownloadLink = "/file/download-link",
+  UpdateUser = "/user/update",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
 
-interface EndpointParams {
+export interface EndpointParams {
   [Endpoint.ShareableLink]: {
     query: undefined;
     body: undefined;
@@ -55,7 +61,7 @@ interface EndpointParams {
   };
   [Endpoint.CreateShareableLink]: {
     query: undefined;
-    body: { tag: string };
+    body: undefined;
     path: undefined;
   };
   [Endpoint.UpdateShareableLink]: {
@@ -129,6 +135,40 @@ interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetFileUploadLink]: {
+    query: {
+      file_name: string;
+      file_size: number;
+      mimetype: string;
+    };
+    body: undefined;
+    path: undefined;
+  };
+  [Endpoint.ActivateFile]: {
+    query: undefined;
+    body: { uuid: string };
+    path: undefined;
+  };
+  [Endpoint.GetFiles]: {
+    query: PaginationQuery;
+    body: undefined;
+    path: undefined;
+  };
+  [Endpoint.GetFileDownloadLink]: {
+    query: { uuid: string };
+    body: undefined;
+    path: undefined;
+  };
+  [Endpoint.UpdateUser]: {
+    query: undefined;
+    body: {
+      first_name?: string;
+      last_name?: string;
+      email?: string;
+      profile_image?: File;
+    };
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -150,6 +190,11 @@ export interface EndpointResponse {
   [Endpoint.GetStandups]: Standup[];
   [Endpoint.GetNotifications]: Notification[];
   [Endpoint.GetSuggestion]: { text: string };
+  [Endpoint.GetFileUploadLink]: { upload_link: string; file_uuid: string };
+  [Endpoint.ActivateFile]: File;
+  [Endpoint.GetFiles]: File[];
+  [Endpoint.GetFileDownloadLink]: { download_link: string };
+  [Endpoint.UpdateUser]: User;
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

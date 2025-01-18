@@ -18,7 +18,9 @@ export type SetMeAction = {
 };
 
 export type Action = SetAuthenticatedAction | SetMeAction;
-export type State = { isAuthenticated: boolean | null; me: User | null };
+export type State = {
+  auth: { isAuthenticated: boolean | null; me: User | null };
+};
 
 export const authReducer: Reducer<State, Action> = (
   state: State,
@@ -26,9 +28,15 @@ export const authReducer: Reducer<State, Action> = (
 ): State => {
   switch (action.type) {
     case SET_AUTHENTICATED:
-      return { ...state, isAuthenticated: action.payload.isAuthenticated };
+      return {
+        ...state,
+        auth: {
+          ...state.auth,
+          isAuthenticated: action.payload.isAuthenticated,
+        },
+      };
     case SET_ME:
-      return { ...state, me: action.payload.me };
+      return { ...state, auth: { ...state.auth, me: action.payload.me } };
     default:
       return { ...state };
   }

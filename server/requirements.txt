@@ -10,6 +10,8 @@ backoff==2.2.1
 bcrypt==4.2.1
 beanie==1.27.0
 beautifulsoup4==4.12.3
+boto3==1.35.97
+botocore==1.35.97
 build==1.2.2.post1
 cachetools==5.5.0
 certifi==2024.8.30
@@ -58,6 +60,7 @@ importlib_resources==6.4.5
 jieba3k==0.35.1
 Jinja2==3.1.4
 jiter==0.8.0
+jmespath==1.0.1
 joblib==1.4.2
 jsonpatch==1.33
 jsonpointer==3.0.0
@@ -153,6 +156,7 @@ requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
 rich==13.9.4
 rsa==4.9
+s3transfer==0.10.4
 selenium==4.27.1
 sendgrid==6.11.0
 sgmllib3k==1.0.0

@@ -28,8 +28,10 @@ export const useStore = () => {
     },
     {
       toasts: [],
-      isAuthenticated: false,
-      me: null,
+      auth: {
+        isAuthenticated: false,
+        me: null,
+      },
       notifications: { open: false },
     },
   );

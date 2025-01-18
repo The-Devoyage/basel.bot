@@ -8,7 +8,9 @@ import { useHandleMessage } from "../../..";
 
 export const AddInterviewButton = () => {
   const {
-    store: { isAuthenticated },
+    store: {
+      auth: { isAuthenticated },
+    },
   } = useContext(GlobalContext);
   const { handleMessage } = useHandleMessage();
 

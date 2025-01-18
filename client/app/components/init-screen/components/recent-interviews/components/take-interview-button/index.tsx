@@ -11,7 +11,9 @@ export const TakeInterviewButton: FC<{ interview: Interview }> = ({
   interview,
 }) => {
   const {
-    store: { isAuthenticated },
+    store: {
+      auth: { isAuthenticated },
+    },
   } = useContext(GlobalContext);
   const { handleMessage } = useHandleMessage();
 
