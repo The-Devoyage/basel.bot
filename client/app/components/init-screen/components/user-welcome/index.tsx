@@ -31,6 +31,14 @@ export const UserWelcome = async () => {
           }
           bordered
           color="success"
+          img={me?.profile_image?.url}
+          theme={{
+            root: {
+              img: {
+                on: "object-cover",
+              },
+            },
+          }}
         />
         {me?.full_name ? (
           <Typography.Heading>{me?.full_name?.trim()}</Typography.Heading>
