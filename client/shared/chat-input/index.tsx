@@ -148,8 +148,18 @@ export const ChatInput = () => {
     }
   };
 
-  const checkFocus = () => {
+  const handleFocus = () => {
     setIsFocused(document.activeElement === inputRef.current);
+    setTimeout(() => {
+      document.body.style.height = `${window.innerHeight}px`;
+    }, 300);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(document.activeElement === inputRef.current);
+    setTimeout(() => {
+      document.body.style.height = `${window.innerHeight}px`;
+    }, 300);
   };
 
   return (
@@ -186,8 +196,8 @@ export const ChatInput = () => {
               setMessageText(value);
               updateSuggestion(value);
             }}
-            onFocus={checkFocus}
-            onBlur={checkFocus}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey && !client?.loading) {
                 e.preventDefault();
