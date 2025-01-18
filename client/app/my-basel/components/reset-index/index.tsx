@@ -33,7 +33,7 @@ export const ResetIndex = () => {
           <Button
             outline
             gradientDuoTone="purpleToBlue"
-            onClick={call}
+            onClick={() => call()}
             isProcessing={loading}
           >
             <div className="flex items-center gap-2">
