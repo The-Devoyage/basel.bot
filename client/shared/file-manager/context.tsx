@@ -197,6 +197,13 @@ export const FileManagerContextProvider: FC<{
         });
       } catch (error) {
         console.error(error);
+        dispatch(
+          addToast({
+            type: "error",
+            title: "Upload Failed",
+            description: "Something went wrong while uploading.",
+          }),
+        );
       }
     }
     setUploading(false);
