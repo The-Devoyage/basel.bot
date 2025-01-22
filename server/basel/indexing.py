@@ -9,7 +9,8 @@ from llama_index.core import (
     Settings,
 )
 from llama_index.readers.mongodb import SimpleMongoReader
-from llama_index.readers.s3 import S3Reader
+
+# from llama_index.readers.s3 import S3Reader
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
 from llama_index.vector_stores.chroma import ChromaVectorStore

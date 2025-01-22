@@ -62,13 +62,15 @@ async def get_file_upload_link(
     try:
         # Validate file size
         if file_size > MAX_FILE_SIZE:
+            logger.error("EXCEEDS MAX ALLOWED FILE SIZE")
             return HTTPException(
                 status_code=400,
                 detail=f"File size exceeds the limit of {MAX_FILE_SIZE // (1024 * 1024)} MB.",
             )
 
         if mimetype not in MimeType.__members__.values():
-            raise HTTPException(
+            logger.error("INVALID FILE TYPE")
+            return HTTPException(
                 status_code=400,
                 detail="The submitted mimetype is unsupported.",
             )
@@ -82,7 +84,6 @@ async def get_file_upload_link(
                 "Bucket": VULTR_S3_BUCKET,
                 "Key": s3_key,
                 "ContentLength": file_size,
-                "ContentType": mimetype,
             },
             ExpiresIn=300,
         )

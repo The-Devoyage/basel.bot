@@ -27,7 +27,7 @@ export const InitScreen = () => {
             timestamp: new Date(),
           }}
         />
-        <div className="flex flex-col gap-2">
+        <div className="w-25 flex flex-col gap-2">
           <div>
             <UserWelcome />
           </div>
