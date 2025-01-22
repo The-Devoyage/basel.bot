@@ -26,7 +26,9 @@ export const callApi = async <E extends Endpoint>(
   }
 
   // Format Query String
-  const queryString = query ? "?" + qs.stringify(query) : "";
+  const queryString = query
+    ? "?" + qs.stringify(query, { arrayFormat: "repeat" })
+    : "";
 
   // Format Params
   let formattedEndpoint = endpoint as string;
@@ -46,6 +48,7 @@ export const callApi = async <E extends Endpoint>(
       method,
       body,
       query,
+      queryString,
       path,
       formattedEndpoint,
     });

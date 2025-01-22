@@ -1,13 +1,13 @@
 "use client";
 
 import { Avatar, Card } from "flowbite-react";
-import { BiSolidLeaf } from "react-icons/bi";
+import { BiFile, BiSolidLeaf } from "react-icons/bi";
 import { forwardRef, useContext } from "react";
 import { Typography } from "../typography";
 import { Message } from "@/types";
 import Markdown from "react-markdown";
 import "./module.styles.css";
-import { FooterButtons } from "./components";
+import { AttachedFiles, FooterButtons } from "./components";
 import { GlobalContext } from "@/app/provider";
 
 interface ChatCardProps {
@@ -67,7 +67,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
           <div className="flex flex-row items-center space-x-4">
             {getIcon()}
             <Typography.Heading className="text-xl capitalize">
-              {isBot ? "Basel" : "You"}
+              {isBot ? "Basel" : me?.full_name || "You"}
             </Typography.Heading>
           </div>
           {!loading ? (
@@ -109,6 +109,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
               </div>
             ))
           )}
+          <AttachedFiles message={message} />
           <FooterButtons buttons={message.buttons} />
         </Card>
       </div>

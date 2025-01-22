@@ -1,4 +1,5 @@
 import { Endpoint } from "@/api";
+import { File } from "@/types";
 
 export interface Button {
   label: string;
@@ -10,4 +11,5 @@ export interface Message {
   timestamp: Date;
   sender: "user" | "bot";
   buttons?: Button[];
+  files?: File[];
 }

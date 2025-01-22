@@ -4,7 +4,7 @@ import { Endpoint, EndpointParams } from "@/api";
 import { FileManager } from "@/shared/file-manager";
 import { Typography } from "@/shared/typography";
 import { useCallApi } from "@/shared/useCallApi";
-import { User } from "@/types";
+import { User, ValidMimeType } from "@/types";
 import { Avatar, Button, Label, TextInput } from "flowbite-react";
 import { FC, FormEvent, useEffect, useState } from "react";
 
@@ -77,6 +77,11 @@ export const UpdateUserForm: FC<{ me: User | null }> = ({ me }) => {
           onSelect={(files) =>
             setForm({ ...form, profile_image: files?.at(0) })
           }
+          validMimeTypes={[
+            ValidMimeType.PNG,
+            ValidMimeType.JPG,
+            ValidMimeType.JPEG,
+          ]}
         />
         <Button color="green" outline onClick={() => setShowFileManager(true)}>
           Update Profile Image

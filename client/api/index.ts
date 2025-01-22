@@ -7,6 +7,7 @@ import {
   Onboarding,
   Notification,
   File,
+  ValidMimeType,
 } from "@/types";
 import { Standup } from "@/types/standup";
 
@@ -150,7 +151,7 @@ export interface EndpointParams {
     path: undefined;
   };
   [Endpoint.GetFiles]: {
-    query: PaginationQuery;
+    query: PaginationQuery & { file_types?: ValidMimeType[] };
     body: undefined;
     path: undefined;
   };

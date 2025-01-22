@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from database.message import SenderIdentifer
+from database.file import File
 
 
 class ButtonAction(BaseModel):
@@ -20,3 +21,4 @@ class SocketMessage(BaseModel):
     timestamp: datetime
     sender: SenderIdentifer
     buttons: Optional[List[Button]] = None
+    files: Optional[List[File]] = None

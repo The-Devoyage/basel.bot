@@ -12,7 +12,7 @@ from fastapi import (
 )
 import jwt
 from basel.agent import get_agent
-from basel.indexing import add_index, get_documents
+from basel.indexing import add_index, get_documents, create_s3_documents
 
 from classes.user_claims import ShareableLinkClaims
 from classes.socket_message import Button, ButtonAction, SocketMessage
@@ -23,7 +23,6 @@ from utils.environment import get_env_var
 
 from utils.jwt import handle_decode_token, verify_token_session
 from utils.subscription import SubscriptionStatus, verify_subscription
-from utils.summary import create_summary
 
 router = APIRouter()
 
@@ -65,7 +64,6 @@ async def websocket_endpoint(
             shareable_link = await ShareableLink.find_one(
                 ShareableLink.uuid == UUID(sl_claims.shareable_link_uuid)
             )
-            logger.debug(f"SHAREABLE LINK 1: {shareable_link}")
             chatting_with = await User.find_one(User.uuid == UUID(sl_claims.user_uuid))
             if not chatting_with:
                 logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
@@ -103,7 +101,13 @@ async def websocket_endpoint(
             try:
                 logger.debug(f"USER MESSAGE RECEIVED: {data}")
 
-                message = SocketMessage.model_validate_json(data)
+                incoming = SocketMessage.model_validate_json(data)
+
+                # Handle Index Files Attached to Message
+                if incoming.files and user_claims:
+                    create_s3_documents(user=user_claims.user, files=incoming.files)
+
+                # Handle save message
                 if (
                     user_claims
                     and (
@@ -113,12 +117,16 @@ async def websocket_endpoint(
                 ):
                     await Message(
                         user=chatting_with,  # type:ignore
-                        sender=message.sender,
-                        text=message.text,
+                        sender=incoming.sender,
+                        text=incoming.text,
                         created_by=chatting_with,  # type:ignore
                     ).create()
 
-                chat_response = await agent.achat(message.text)
+                # Handle create response
+                prompt = incoming.text
+                if incoming.files:
+                    prompt += f"\n\n #Attached Files: {incoming.files}"
+                chat_response = await agent.achat(prompt)
 
                 logger.debug(f"CHAT RESPONSE: {chat_response}")
 
@@ -167,6 +175,7 @@ async def websocket_endpoint(
         logger.debug(f"WEBSOCKET DISCONNECT: {e}")
 
         try:
+            logger.debug("SYNC NEW USER META")
             if (
                 not user_claims
                 or not chatting_with
@@ -176,9 +185,9 @@ async def websocket_endpoint(
                     and not subscription_status.is_free_trial
                 )
             ):
-                logger.debug("CLOSING WITHOUT SUMMERIZING")
+                logger.debug("CLOSING WITHOUT SYNCING NEW USER META")
                 return
-            documents = await get_documents(user_claims.user, chat_start_time)
+            documents = get_documents(user_claims.user, chat_start_time)
             add_index(documents, "user_meta")
 
         except Exception as e:

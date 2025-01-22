@@ -37,6 +37,7 @@ async def verify_subscription(
                     break
                 i += 1
             if active:
+                logger.debug("ACTIVE SUBSCRIPTION")
                 return SubscriptionStatus(
                     subscriptions=subscriptions, active=active, is_free_trial=False
                 )
@@ -45,11 +46,13 @@ async def verify_subscription(
         user_created_at = user_created_at.replace(tzinfo=timezone.utc)
         now = datetime.now(timezone.utc)
         if now < user_created_at + timedelta(days=30):
+            logger.debug("FREE TRIAL SUBSCRIPTION")
             return SubscriptionStatus(
                 subscriptions=None, is_free_trial=True, active=False
             )
 
         # Inacive Subscriptions
+        logger.debug("INACTIVE SUBSCRIPTION")
         return SubscriptionStatus(
             subscriptions=subscriptions, active=False, is_free_trial=False
         )
