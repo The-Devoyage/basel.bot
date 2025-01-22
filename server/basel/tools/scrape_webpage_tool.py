@@ -39,8 +39,6 @@ class ScrapeWebpageToolParams(BaseModel):
 async def scrape_webpage(url: str, prompt: str, mode: ScrapeModeParam):
     chroma_collection = remote_db.get_or_create_collection("scraped_webpages")
     docs = chroma_collection.get(where={"url": str(url)})
-    logger.debug(f"CHROMA DOCS COUNT: {len(docs)}")
-    logger.debug(f"CHROMA DOCS: {docs}")
 
     if docs and "documents" in docs and len(docs["documents"]) > 0:  # type:ignore
         logger.debug("USING EXISTING SCRAPED DATA")

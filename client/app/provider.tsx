@@ -1,13 +1,12 @@
 "use client";
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
-import { FC, createContext, useEffect, useMemo } from "react";
+import { FC, createContext, useMemo } from "react";
 import { Message, Notification } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
-import { addToast } from "@/shared/useStore/toast";
 import { setMe } from "@/shared/useStore/auth";
-import { Endpoint, callApi } from "@/api";
+import { Endpoint } from "@/api";
 import { useSearchParams } from "next/navigation";
 import { useCallApi } from "@/shared/useCallApi";
 

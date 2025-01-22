@@ -1,14 +1,16 @@
 import logging
 from datetime import datetime
+from typing import List, Optional
 from uuid import UUID
 from beanie import SortDirection
-from fastapi import APIRouter, Depends, HTTPException
+from beanie.operators import In
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from utils.boto import vultr_s3_client
 from utils.environment import get_env_var
 from utils.responses import create_response
 from utils.jwt import require_auth, UserClaims
-from database.file import File
+from database.file import File, MimeType
 
 
 router = APIRouter()
@@ -18,54 +20,6 @@ logger = logging.getLogger(__name__)
 VULTR_S3_BUCKET = get_env_var("VULTR_S3_BUCKET")
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
-VALID_MIMETYPES = [
-    # Images
-    "image/png",
-    "image/jpeg",
-    "image/jpg",
-    "image/gif",
-    "image/svg+xml",
-    "image/webp",
-    "image/bmp",
-    "image/tiff",
-    # Videos
-    "video/mp4",
-    "video/webm",
-    "video/ogg",
-    "video/quicktime",
-    "video/x-msvideo",  # AVI
-    "video/x-ms-wmv",
-    # Audio
-    "audio/mpeg",
-    "audio/ogg",
-    "audio/wav",
-    "audio/webm",
-    "audio/x-ms-wma",
-    "audio/aac",
-    # Documents
-    "application/pdf",
-    "application/msword",  # .doc
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",  # .docx
-    "application/vnd.ms-excel",  # .xls
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",  # .xlsx
-    "application/vnd.ms-powerpoint",  # .ppt
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",  # .pptx
-    "application/vnd.oasis.opendocument.text",  # .odt
-    "application/vnd.oasis.opendocument.spreadsheet",  # .ods
-    "text/plain",
-    "text/csv",
-    "application/json",
-    "application/xml",
-    "application/zip",
-    # Archives
-    "application/x-tar",
-    "application/x-rar-compressed",
-    "application/x-7z-compressed",
-    # Other
-    "text/html",
-    "application/javascript",
-    "application/octet-stream",
-]
 
 
 @router.get("/download-link")
@@ -102,7 +56,7 @@ async def get_download_link(uuid: str, user_claims: UserClaims = Depends(require
 async def get_file_upload_link(
     file_name: str,
     file_size: int,
-    mimetype: str,
+    mimetype: MimeType,
     user_claims: UserClaims = Depends(require_auth),
 ):
     try:
@@ -113,14 +67,14 @@ async def get_file_upload_link(
                 detail=f"File size exceeds the limit of {MAX_FILE_SIZE // (1024 * 1024)} MB.",
             )
 
-        if mimetype not in VALID_MIMETYPES:
-            return HTTPException(
+        if mimetype not in MimeType.__members__.values():
+            raise HTTPException(
                 status_code=400,
-                detail=f"The submitted mimetype is unsupported.",
+                detail="The submitted mimetype is unsupported.",
             )
 
         timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        s3_key = f"{file_name}_{timestamp}"
+        s3_key = f"{timestamp}_{file_name}"
 
         response = vultr_s3_client.generate_presigned_url(
             ClientMethod="put_object",
@@ -182,14 +136,21 @@ async def activate_file(
 
 @router.get("/list")
 async def get_files(
-    offset: int = 0, limit: int = 10, user_claims: UserClaims = Depends(require_auth)
+    file_types: Optional[List[MimeType]] = Query(None),
+    offset: int = 0,
+    limit: int = 10,
+    user_claims: UserClaims = Depends(require_auth),
 ):
-    logger.debug(f"LIMIT {type(limit)} OFFSET {type(offset)}")
+    logger.debug(f"LIMIT {type(limit)} OFFSET {type(offset)}, FILETYPES: {file_types}")
     try:
         query = File.find(
             File.created_by.id == user_claims.user.id,  # type:ignore
             File.status == True,
         )
+
+        if file_types:
+            logger.debug(f"FILETYPES: {file_types}")
+            query.find(In(File.file_type, [ft.value for ft in file_types]))
 
         files = (
             await query.find()

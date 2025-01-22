@@ -10,7 +10,7 @@ import { useCallApi } from "../useCallApi";
 import { Endpoint } from "@/api";
 import { GlobalContext } from "@/app/provider";
 import { addToast } from "../useStore/toast";
-import { File } from "@/types";
+import { File, ValidMimeType, getAllValidMimeTypes } from "@/types";
 import { usePagination } from "../usePagination";
 import { TabsRef } from "flowbite-react";
 
@@ -30,6 +30,7 @@ interface FileManagerContext {
   handleDownloadFile: (file: File) => Promise<void>;
   multiple: boolean;
   handleSelect?: () => void;
+  validMimeTypes?: ValidMimeType[];
 }
 
 export const FileManagerContext = createContext<FileManagerContext>({
@@ -56,7 +57,16 @@ export const FileManagerContextProvider: FC<{
   multiple?: boolean;
   onSelect?: (files: File[]) => void;
   handleClose: () => void;
-}> = ({ children, show, tabsRef, multiple, onSelect, handleClose }) => {
+  validMimeTypes?: ValidMimeType[];
+}> = ({
+  children,
+  show,
+  tabsRef,
+  multiple,
+  onSelect,
+  handleClose,
+  validMimeTypes,
+}) => {
   const {
     dispatch,
     store: {
@@ -95,12 +105,13 @@ export const FileManagerContextProvider: FC<{
       query: {
         limit: pagination.limit,
         offset: nextOffset,
+        file_types: validMimeTypes ? validMimeTypes : undefined,
       },
       path: null,
       body: null,
     },
     {
-      callOnMount: isAuthenticated || false,
+      // callOnMount: isAuthenticated || false,
       onSuccess: async (res) => {
         handleSetTotal(res?.total);
       },
@@ -109,16 +120,19 @@ export const FileManagerContextProvider: FC<{
   const files = getFilesRes.res?.data || [];
 
   useEffect(() => {
-    if (!isAuthenticated || !show) return;
-
     handleFetch();
   }, [pagination.currentPage, show]);
 
   useEffect(() => {
+    if (!isAuthenticated || !show) return;
     if (activeTab === "list") {
       handlePageChange(1);
       getFilesRes.call({
-        query: { limit: 10, offset: 0 },
+        query: {
+          limit: 10,
+          offset: 0,
+          file_types: validMimeTypes ? validMimeTypes : undefined,
+        },
         body: null,
         path: null,
       });
@@ -131,6 +145,7 @@ export const FileManagerContextProvider: FC<{
   };
 
   const handleFetch = async () => {
+    if (!isAuthenticated || !show) return;
     await getFilesRes.call();
   };
 
@@ -258,6 +273,7 @@ export const FileManagerContextProvider: FC<{
   const handleSelect = () => {
     console.log(selectedFiles, onSelect);
     onSelect?.(selectedFiles);
+    setSelectedFiles([]);
     handleClose();
   };
 
@@ -278,6 +294,7 @@ export const FileManagerContextProvider: FC<{
       downloading,
       multiple: !!multiple,
       handleSelect: onSelect && handleSelect,
+      validMimeTypes: validMimeTypes || getAllValidMimeTypes(),
     }),
     [
       uploads,
@@ -289,6 +306,7 @@ export const FileManagerContextProvider: FC<{
       activeTab,
       selectedFiles,
       downloading,
+      validMimeTypes,
     ],
   );
 

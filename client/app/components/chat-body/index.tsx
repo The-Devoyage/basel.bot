@@ -22,7 +22,7 @@ export const ChatBody = () => {
     }
   }, [ref.current, client?.messages]);
 
-  if (!client || client?.initializing) return <Loader />;
+  if (!client) return <Loader />;
 
   if (client?.loading && !client?.messages.length) {
     return <Loader />;
@@ -37,7 +37,7 @@ export const ChatBody = () => {
           ref={index === client?.messages.length - 1 ? ref : undefined}
         />
       ))}
-      {client.loading && (
+      {(client.loading || client.initializing) && (
         <ChatCard
           message={{
             text: "",

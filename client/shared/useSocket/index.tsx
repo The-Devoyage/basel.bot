@@ -31,6 +31,7 @@ export const useSocket = <Send, Receive>(
 
   useEffect(() => {
     if (socket.current?.readyState === WebSocket.OPEN) {
+      if (messageQueue.length) setLoading(true);
       for (const m of messageQueue) {
         socket?.current?.send(JSON.stringify(m));
       }

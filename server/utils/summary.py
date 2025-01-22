@@ -67,5 +67,5 @@ async def create_summary(user_claims: UserClaims, chat_start_time: datetime):
             created_by=user_claims.user,  # type:ignore
         ).create()
         # Update Index
-        documents = await get_documents(user_claims.user, chat_start_time)
+        documents = get_documents(user_claims.user, chat_start_time)
         add_index(documents, "user_meta")

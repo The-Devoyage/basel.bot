@@ -6,14 +6,15 @@ import { FaFolderOpen } from "react-icons/fa";
 import { FileList, Uploader } from "./components";
 import { GrCloudUpload } from "react-icons/gr";
 import { FileManagerContext, FileManagerContextProvider } from "./context";
-import { File } from "@/types";
+import { File, ValidMimeType } from "@/types";
 
 export const FileManager: FC<{
   show: boolean;
   onClose: () => void;
   multiple?: boolean;
   onSelect?: (files: File[]) => void;
-}> = ({ show, onClose, multiple, onSelect }) => {
+  validMimeTypes?: ValidMimeType[];
+}> = ({ show, onClose, multiple, onSelect, validMimeTypes }) => {
   const tabsRef = useRef<TabsRef>(null);
 
   return (
@@ -23,6 +24,7 @@ export const FileManager: FC<{
       multiple={multiple}
       onSelect={onSelect}
       handleClose={onClose}
+      validMimeTypes={validMimeTypes}
     >
       <Modal show={show} size="5xl" onClose={onClose}>
         <Modal.Header>File Manager</Modal.Header>

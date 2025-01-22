@@ -2,44 +2,40 @@
 
 import { useContext, useState, useEffect, useRef } from "react";
 import { GlobalContext } from "@/app/provider";
-import { Message } from "@/types";
-import { useRouter, usePathname } from "next/navigation";
-import { ActionItems } from "./components";
+import { ActionItems, FilePreviews } from "./components";
 import clsx from "clsx";
+import { ChatInputContext, ChatInputContextProvider } from "./context";
 
-// Command map with primary commands and subcommands
-const commandResponses: Record<string, Record<string, string>> = {
-  "/interviews": {
-    list: "Can you please list interviews available for me to take?",
-    take: "I'd like to take an interview based on a job posting I have found.",
-    create:
-      "Can you help me create a custom interview that does not have a job posting?",
-  },
-  "/standup": {
-    log: "Can you assist me with logging a new standup?",
-    list: "Can you list my recent standups?",
-  },
-};
-
-export const ChatInput = () => {
-  const [messageText, setMessageText] = useState<string>("");
-  const [suggestion, setSuggestion] = useState<string>(""); // Current suggestion
+export const ChatInputContents = () => {
   const {
-    client,
-    store: {
-      auth: { isAuthenticated },
-    },
-  } = useContext(GlobalContext);
+    handleMessage,
+    messageText,
+    setMessageText,
+    suggestion,
+    handleAutocomplete,
+    handleRepeatMessage,
+    updateSuggestion,
+  } = useContext(ChatInputContext);
+  const { client } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const router = useRouter();
-  const pathname = usePathname();
-  const [repetedMessage, setRepeatedMessage] = useState<Message | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    client?.handleConnect();
-    return () => client?.handleClose();
-  }, [isAuthenticated]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsFocused(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -48,106 +44,6 @@ export const ChatInput = () => {
     }
   }, [messageText]);
 
-  const handleRepeatMessage = (previous = true) => {
-    if (previous) {
-      const messages = client?.messages.filter(
-        (m) =>
-          m.sender !== "bot" &&
-          m.timestamp < (repetedMessage?.timestamp || new Date()),
-      );
-      setRepeatedMessage(messages?.at(-1) ?? null);
-      setMessageText(messages?.at(-1)?.text || "");
-    } else {
-      const messages = client?.messages.filter(
-        (m) =>
-          m.sender !== "bot" &&
-          m.timestamp > (repetedMessage?.timestamp || new Date()),
-      );
-      setRepeatedMessage(messages?.at(0) ?? null);
-      setMessageText(messages?.at(0)?.text || "");
-    }
-  };
-
-  // Update the suggestion based on the current input
-  const updateSuggestion = (input: string) => {
-    if (!isAuthenticated) return;
-    if (input.split(" ").length > 2) return;
-    if (input.startsWith("/")) {
-      // Split input to identify the base command and subcommand
-      const [baseCommand, subCommand] = input.split(" ");
-
-      // Show primary commands if no base command or incomplete base command is typed
-      const primaryCommands = Object.keys(commandResponses).filter((cmd) =>
-        cmd.startsWith(input),
-      );
-
-      if (primaryCommands.length > 0) {
-        setSuggestion(primaryCommands.join(" | "));
-      } else {
-        setSuggestion("");
-      }
-
-      // If base command exists, show subcommands
-      const subcommands = commandResponses[baseCommand];
-      if (subcommands) {
-        const matchingSubcommands = Object.keys(subcommands).filter((cmd) =>
-          cmd.startsWith(subCommand || ""),
-        );
-
-        const isMatch =
-          matchingSubcommands.length === 1 &&
-          matchingSubcommands[0] === subCommand;
-
-        if (isMatch) {
-          // Stop Suggesting, match complete
-          setSuggestion("");
-        } else if (matchingSubcommands.length > 0) {
-          setSuggestion(matchingSubcommands.join(" | "));
-        }
-      }
-    } else {
-      setSuggestion("");
-    }
-  };
-
-  const handleMessage = () => {
-    if (pathname !== "/") router.push("/");
-    if (!messageText) return;
-    if (!client?.connected) client?.handleConnect();
-
-    // Check if the message is a command and format it accordingly
-    const [baseCommand, subCommand] = messageText.split(" ");
-    const formattedText =
-      commandResponses?.[baseCommand]?.[subCommand] || messageText;
-
-    const message: Message = {
-      text: formattedText,
-      timestamp: new Date(),
-      sender: "user",
-    };
-
-    client?.handleSend(message);
-    setMessageText("");
-    setSuggestion("");
-    setRepeatedMessage(null);
-  };
-
-  const handleAutocomplete = () => {
-    if (suggestion) {
-      const firstSuggestion = suggestion.split(" | ")?.at(0);
-      const hasBase =
-        Object.keys(commandResponses).findIndex((k) =>
-          messageText.startsWith(k),
-        ) > -1;
-      const newMessageText = hasBase
-        ? messageText.split(" ")?.at(0) + " " + (firstSuggestion || suggestion)
-        : firstSuggestion || suggestion;
-      setMessageText(newMessageText);
-      setSuggestion("");
-      return newMessageText;
-    }
-  };
-
   const handleFocus = () => {
     setIsFocused(document.activeElement === inputRef.current);
     setTimeout(() => {
@@ -155,15 +51,19 @@ export const ChatInput = () => {
     }, 300);
   };
 
-  const handleBlur = () => {
-    setIsFocused(document.activeElement === inputRef.current);
-    setTimeout(() => {
-      document.body.style.height = `${window.innerHeight}px`;
-    }, 300);
-  };
+  // const handleBlur = () => {
+  //   setIsFocused(document.activeElement === inputRef.current);
+  //   setTimeout(() => {
+  //     document.body.style.height = `${window.innerHeight}px`;
+  //   }, 300);
+  // };
 
   return (
-    <div className="container mx-auto flex w-full flex-col p-4 px-4 dark:bg-slate-950">
+    <div
+      className="container mx-auto flex w-full flex-col space-y-4 p-4 px-4 dark:bg-slate-950"
+      ref={containerRef}
+    >
+      <FilePreviews />
       <div
         className={clsx("rounded border border-slate-200", {
           "border-green-400": isFocused,
@@ -197,7 +97,7 @@ export const ChatInput = () => {
               updateSuggestion(value);
             }}
             onFocus={handleFocus}
-            onBlur={handleBlur}
+            // onBlur={handleBlur}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey && !client?.loading) {
                 e.preventDefault();
@@ -225,9 +125,18 @@ export const ChatInput = () => {
             setMessageText={setMessageText}
             handleMessage={handleMessage}
             messageText={messageText}
+            inputRef={inputRef}
           />
         </div>
       </div>
     </div>
+  );
+};
+
+export const ChatInput = () => {
+  return (
+    <ChatInputContextProvider>
+      <ChatInputContents />
+    </ChatInputContextProvider>
   );
 };

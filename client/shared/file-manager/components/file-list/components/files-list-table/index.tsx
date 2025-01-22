@@ -32,7 +32,7 @@ export const FilesListTable = () => {
             key={f.uuid}
             className={clsx({
               "cursor-pointer": !!handleSelect,
-              "bg-green-100 bg-green-200 hover:bg-green-100 hover:dark:bg-green-50":
+              "bg-slate-600 hover:bg-green-100 hover:dark:bg-slate-500":
                 selectedFiles.findIndex((sf) => sf.uuid === f.uuid) > -1,
             })}
             onClick={() => !!handleSelect && handleSelectFile(f)}

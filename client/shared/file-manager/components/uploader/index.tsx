@@ -1,12 +1,12 @@
 "use client";
 
-import { Button, Card, FileInput, Label, Modal, Table } from "flowbite-react";
+import { FileInput, Label, Modal, Table } from "flowbite-react";
 import { useContext } from "react";
 import { GrCloudUpload } from "react-icons/gr";
 import { FileManagerContext } from "../../context";
 
 export const Uploader = () => {
-  const { handleUpload, handleSetUploads, uploads, uploading } =
+  const { handleSetUploads, uploads, validMimeTypes } =
     useContext(FileManagerContext);
 
   return (
@@ -42,7 +42,7 @@ export const Uploader = () => {
                 and drop
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                PDF, PNG, or JPG (MAX. 10mb)
+                MAX. 10mb
               </p>
             </div>
             <FileInput
@@ -50,6 +50,7 @@ export const Uploader = () => {
               className="hidden"
               onChange={(e) => handleSetUploads(e.target.files)}
               multiple
+              accept={validMimeTypes && validMimeTypes?.join(",")}
             />
           </Label>
         </div>

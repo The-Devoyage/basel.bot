@@ -28,6 +28,7 @@ def create_jwt(payload: dict, secret: str) -> str:
 
 async def handle_decode_token(token: str) -> UserClaims:
     """Decode a JWT token."""
+    logger.debug("DECODING JWT")
     try:
         decoded_token = jwt.decode(token, ACCESS_SECRET, algorithms=[ALGORITHM])
         # Populate User Service Context
@@ -47,13 +48,16 @@ async def handle_decode_token(token: str) -> UserClaims:
 
 async def verify_token_session(token_session_uuid: str) -> bool:
     """Verify a token session."""
+    logger.debug("VERIFY TOKEN SESSION")
     try:
         token_session = await TokenSession.find_one(
             TokenSession.uuid == UUID(token_session_uuid)
         )
         if not token_session:
+            logger.error("NO TOKEN SESSION FOUND")
             raise HTTPException(status_code=401, detail="Token session not found")
         if token_session.status is False:
+            logger.error("TOKEN SESSION IS INVALID")
             raise HTTPException(status_code=401, detail="Token session is invalid")
         return True
     except Exception as e:

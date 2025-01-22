@@ -23,6 +23,7 @@ from basel.tools.get_interviews_tool import create_get_interviews_tool
 from basel.tools.scrape_webpage_tool import scrape_webpage_tool
 from basel.tools.create_insert_user_meta_tool import create_insert_user_meta_tool
 from basel.tools.create_update_interview_tool import create_update_interview_tool
+from basel.tools.read_s3 import create_read_s3_tool
 from database.role import Role
 
 # DB
@@ -68,6 +69,7 @@ def get_general_tools(current_user: User):
     tools: List[BaseTool] = []
 
     # Create Interview Question Response Tool
+    # NOTE: this seems incorrect.. maybe the get response is supposed to be here?
     create_interview_question_response = create_create_interview_question_response_tool(
         current_user
     )
@@ -116,4 +118,9 @@ def get_candidate_tools(current_user: User, role: Role):
         current_user, role
     )
     tools.append(update_interview_question_tool)
+
+    # Read Files Tool
+    read_files_tool = create_read_s3_tool(user=current_user)
+    tools.append(read_files_tool)
+
     return tools
