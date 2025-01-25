@@ -107,6 +107,7 @@ export interface EndpointParams {
     query: PaginationQuery & {
       created_by_me?: boolean;
       taken_by_me?: boolean;
+      search_term?: string;
     };
     body: undefined;
     path: undefined;

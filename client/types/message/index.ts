@@ -12,4 +12,5 @@ export interface Message {
   sender: "user" | "bot";
   buttons?: Button[];
   files?: File[];
+  context?: string;
 }

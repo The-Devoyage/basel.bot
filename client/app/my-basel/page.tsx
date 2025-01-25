@@ -11,7 +11,6 @@ import {
   AccordionPanel,
   AccordionTitle,
   Alert,
-  Card,
 } from "flowbite-react";
 import { Endpoint, callApi } from "@/api";
 import { ResetIndex } from "./components/reset-index";

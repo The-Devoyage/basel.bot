@@ -278,7 +278,6 @@ export const FileManagerContextProvider: FC<{
   };
 
   const handleSelect = () => {
-    console.log(selectedFiles, onSelect);
     onSelect?.(selectedFiles);
     setSelectedFiles([]);
     handleClose();

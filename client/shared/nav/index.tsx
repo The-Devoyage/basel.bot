@@ -6,6 +6,9 @@ import {
   DropdownItem,
   Navbar,
   NavbarBrand,
+  NavbarCollapse,
+  NavbarLink,
+  NavbarToggle,
 } from "flowbite-react";
 import {
   NotificationToggle,
@@ -31,14 +34,26 @@ export const Nav = async () => {
   });
 
   return (
-    <Navbar className="fixed left-0 right-0 top-0 z-20 shadow-lg shadow-blue-200/50 dark:bg-slate-950 dark:shadow-blue-950/75">
-      <NavbarBrand
-        href="/"
-        className="space-x-2 text-2xl font-bold dark:text-white"
-      >
-        <BiSolidLeaf className="text-green-400" />
-        <span className="text-green-400">basel.bot</span>
-      </NavbarBrand>
+    <Navbar
+      className="fixed left-0 right-0 top-0 z-20 shadow-lg shadow-blue-200/50 dark:bg-slate-950 dark:shadow-blue-950/75"
+      fluid
+    >
+      <NavbarToggle />
+      <div className="flex items-center gap-6">
+        <NavbarBrand
+          href="/"
+          className="flex items-center space-x-2 text-2xl font-bold dark:text-white"
+        >
+          <BiSolidLeaf className="hidden text-green-400 md:flex" />
+          <span className="hidden text-green-400 md:block">basel.bot</span>
+        </NavbarBrand>
+        <a
+          href="/interviews"
+          className="hidden self-end text-slate-400 md:flex"
+        >
+          Interviews
+        </a>
+      </div>
       {isAuthenticated.success ? (
         <div className="flex gap-2 md:order-3">
           <NotificationToggle />
@@ -81,6 +96,10 @@ export const Nav = async () => {
       ) : (
         <UnauthenticatedCta />
       )}
+      <NavbarCollapse style={{ marginBottom: "0.1rem" }} className="md:hidden">
+        <NavbarLink href="/">Home</NavbarLink>
+        <NavbarLink href="/interviews">Interviews</NavbarLink>
+      </NavbarCollapse>
     </Navbar>
   );
 };

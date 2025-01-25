@@ -6,6 +6,7 @@ import { FaLongArrowAltRight } from "react-icons/fa";
 import { useHandleMessage } from "../../..";
 import { Interview } from "@/types";
 import { GlobalContext } from "@/app/provider";
+import { useRouter, usePathname } from "next/navigation";
 
 export const TakeInterviewButton: FC<{ interview: Interview }> = ({
   interview,
@@ -15,10 +16,14 @@ export const TakeInterviewButton: FC<{ interview: Interview }> = ({
       auth: { isAuthenticated },
     },
   } = useContext(GlobalContext);
+  const router = useRouter();
+  const pathname = usePathname();
   const { handleMessage } = useHandleMessage();
 
   const handleClick = () => {
-    return handleMessage("interview", interview.name);
+    if (pathname !== "/") router.push("/");
+    const context = `Interview UUID: ${interview.uuid}`;
+    return handleMessage("interview", interview.name, context);
   };
 
   if (!isAuthenticated) return null;

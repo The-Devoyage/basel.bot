@@ -1,5 +1,9 @@
 # Basel Changelog
 
+## v0.0.9
+
+- Add Interviews Page
+
 ## v0.0.8
 
 - Auto suggest responses for interviews based on candidate profile.

@@ -21,7 +21,11 @@ export type MessageType =
 export const useHandleMessage = () => {
   const { client } = useContext(GlobalContext);
 
-  const handleMessage = (type: MessageType, modifier?: string) => {
+  const handleMessage = (
+    type: MessageType,
+    modifier?: string,
+    context?: string,
+  ) => {
     let text = "";
     switch (type) {
       case "interviews":
@@ -74,6 +78,7 @@ export const useHandleMessage = () => {
       text,
       timestamp: new Date(),
       sender: "user",
+      context,
     };
 
     client?.handleSend(message);

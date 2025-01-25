@@ -3,12 +3,12 @@ import { Alert } from "flowbite-react";
 import { FaCircleCheck } from "react-icons/fa6";
 import { TbReportAnalytics } from "react-icons/tb";
 import {
-  AddInterviewButton,
   ListInterviews,
   SearchInterviewsButton,
   ToggleTakenByMe,
 } from "./components";
 import { InterviewContextProvider } from "./context";
+import { AddInterviewButton } from "@/shared/add-interview-button";
 
 export const RecentInterviews = () => (
   <div className="w-full space-y-4 rounded-md border-2 border-purple-300 bg-purple-50 p-4 dark:bg-slate-900">
