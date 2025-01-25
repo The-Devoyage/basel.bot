@@ -36,6 +36,9 @@ def get_unauthenticated_tools():
     about_tool = create_about_tool()
     tools.append(about_tool)
 
+    get_interviews_tool = create_get_interviews_tool()
+    tools.append(get_interviews_tool)
+
     return tools
 
 
@@ -52,9 +55,6 @@ def get_global_tools(chatting_with: User):
 
     get_interview_questions_tool = create_get_interview_questions_tool()
     tools.append(get_interview_questions_tool)
-
-    get_interviews_tool = create_get_interviews_tool()
-    tools.append(get_interviews_tool)
 
     return tools
 

@@ -22,3 +22,4 @@ class SocketMessage(BaseModel):
     sender: SenderIdentifer
     buttons: Optional[List[Button]] = None
     files: Optional[List[File]] = None
+    context: Optional[str] = None

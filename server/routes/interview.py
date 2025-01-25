@@ -1,6 +1,5 @@
 from typing import List, Optional
 from beanie import SortDirection
-from beanie.operators import Or
 from chromadb.api.models.Collection import logging
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -32,7 +31,7 @@ async def get_interviews(
         )
 
         if search_term:
-            query.find({"name": {"$regex": search_term, "$options": "i"}})
+            query.find({"$text": {"$search": search_term}})
         if tags:
             tags_query = [{"tags": {"$regex": tag, "$options": "i"}} for tag in tags]
             query.find({"$or": tags_query})

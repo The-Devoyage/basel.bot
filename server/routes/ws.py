@@ -126,6 +126,8 @@ async def websocket_endpoint(
                 prompt = incoming.text
                 if incoming.files:
                     prompt += f"\n\n #Attached Files: {incoming.files}"
+                if incoming.context:
+                    prompt += f"\n\n #Context: {incoming.context}"
                 chat_response = await agent.achat(prompt)
 
                 logger.debug(f"CHAT RESPONSE: {chat_response}")

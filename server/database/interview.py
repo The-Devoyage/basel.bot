@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import List, Optional
+from typing import Annotated, List, Optional
+from beanie import Indexed
+import pymongo
 from classes.user_claims import UserClaims
 from database.base import BaseMongoModel
 
@@ -10,7 +12,7 @@ class InterviewType(str, Enum):
 
 
 class Interview(BaseMongoModel):
-    name: str
+    name: Annotated[str, Indexed(index_type=pymongo.TEXT)]  # type:ignore
     description: str
     url: Optional[str] = None
     organization_name: Optional[str] = None
@@ -39,7 +41,7 @@ def get_pipeline(user_claims: Optional[UserClaims], taken_by_me: bool = False):
     ]
 
     # Add the conditional `$lookup` for `InterviewQuestionResponse`
-    if user_claims and taken_by_me:
+    if user_claims:
         pipeline.append(
             {
                 "$lookup": {
@@ -101,6 +103,7 @@ def get_pipeline(user_claims: Optional[UserClaims], taken_by_me: bool = False):
         {
             "$group": {
                 "_id": "$_id",
+                "uuid": {"$first": "$uuid"},
                 "name": {"$first": "$name"},
                 "description": {"$first": "$description"},
                 "url": {"$first": "$url"},
@@ -126,6 +129,7 @@ def get_pipeline(user_claims: Optional[UserClaims], taken_by_me: bool = False):
         {
             "$project": {
                 "_id": 0,
+                "uuid": 1,
                 "name": 1,
                 "description": 1,
                 "url": 1,

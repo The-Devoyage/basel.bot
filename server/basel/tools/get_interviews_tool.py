@@ -38,7 +38,7 @@ async def get_interviews(search_term=None, limit=10, offset=0, tags=None, url=No
     )
 
     if search_term:
-        interviews.find({"name": {"$regex": search_term, "$options": "i"}})
+        interviews.find({"$text": {"$search": search_term}})
     if tags:
         tags_query = [{"tags": {"$regex": tag, "$options": "i"}} for tag in tags]
         interviews.find({"$or": tags_query})

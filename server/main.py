@@ -72,4 +72,4 @@ def describe_api():
     - version: str
 
     """
-    return {"version": "0.0.8"}
+    return {"version": "0.0.9"}
