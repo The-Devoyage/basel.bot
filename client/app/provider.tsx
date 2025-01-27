@@ -5,7 +5,7 @@ import { FC, createContext, useMemo } from "react";
 import { Message, Notification } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
-import { setMe } from "@/shared/useStore/auth";
+import { setShareableLink, setMe } from "@/shared/useStore/auth";
 import { Endpoint } from "@/api";
 import { useSearchParams } from "next/navigation";
 import { useCallApi } from "@/shared/useCallApi";
@@ -25,6 +25,7 @@ export const GlobalContext = createContext<GlobalContext>({
     auth: {
       isAuthenticated: null,
       me: null,
+      shareableLink: null,
     },
     notifications: { open: false },
   },
@@ -53,6 +54,22 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
       callOnMount: true,
       onSuccess: (res) => {
         if (res.data) dispatch(setMe(res.data));
+      },
+    },
+  );
+  useCallApi(
+    {
+      endpoint: Endpoint.ShareableLink,
+      path: {
+        sl_token: slToken!,
+      },
+      body: null,
+      query: null,
+    },
+    {
+      callOnMount: !!slToken,
+      onSuccess: (res) => {
+        if (res.data) dispatch(setShareableLink(res.data));
       },
     },
   );

@@ -57,7 +57,13 @@ export const RecruiterWelcome = () => {
             <Button
               gradientDuoTone="greenToBlue"
               outline
-              onClick={() => handleMessage("generate_resume")}
+              onClick={() =>
+                handleMessage(
+                  "generate_resume",
+                  null,
+                  "Only provide information that has been supplied by the candidate.",
+                )
+              }
               className="mt-4 w-full"
             >
               Generate Resume

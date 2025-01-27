@@ -1,8 +1,10 @@
+import { ShareableLink } from "@/types";
 import { User } from "@/types/user";
 import { Reducer } from "react";
 
 export const SET_AUTHENTICATED = "SET_AUTHENTICATED";
 export const SET_ME = "SET_ME";
+export const SET_SHAREABLE_LINK = "SET_SHAREABLE_LINK";
 
 export type SetAuthenticatedAction = {
   type: typeof SET_AUTHENTICATED;
@@ -16,10 +18,23 @@ export type SetMeAction = {
     me: User;
   };
 };
+export type SetShareableLinkAction = {
+  type: typeof SET_SHAREABLE_LINK;
+  payload: {
+    shareableLink: ShareableLink;
+  };
+};
 
-export type Action = SetAuthenticatedAction | SetMeAction;
+export type Action =
+  | SetAuthenticatedAction
+  | SetMeAction
+  | SetShareableLinkAction;
 export type State = {
-  auth: { isAuthenticated: boolean | null; me: User | null };
+  auth: {
+    isAuthenticated: boolean | null;
+    me: User | null;
+    shareableLink: ShareableLink | null;
+  };
 };
 
 export const authReducer: Reducer<State, Action> = (
@@ -37,6 +52,11 @@ export const authReducer: Reducer<State, Action> = (
       };
     case SET_ME:
       return { ...state, auth: { ...state.auth, me: action.payload.me } };
+    case SET_SHAREABLE_LINK:
+      return {
+        ...state,
+        auth: { ...state.auth, shareableLink: action.payload.shareableLink },
+      };
     default:
       return { ...state };
   }
@@ -53,4 +73,11 @@ export const setAuthenticated = (
 export const setMe = (me: User): SetMeAction => ({
   type: SET_ME,
   payload: { me },
+});
+
+export const setShareableLink = (
+  shareableLink: ShareableLink,
+): SetShareableLinkAction => ({
+  type: SET_SHAREABLE_LINK,
+  payload: { shareableLink },
 });

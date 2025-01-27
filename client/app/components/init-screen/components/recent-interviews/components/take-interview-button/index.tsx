@@ -13,7 +13,7 @@ export const TakeInterviewButton: FC<{ interview: Interview }> = ({
 }) => {
   const {
     store: {
-      auth: { isAuthenticated },
+      auth: { isAuthenticated, shareableLink },
     },
   } = useContext(GlobalContext);
   const router = useRouter();
@@ -26,7 +26,7 @@ export const TakeInterviewButton: FC<{ interview: Interview }> = ({
     return handleMessage("interview", interview.name, context);
   };
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || shareableLink) return null;
 
   return (
     <Button outline gradientDuoTone="purpleToBlue" onClick={handleClick}>

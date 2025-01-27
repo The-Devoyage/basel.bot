@@ -23,7 +23,7 @@ export const useHandleMessage = () => {
 
   const handleMessage = (
     type: MessageType,
-    modifier?: string,
+    modifier?: string | null,
     context?: string,
   ) => {
     let text = "";

@@ -13,7 +13,8 @@ export const LearnAboutBasel = () => {
         <MdSchool className="mr-2 text-2xl" /> Learn about Basel
       </Typography.Heading>
       <Typography.Paragraph>
-        Ask Basel to learn how she can help guide your career.
+        Discover how Basel can help guide careers with powerful tools, designed
+        to make job searching smarter and more impactful.
       </Typography.Paragraph>
       <div className="flex flex-wrap space-y-4 md:space-x-4 md:space-y-0">
         <Button

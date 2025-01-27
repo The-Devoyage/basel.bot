@@ -1,4 +1,3 @@
-import { ChatCard } from "@/shared/chat-card";
 import {
   BreakBarriers,
   Standup,
@@ -8,8 +7,8 @@ import {
   RecentInterviews,
   RecruiterWelcome,
   UserWelcome,
+  WelcomeMessage,
 } from "./components";
-import { message } from "./message";
 
 export const InitScreen = () => {
   return (
@@ -18,18 +17,14 @@ export const InitScreen = () => {
       id="init_screen"
     >
       <Onboarding />
-      <RecruiterWelcome />
       <div className="flex w-full flex-col gap-4 md:flex-row">
-        <ChatCard
-          message={{
-            text: message,
-            sender: "bot",
-            timestamp: new Date(),
-          }}
-        />
-        <div className="w-25 flex flex-col gap-2">
-          <div>
+        <div className="order-2 w-full md:order-1">
+          <WelcomeMessage />
+        </div>
+        <div className="order-1 flex w-full flex-col gap-2 md:order-2 md:w-1/3">
+          <div className="space-y-4">
             <UserWelcome />
+            <RecruiterWelcome />
           </div>
           <div>
             <ProfileViews />

@@ -121,6 +121,7 @@ export interface EndpointParams {
     query: PaginationQuery & {
       start_date?: Date;
       end_date?: Date;
+      sl_token?: string;
     };
     body: undefined;
     path: undefined;

@@ -1,9 +1,8 @@
-from typing import Optional
-
+from typing import List, Optional
 from beanie import Link
 from database.base import BaseMongoModel
 from database.user import User
-
+from database.interview import Interview
 from utils.environment import get_env_var
 
 CLIENT_URL = get_env_var("CLIENT_URL")
@@ -15,6 +14,7 @@ class ShareableLink(BaseMongoModel):
     user: Link[User]
     status: bool = True
     views: int = 0
+    interviews: Optional[List[Link[Interview]]]
 
     def get_virtual_fields(self) -> dict:
         """

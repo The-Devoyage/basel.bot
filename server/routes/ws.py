@@ -144,8 +144,11 @@ async def websocket_endpoint(
                             ),
                         )
                     ]
-                    if not subscription_status.active
-                    or subscription_status.is_free_trial
+                    if (
+                        not subscription_status.active
+                        or subscription_status.is_free_trial
+                    )
+                    and not shareable_link
                     else None,
                 )
                 # Respond to user

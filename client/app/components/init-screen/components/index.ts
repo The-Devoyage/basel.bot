@@ -7,3 +7,4 @@ export * from "./recent-interviews";
 export * from "./onboarding";
 export * from "./standup";
 export * from "./user-welcome";
+export * from "./welcome-message";
