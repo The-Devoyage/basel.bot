@@ -20,7 +20,7 @@ export const LinkCell: FC<LinkCellProps> = ({ shareableLink }) => {
   };
 
   return (
-    <span className="flex space-x-1">
+    <span className="flex space-x-1" onClick={(e) => e.stopPropagation()}>
       <TextInput
         readOnly
         value={shareableLink.link}

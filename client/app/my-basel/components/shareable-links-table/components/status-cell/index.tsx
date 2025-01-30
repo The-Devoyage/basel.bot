@@ -39,10 +39,12 @@ export const StatusCell: FC<StatusCellProps> = ({ shareableLink }) => {
   };
 
   return (
-    <ToggleSwitch
-      checked={shareableLink.status}
-      onChange={handleChange}
-      color="green"
-    />
+    <div onClick={(e) => e.stopPropagation()}>
+      <ToggleSwitch
+        checked={shareableLink.status}
+        onChange={handleChange}
+        color="green"
+      />
+    </div>
   );
 };

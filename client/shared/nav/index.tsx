@@ -71,7 +71,7 @@ export const Nav = async () => {
                 theme={{
                   root: {
                     img: {
-                      on: "object-cover",
+                      on: "flex items-center justify-center object-cover",
                     },
                   },
                 }}

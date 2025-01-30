@@ -1,49 +1,48 @@
-import { Endpoint, callApi } from "@/api";
+"use client";
+
+import { GlobalContext } from "@/app/provider";
 import { Typography } from "@/shared/typography";
 import { Avatar, Card } from "flowbite-react";
+import { useContext } from "react";
 
-export const UserWelcome = async () => {
-  const res = await callApi({
-    endpoint: Endpoint.Me,
-    query: null,
-    body: null,
-    path: null,
-  });
-  const isAuthenticated = await callApi({
-    endpoint: Endpoint.Verify,
-    path: null,
-    body: null,
-    query: null,
-  });
-  const me = res.data;
+export const UserWelcome = () => {
+  const {
+    store: {
+      auth: { me, shareableLink },
+    },
+  } = useContext(GlobalContext);
+  const candidate = shareableLink?.user || null || me;
 
-  if (!isAuthenticated.success) return null;
+  if (!candidate) return null;
 
   return (
     <Card className="border-4 !border-green-400 text-center">
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-4">
         <Avatar
           alt="User Avatar"
+          size="lg"
           rounded
           placeholderInitials={
-            me?.first_name?.at(0)?.toUpperCase() ||
-            me?.email.at(0)?.toUpperCase()
+            candidate?.first_name?.at(0)?.toUpperCase() ||
+            candidate?.email.at(0)?.toUpperCase()
           }
           bordered
           color="success"
-          img={me?.profile_image?.url}
+          img={candidate?.profile_image?.url}
           theme={{
             root: {
               img: {
-                on: "object-cover",
+                on: "flex items-center justify-center object-cover",
               },
             },
           }}
         />
-        {me?.full_name ? (
-          <Typography.Heading>{me?.full_name?.trim()}</Typography.Heading>
+        {candidate?.full_name ? (
+          <Typography.Heading className="w-2/3 text-xl">
+            {candidate?.full_name?.trim()}
+          </Typography.Heading>
         ) : (
-          <Typography.Link>Introduce Yourself</Typography.Link>
+          <Typography.Heading>Welcome!</Typography.Heading>
         )}
       </div>
     </Card>

@@ -66,7 +66,7 @@ export const UpdateUserForm: FC<{ me: User | null }> = ({ me }) => {
           theme={{
             root: {
               img: {
-                on: "object-cover",
+                on: "flex items-center justify-center object-cover",
               },
             },
           }}

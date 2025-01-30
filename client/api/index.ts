@@ -67,7 +67,7 @@ export interface EndpointParams {
   };
   [Endpoint.UpdateShareableLink]: {
     query: undefined;
-    body: { tag?: string; status?: boolean };
+    body: { tag?: string; status?: boolean; interview_uuids?: string[] };
     path: { uuid: string };
   };
   [Endpoint.Me]: { query: undefined; body: undefined; path: undefined };
@@ -108,6 +108,7 @@ export interface EndpointParams {
       created_by_me?: boolean;
       taken_by_me?: boolean;
       search_term?: string;
+      sl_token?: string;
     };
     body: undefined;
     path: undefined;
@@ -121,6 +122,7 @@ export interface EndpointParams {
     query: PaginationQuery & {
       start_date?: Date;
       end_date?: Date;
+      sl_token?: string;
     };
     body: undefined;
     path: undefined;

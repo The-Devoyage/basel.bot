@@ -31,6 +31,7 @@ export const useStore = () => {
       auth: {
         isAuthenticated: false,
         me: null,
+        shareableLink: null,
       },
       notifications: { open: false },
     },

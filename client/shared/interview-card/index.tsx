@@ -1,3 +1,5 @@
+"use client";
+
 import { Interview } from "@/types";
 import { Badge, Card, Tooltip } from "flowbite-react";
 import { Typography } from "../typography";

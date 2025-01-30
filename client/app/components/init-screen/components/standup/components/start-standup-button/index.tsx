@@ -14,7 +14,7 @@ export const StartStandupButton = () => {
   const [visible, setVisible] = useState(false);
   const {
     store: {
-      auth: { isAuthenticated },
+      auth: { isAuthenticated, shareableLink },
     },
   } = useContext(GlobalContext);
   const { handleMessage } = useHandleMessage();
@@ -29,6 +29,8 @@ export const StartStandupButton = () => {
     handleMessage(isAuthenticated ? "standup" : "describe_standup");
     setVisible(false);
   };
+
+  if (shareableLink) return null;
 
   return (
     <>

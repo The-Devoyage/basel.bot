@@ -7,8 +7,9 @@ import HeatMap from "@uiw/react-heat-map";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { Tooltip } from "react-tooltip";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useHandleMessage } from "../../..";
+import { GlobalContext } from "@/app/provider";
 
 dayjs.extend(utc);
 
@@ -18,6 +19,7 @@ export const StandupHeatmap = () => {
     dayjs.utc().local().subtract(1, "year"),
   );
   const { handleMessage } = useHandleMessage();
+  const { slToken } = useContext(GlobalContext);
   const standups = useCallApi(
     {
       endpoint: Endpoint.GetStandups,
@@ -25,6 +27,7 @@ export const StandupHeatmap = () => {
         limit: 0,
         start_date: startDate.toDate(),
         end_date: dayjs().toDate(),
+        sl_token: slToken || undefined,
       },
       path: null,
       body: null,
@@ -92,7 +95,7 @@ export const StandupHeatmap = () => {
               opacity={isFuture ? 0.5 : props.opacity}
               data-tooltip-id="standup"
               data-tooltip-content={`${data.date}: ${data.count || 0} standups`}
-              onClick={() => handleClick(data.date)}
+              onClick={() => !slToken && handleClick(data.date)}
             />
           );
         }}

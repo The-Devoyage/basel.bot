@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Annotated, List, Optional
-from beanie import Indexed
+from beanie import Indexed, PydanticObjectId
 import pymongo
 from classes.user_claims import UserClaims
 from database.base import BaseMongoModel
@@ -22,7 +22,12 @@ class Interview(BaseMongoModel):
     status: bool = True
 
 
-def get_pipeline(user_claims: Optional[UserClaims], taken_by_me: bool = False):
+def get_pipeline(
+    user_id: Optional[PydanticObjectId] = None,
+    taken_by_me: bool = False,
+    is_public: bool = True,
+    shareable_link_id: Optional[PydanticObjectId] = None,
+):
     pipeline = [
         {
             "$lookup": {
@@ -41,7 +46,7 @@ def get_pipeline(user_claims: Optional[UserClaims], taken_by_me: bool = False):
     ]
 
     # Add the conditional `$lookup` for `InterviewQuestionResponse`
-    if user_claims:
+    if user_id:
         pipeline.append(
             {
                 "$lookup": {
@@ -58,7 +63,7 @@ def get_pipeline(user_claims: Optional[UserClaims], taken_by_me: bool = False):
                                                 "$$question_id",
                                             ]
                                         },
-                                        {"$eq": ["$user.$id", user_claims.user.id]},
+                                        {"$eq": ["$user.$id", user_id]},
                                     ]
                                 }
                             }
@@ -74,6 +79,39 @@ def get_pipeline(user_claims: Optional[UserClaims], taken_by_me: bool = False):
                 }
             }
         )
+        if shareable_link_id:
+            pipeline += [
+                {
+                    "$lookup": {
+                        "from": "ShareableLink",
+                        "let": {"interview_id": "$_id"},
+                        "pipeline": [
+                            {
+                                "$match": {
+                                    "$expr": {
+                                        "$and": [
+                                            {
+                                                "$eq": [
+                                                    "$_id",
+                                                    shareable_link_id,
+                                                ]
+                                            },
+                                            {
+                                                "$in": [
+                                                    "$$interview_id",
+                                                    "$interviews.$id",
+                                                ]
+                                            },
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        "as": "matched_shareable_link",
+                    }
+                },
+                {"$match": {"matched_shareable_link": {"$ne": []}}},
+            ]
     else:
         pipeline.append(
             {
@@ -122,13 +160,13 @@ def get_pipeline(user_claims: Optional[UserClaims], taken_by_me: bool = False):
         {
             "$match": {
                 "response_count": {"$gt": 0}
-                if (taken_by_me and user_claims)
+                if (taken_by_me and user_id)
                 else {"$gte": 0}
             }
         },
         {
             "$project": {
-                "_id": 0,
+                "_id": 0 if is_public else 1,
                 "uuid": 1,
                 "name": 1,
                 "description": 1,

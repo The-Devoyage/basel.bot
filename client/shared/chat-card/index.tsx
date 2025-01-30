@@ -41,7 +41,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
               theme={{
                 root: {
                   img: {
-                    on: "object-cover",
+                    on: "flex items-center justify-center object-cover",
                   },
                 },
               }}
@@ -72,7 +72,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
           </div>
           {!loading ? (
             <Markdown
-              className="prose break-words dark:text-slate-300"
+              className="prose ml-1 break-words dark:text-slate-300"
               components={{
                 h1: (props) => (
                   <h1 {...props} className="dark:text-slate-300" />

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from classes.user_claims import UserClaims
 from database.interview import Interview, get_pipeline
-from utils.jwt import optional_auth
+from utils.jwt import get_sl_token_claims, optional_auth
 from utils.responses import create_response
 
 router = APIRouter()
@@ -23,12 +23,19 @@ async def get_interviews(
     limit: Optional[int] = 10,
     offset: Optional[int] = 0,
     user_claims: Optional[UserClaims] = Depends(optional_auth),
+    sl_token: Optional[str] = None,
 ):
     try:
         query = Interview.find(
             Interview.status == True,
             Interview.deleted_at == None,
         )
+
+        chatting_with = None
+        sl_token_claims = None
+        if sl_token:
+            sl_token_claims = await get_sl_token_claims(sl_token)
+            chatting_with = sl_token_claims.chatting_with
 
         if search_term:
             query.find({"$text": {"$search": search_term}})
@@ -49,7 +56,17 @@ async def get_interviews(
                     fetch_links=True,
                 )
 
-        pipeline = get_pipeline(user_claims, taken_by_me)
+        pipeline = get_pipeline(
+            chatting_with.id
+            if chatting_with
+            else user_claims.user.id
+            if user_claims
+            else None,
+            taken_by_me,
+            shareable_link_id=sl_token_claims.shareable_link.id
+            if sl_token_claims
+            else None,
+        )
 
         total = await query.aggregate(pipeline).to_list()
 
