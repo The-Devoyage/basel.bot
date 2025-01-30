@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 from uuid import UUID, uuid4
 from beanie import (
     Document,
@@ -65,6 +65,13 @@ class BaseMongoModel(Document):
             # Recursively Replace
             if hasattr(value, "to_public_dict"):
                 public_dict[key] = await value.to_public_dict(json=json)  # type:ignore
+            elif isinstance(value, List):
+                if all(hasattr(v, "to_public_dict") for v in value):
+                    public_dict[key] = [
+                        await v.to_public_dict(json=json) for v in value
+                    ]
+                else:
+                    public_dict[key] = value  # Leave as-is if not all are serializable
             elif isinstance(value, Link):
                 public_dict[key] = None
 

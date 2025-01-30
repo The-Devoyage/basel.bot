@@ -14,7 +14,7 @@ class ShareableLink(BaseMongoModel):
     user: Link[User]
     status: bool = True
     views: int = 0
-    interviews: Optional[List[Link[Interview]]]
+    interviews: Optional[List[Link[Interview]]] = None
 
     def get_virtual_fields(self) -> dict:
         """

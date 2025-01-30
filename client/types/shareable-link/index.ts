@@ -1,3 +1,4 @@
+import { Interview } from "..";
 import { User } from "../user";
 
 export interface ShareableLink {
@@ -6,6 +7,7 @@ export interface ShareableLink {
   link: string;
   status: boolean;
   user: User;
+  interviews: Interview[];
   views: number;
   created_at: string;
   updated_at: string;

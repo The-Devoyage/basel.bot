@@ -7,12 +7,13 @@ import { Loader } from "@/shared/loader";
 import { Alert, Avatar, Card } from "flowbite-react";
 import { Typography } from "@/shared/typography";
 import clsx from "clsx";
+import { AuthButton } from "@/shared/auth-button";
 
 export const ChatBody = () => {
   const {
     client,
     store: {
-      auth: { me, shareableLink },
+      auth: { me, shareableLink, isAuthenticated },
     },
   } = useContext(GlobalContext);
   const ref = useRef<HTMLDivElement>(null);
@@ -38,7 +39,7 @@ export const ChatBody = () => {
   if (!client.messages.length) return null;
 
   return (
-    <div className="mx-auto flex flex-col items-end gap-2 md:flex-row">
+    <div className="mx-auto flex w-full flex-col items-end gap-2 md:flex-row">
       <div className="mx-full order-2 flex w-full flex-col justify-center space-y-4 md:order-1 md:min-w-[700px]">
         {client.messages.map((m, index) => (
           <ChatCard
@@ -93,9 +94,10 @@ export const ChatBody = () => {
               </Typography.Heading>
             ) : (
               <Typography.Heading className="w-2/3 text-wrap">
-                {chattingWith?.email.split("@")?.at(0)}
+                {chattingWith?.email.split("@")?.at(0) || "Welcome!"}
               </Typography.Heading>
             )}
+            {!isAuthenticated && !shareableLink && <AuthButton />}
           </div>
         </Card>
       </div>

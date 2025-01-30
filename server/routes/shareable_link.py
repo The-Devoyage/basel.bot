@@ -1,13 +1,15 @@
 import logging
 from uuid import UUID
 import jwt
-from typing import Optional, cast
+from typing import List, Optional, cast
 from fastapi import APIRouter, HTTPException
 from fastapi.param_functions import Depends
 from classes.user_claims import ShareableLinkClaims, UserClaims
+from database.interview import Interview
 from database.shareable_link import ShareableLink
 from utils.environment import get_env_var
 from pydantic import BaseModel
+from beanie.operators import In
 
 from utils.jwt import create_jwt, require_auth
 from utils.responses import create_response
@@ -58,6 +60,7 @@ async def create_shareable_link(user_claims: UserClaims = Depends(require_auth))
 class UpdateShareableLinkBody(BaseModel):
     status: Optional[bool] = None
     tag: Optional[str] = None
+    interview_uuids: Optional[List[str]] = None
 
 
 @router.patch("/shareable-link/{uuid}")
@@ -78,8 +81,16 @@ async def update_shareable_link(
         shareable_link.status = (
             body.status if body.status is not None else shareable_link.status
         )
-        shareable_link.tag = body.tag if body.tag else shareable_link.tag
+        shareable_link.tag = body.tag if body.tag is not None else shareable_link.tag
         shareable_link.updated_by = user_claims.user  # type:ignore
+
+        if body.interview_uuids:
+            interviews = await Interview.find(
+                In(Interview.uuid, [UUID(uuid) for uuid in body.interview_uuids])
+            ).to_list()
+            shareable_link.interviews = interviews  # type:ignore
+        else:
+            shareable_link.interviews = None
 
         await shareable_link.save()
 

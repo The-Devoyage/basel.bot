@@ -13,7 +13,7 @@ export const TakeInterviewButton: FC<{ interview: Interview }> = ({
 }) => {
   const {
     store: {
-      auth: { isAuthenticated, shareableLink },
+      auth: { shareableLink },
     },
   } = useContext(GlobalContext);
   const router = useRouter();
@@ -23,10 +23,12 @@ export const TakeInterviewButton: FC<{ interview: Interview }> = ({
   const handleClick = () => {
     if (pathname !== "/") router.push("/");
     const context = `Interview UUID: ${interview.uuid}`;
-    return handleMessage("interview", interview.name, context);
+    return handleMessage(
+      shareableLink ? "recruiter_interview" : "interview",
+      interview.name,
+      context,
+    );
   };
-
-  if (!isAuthenticated || shareableLink) return null;
 
   return (
     <Button outline gradientDuoTone="purpleToBlue" onClick={handleClick}>

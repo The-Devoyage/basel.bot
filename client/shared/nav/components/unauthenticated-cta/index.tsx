@@ -2,7 +2,7 @@
 
 import { DarkThemeToggle, Navbar, useThemeMode } from "flowbite-react";
 import { useWindowSize } from "../../../useWindowSize";
-import { AuthButton } from "..";
+import { AuthButton } from "@/shared/auth-button";
 
 export const UnauthenticatedCta = () => {
   const windowSize = useWindowSize();

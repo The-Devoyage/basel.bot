@@ -1,10 +1,11 @@
 "use client";
+
 import { GlobalContext } from "@/app/provider";
 import { Typography } from "@/shared/typography";
 import { Avatar, Card } from "flowbite-react";
 import { useContext } from "react";
 
-export const UserWelcome = async () => {
+export const UserWelcome = () => {
   const {
     store: {
       auth: { me, shareableLink },

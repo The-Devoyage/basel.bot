@@ -8,7 +8,7 @@ from database.standup import Standup
 from fastapi import APIRouter, Depends, HTTPException
 from database.user import User
 from utils.environment import get_env_var
-from utils.jwt import optional_auth
+from utils.jwt import get_sl_token_claims, optional_auth
 import jwt
 
 from utils.responses import create_response
@@ -16,9 +16,6 @@ from utils.responses import create_response
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-SHAREABLE_LINK_SECRET = get_env_var("SHAREABLE_LINK_SECRET")
-ALGORITHM = get_env_var("JWT_ALGORITHM")
 
 
 @router.get("/standups")
@@ -34,22 +31,9 @@ async def get_standups(
         sl_claims = None
         chatting_with = None
         if sl_token:
-            decoded = jwt.decode(
-                sl_token, SHAREABLE_LINK_SECRET, algorithms=[ALGORITHM]
-            )
-            sl_claims = cast(ShareableLinkClaims, ShareableLinkClaims(**decoded))
-            chatting_with = await User.find_one(User.uuid == UUID(sl_claims.user_uuid))
-            shareable_link = await ShareableLink.find_one(
-                ShareableLink.uuid == UUID(sl_claims.shareable_link_uuid)
-            )
-            if not shareable_link:
-                logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
-                return HTTPException(
-                    status_code=500, detail="Shareable Link Token User Not Found"
-                )
-            if not shareable_link.status:
-                logger.error("SHAREABLE LINK REVOKED")
-                return HTTPException(status_code=500, detail="Shareable Link Disabled")
+            sl_token_claims = await get_sl_token_claims(sl_token)
+            sl_claims = sl_token_claims.sl_claims
+            chatting_with = sl_token_claims.chatting_with
 
         if not sl_claims and not user_claims:
             logger.error("AUTHENTICATION REQUIRED")

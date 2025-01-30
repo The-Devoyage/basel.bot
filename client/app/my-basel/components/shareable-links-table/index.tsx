@@ -1,8 +1,10 @@
-import { Table, TableBody, TableCell, TableRow } from "flowbite-react";
+"use client";
+
+import { Table } from "flowbite-react";
 import { ShareableLinksTableHead } from "./components/shareable-links-table-head";
 import { ShareableLink } from "@/types/shareable-link";
-import { FC } from "react";
-import { LinkCell, StatusCell, TagCell } from "./components";
+import { FC, useState } from "react";
+import { LinkCell, StatusCell, UpdateLinkModal } from "./components";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
@@ -14,35 +16,42 @@ interface ShareableLinksTableProps {
 export const ShareableLinksTable: FC<ShareableLinksTableProps> = ({
   shareableLinks = [],
 }) => {
+  const [selectedLink, setSelectedLink] = useState<ShareableLink | null>(null);
+
   if (!shareableLinks?.length) {
     return null;
   }
 
   return (
-    <Table>
+    <Table hoverable>
       <ShareableLinksTableHead />
-      <TableBody className="divide-y">
+      <UpdateLinkModal
+        show={!!selectedLink}
+        shareableLink={selectedLink}
+        onClose={() => setSelectedLink(null)}
+      />
+      <Table.Body className="divide-y">
         {shareableLinks?.map((sl) => (
-          <TableRow
+          <Table.Row
             key={sl.uuid}
-            className="bg-white dark:border-gray-700 dark:bg-gray-800"
+            className="cursor-pointer bg-white dark:border-gray-700 dark:bg-gray-800"
+            onClick={() => setSelectedLink(sl)}
           >
-            <TableCell>
+            <Table.Cell>
               <StatusCell shareableLink={sl} />
-            </TableCell>
-            <TableCell className="hidden md:table-cell">{sl.views}</TableCell>
-            <TableCell>
-              <TagCell shareableLink={sl} />
-            </TableCell>
-            <TableCell className="hidden md:table-cell">
+            </Table.Cell>
+            <Table.Cell className="hidden md:table-cell">{sl.views}</Table.Cell>
+            <Table.Cell>{sl.tag || "--"}</Table.Cell>
+            <Table.Cell>{sl.interviews.length || "--"}</Table.Cell>
+            <Table.Cell className="hidden md:table-cell">
               {dayjs.utc(sl.created_at).local().format("MMM D, YYYY")}
-            </TableCell>
-            <TableCell>
+            </Table.Cell>
+            <Table.Cell>
               <LinkCell shareableLink={sl} />
-            </TableCell>
-          </TableRow>
+            </Table.Cell>
+          </Table.Row>
         ))}
-      </TableBody>
+      </Table.Body>
     </Table>
   );
 };
