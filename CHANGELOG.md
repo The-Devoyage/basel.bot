@@ -1,5 +1,9 @@
 # Basel Changelog
 
+## v0.0.10
+
+- Recruiter views, attach interviews to links
+
 ## v0.0.9
 
 - Add Interviews Page
