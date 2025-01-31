@@ -2,7 +2,6 @@ from enum import Enum
 from typing import Annotated, List, Optional
 from beanie import Indexed, PydanticObjectId
 import pymongo
-from classes.user_claims import UserClaims
 from database.base import BaseMongoModel
 
 
@@ -99,7 +98,12 @@ def get_pipeline(
                                             {
                                                 "$in": [
                                                     "$$interview_id",
-                                                    "$interviews.$id",
+                                                    {
+                                                        "$ifNull": [
+                                                            "$interviews.$id",
+                                                            [],
+                                                        ]
+                                                    },
                                                 ]
                                             },
                                         ]
