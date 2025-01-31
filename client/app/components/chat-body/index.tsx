@@ -10,12 +10,10 @@ import clsx from "clsx";
 import { AuthButton } from "@/shared/auth-button";
 
 export const ChatBody = () => {
+  const { client, store } = useContext(GlobalContext);
   const {
-    client,
-    store: {
-      auth: { me, shareableLink, isAuthenticated },
-    },
-  } = useContext(GlobalContext);
+    auth: { me, shareableLink, isAuthenticated },
+  } = store;
   const ref = useRef<HTMLDivElement>(null);
   const candidate = shareableLink?.user || null;
   const chattingWith = candidate || null || me;
@@ -81,6 +79,8 @@ export const ChatBody = () => {
                 root: {
                   img: {
                     on: "flex items-center justify-center object-cover",
+                    placeholder:
+                      "absolute -bottom-2 h-auto w-auto text-gray-400",
                   },
                 },
               }}

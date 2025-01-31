@@ -1,7 +1,7 @@
 "use client";
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
-import { FC, createContext, useMemo } from "react";
+import { FC, createContext, useEffect, useMemo } from "react";
 import { Message, Notification } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
@@ -43,7 +43,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const searchParams = useSearchParams();
   const slToken = searchParams.get("sl_token");
   useVerifyLogin(dispatch);
-  useCallApi(
+  const { call } = useCallApi(
     {
       endpoint: Endpoint.Me,
       query: null,
@@ -51,7 +51,6 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
       path: null,
     },
     {
-      callOnMount: true,
       onSuccess: (res) => {
         if (res.data) dispatch(setMe(res.data));
       },
@@ -73,6 +72,10 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
       },
     },
   );
+
+  useEffect(() => {
+    if (store.auth.isAuthenticated) call();
+  }, [store.auth.isAuthenticated]);
 
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${slToken ? "?sl_token=" + slToken : ""}`,
