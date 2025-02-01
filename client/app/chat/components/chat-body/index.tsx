@@ -49,8 +49,8 @@ export const ChatBody = () => {
                 Hello! My name is Basel.
               </Typography.Heading>
               <Typography.Paragraph>
-                Whether you're here to network, hire, or share your journey — it
-                all starts with a conversation.
+                Whether you&apos;re here to network, hire, or share your journey
+                — it all starts with a conversation.
               </Typography.Paragraph>
             </div>
           </div>
