@@ -4,6 +4,7 @@ import { GlobalContext } from "@/app/provider";
 import { Typography } from "@/shared/typography";
 import { Avatar, Card } from "flowbite-react";
 import { useContext } from "react";
+import { BiSolidLeaf } from "react-icons/bi";
 
 export const UserWelcome = () => {
   const {
@@ -13,7 +14,16 @@ export const UserWelcome = () => {
   } = useContext(GlobalContext);
   const candidate = shareableLink?.user || null || me;
 
-  if (!candidate) return null;
+  if (!candidate) {
+    return (
+      <Card className="border-4 !border-green-400 text-center">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <BiSolidLeaf className="h-12 w-12 text-green-400" />
+          <Typography.Heading>Hey, I&apos;m Basel!</Typography.Heading>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-4 !border-green-400 text-center">

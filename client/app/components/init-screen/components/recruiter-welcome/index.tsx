@@ -44,7 +44,7 @@ export const RecruiterWelcome = () => {
       </Typography.Heading>
       <Typography.Paragraph className="my-2 dark:text-slate-600">
         {status
-          ? `It looks like you might be here to learn about ${user?.first_name || "a candidate"}!`
+          ? `It looks like you might be here to learn about ${user?.first_name || "a candidate"}.`
           : `The user has revoked access to their bot. Please try again later.`}
       </Typography.Paragraph>
       {status && (
@@ -66,7 +66,7 @@ export const RecruiterWelcome = () => {
               }
               className="mt-4 w-full"
             >
-              Generate Resume
+              Resume
             </Button>
             <Button
               gradientDuoTone="purpleToBlue"
@@ -74,7 +74,7 @@ export const RecruiterWelcome = () => {
               onClick={() => handleMessage("candidate")}
               className="mt-4 w-full"
             >
-              Interview {user?.first_name || "the Candidate"}&apos;s Basel
+              Interview
             </Button>
           </div>
         </>

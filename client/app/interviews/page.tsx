@@ -4,7 +4,7 @@ import { InterviewsList } from "./components";
 import { AddInterviewButton } from "@/shared/add-interview-button";
 
 const InterviewsPage = async () => (
-  <section className="flex w-full flex-col space-y-4">
+  <section className="container mx-auto flex w-full flex-col space-y-4 p-4">
     <div className="flex items-center justify-between">
       <PageHeader title="Interviews" />
       <AddInterviewButton />

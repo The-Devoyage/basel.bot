@@ -13,7 +13,7 @@ Let’s make interviews less stressful and a whole lot smarter. Ready to get sta
 export const recruiterMessage = `
 ### Hello there! 👋  
 
-I’m Basel, your personal AI assistant for exploring this candidate’s profile. Think of me as their voice, here to make your recruitment process smoother and more insightful.  
+I’m Basel, your personal AI assistant here to help you explore this candidate’s profile. Think of me as their voice, here to make your recruitment process smoother and more insightful.  
 
 - **Curious about their skills, experiences, or achievements?** Ask me anything, and I’ll provide answers on their behalf.  
 - **Looking to fill a role?** Describe the job, and I’ll help you determine if this candidate is a good match.  

@@ -28,6 +28,7 @@ export const GlobalContext = createContext<GlobalContext>({
       shareableLink: null,
     },
     notifications: { open: false },
+    chatInput: { focused: false },
   },
   dispatch: () => {},
   slToken: null,

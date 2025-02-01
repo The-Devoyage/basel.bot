@@ -8,3 +8,4 @@ export * from "./onboarding";
 export * from "./standup";
 export * from "./user-welcome";
 export * from "./welcome-message";
+export * from "./chat-now";

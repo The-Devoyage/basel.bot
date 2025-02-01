@@ -1,10 +1,11 @@
 "use client";
 
-import { useContext, useState, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { GlobalContext } from "@/app/provider";
 import { ActionItems, FilePreviews } from "./components";
 import clsx from "clsx";
 import { ChatInputContext, ChatInputContextProvider } from "./context";
+import { toggleChatInputFocus } from "../useStore/chatInput";
 
 export const ChatInputContents = () => {
   const {
@@ -16,9 +17,14 @@ export const ChatInputContents = () => {
     handleRepeatMessage,
     updateSuggestion,
   } = useContext(ChatInputContext);
-  const { client } = useContext(GlobalContext);
+  const {
+    client,
+    dispatch,
+    store: {
+      chatInput: { focused },
+    },
+  } = useContext(GlobalContext);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,7 +33,7 @@ export const ChatInputContents = () => {
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
       ) {
-        setIsFocused(false);
+        dispatch(toggleChatInputFocus(false));
       }
     };
 
@@ -44,19 +50,18 @@ export const ChatInputContents = () => {
     }
   }, [messageText]);
 
+  useEffect(() => {
+    if (focused) {
+      inputRef.current?.focus();
+    }
+  }, [focused]);
+
   const handleFocus = () => {
-    setIsFocused(document.activeElement === inputRef.current);
+    dispatch(toggleChatInputFocus(document.activeElement === inputRef.current));
     setTimeout(() => {
       document.body.style.height = `${window.innerHeight}px`;
     }, 300);
   };
-
-  // const handleBlur = () => {
-  //   setIsFocused(document.activeElement === inputRef.current);
-  //   setTimeout(() => {
-  //     document.body.style.height = `${window.innerHeight}px`;
-  //   }, 300);
-  // };
 
   return (
     <div
@@ -66,8 +71,8 @@ export const ChatInputContents = () => {
       <FilePreviews />
       <div
         className={clsx("rounded border border-slate-200", {
-          "border-green-400": isFocused,
-          flex: !isFocused,
+          "border-green-400": focused,
+          flex: !focused,
         })}
       >
         <div className="relative flex w-full items-end">

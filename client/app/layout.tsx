@@ -38,28 +38,20 @@ export default async function RootLayout({
         <ThemeModeScript />
       </head>
       <body
-        className={`h-screen w-full bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
+        className={`flex w-full flex-col bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
       >
         <Suspense
           fallback={
-            <Loader message="Your next interview just got much easier." />
+            <Loader message="Your next interview is going to be much easier." />
           }
         >
           <GlobalProvider>
             <Toaster />
-            <Nav />
-            <NotificationDrawer />
-            <main
-              className="container relative top-16 mx-auto mb-16 flex p-4 dark:bg-slate-900"
-              style={{
-                minHeight: "calc(100vh - 148px)",
-              }}
-            >
+            <main className="flex h-full flex-col dark:bg-slate-900">
+              <Nav />
+              <NotificationDrawer />
               {children}
             </main>
-            <footer className="sticky bottom-0 w-full border-t bg-white dark:border-slate-500 dark:bg-slate-950">
-              <ChatInput />
-            </footer>
           </GlobalProvider>
         </Suspense>
       </body>

@@ -74,7 +74,7 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
   }, [isAuthenticated]);
 
   const handleMessage = () => {
-    if (pathname !== "/") router.push("/");
+    if (pathname !== "/chat") router.push("/chat");
     if (!messageText) return;
     if (!client?.connected) client?.handleConnect();
 

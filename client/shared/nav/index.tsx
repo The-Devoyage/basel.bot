@@ -35,10 +35,19 @@ export const Nav = async () => {
 
   return (
     <Navbar
-      className="fixed left-0 right-0 top-0 z-20 shadow-lg shadow-blue-200/50 dark:bg-slate-950 dark:shadow-blue-950/75"
+      className="sticky top-0 z-20 shadow-lg shadow-blue-200/50 dark:bg-slate-950 dark:shadow-blue-950/75"
       fluid
     >
-      <NavbarToggle />
+      {isAuthenticated.success ? (
+        <NavbarToggle />
+      ) : (
+        <NavbarBrand
+          href="/"
+          className="flex items-center space-x-2 text-2xl font-bold dark:text-white md:hidden"
+        >
+          <BiSolidLeaf className="text-green-400 md:hidden" />
+        </NavbarBrand>
+      )}
       <div className="flex items-center gap-6">
         <NavbarBrand
           href="/"

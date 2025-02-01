@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, useRef, MutableRefObject, useEffect } from "react";
+import {
+  useState,
+  useRef,
+  MutableRefObject,
+  useEffect,
+  useContext,
+} from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { GlobalContext } from "@/app/provider";
 
 export interface SocketClient<Send, Receive> {
   socket: MutableRefObject<WebSocket | null>;
@@ -28,6 +36,10 @@ export const useSocket = <Send, Receive>(
   const [messageQueue, setMessageQueue] = useState<Send[]>([]);
   const [connected, setConnected] = useState(false);
   const closed = useRef(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { slToken } = useContext(GlobalContext);
 
   useEffect(() => {
     if (socket.current?.readyState === WebSocket.OPEN) {
@@ -76,6 +88,9 @@ export const useSocket = <Send, Receive>(
   };
 
   const handleSend = (message: Send, appendMessage = true) => {
+    if (pathname !== "/chat") {
+      router.push(`/chat?${searchParams.toString()}`);
+    }
     if (appendMessage) setMessages((prev) => [...prev, message]);
     if (!connected) {
       setMessageQueue((curr) => [...curr, message]);
