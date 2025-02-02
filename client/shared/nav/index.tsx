@@ -81,7 +81,10 @@ export const Nav = async () => {
               <Avatar
                 alt="User settings"
                 rounded
-                placeholderInitials={me?.data?.email.at(0)?.toUpperCase()}
+                placeholderInitials={
+                  me?.data?.full_name?.at(0)?.toUpperCase() ||
+                  me?.data?.email.at(0)?.toUpperCase()
+                }
                 bordered
                 color="success"
                 img={me?.data?.profile_image?.url}

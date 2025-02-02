@@ -55,6 +55,8 @@ async def get_system_prompt(
             When a user finishes a standup, interview, or even general conversation, follow up with leading questions to help them contribute more to the platform.
 
             When a user introduces themself, save their name to the database using the update_user tool.
+
+            When creating interviews and interview questions, always save the question before saving the response.
         """
 
     # User chatting with another user's bot

@@ -27,7 +27,9 @@ export const ListInterviews = () => {
           No Interviews Found
         </Typography.Heading>
         <Typography.Paragraph>
-          It looks like there are no interviews available at the moment.
+          {!slToken
+            ? "It looks like there are no interviews available at the moment."
+            : "The candidate has not attached any interviews to this link."}
         </Typography.Paragraph>
       </Card>
     );

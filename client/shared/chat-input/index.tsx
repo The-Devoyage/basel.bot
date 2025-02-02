@@ -44,11 +44,15 @@ export const ChatInputContents = () => {
   }, []);
 
   useEffect(() => {
-    if (inputRef.current) {
+    if (!inputRef.current) return;
+    if (focused) {
       inputRef.current.style.height = "auto";
       inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
+    } else {
+      inputRef.current.style.height = "auto";
+      // inputRef.current.style.height = `${inputRef.current.scrollHeight}px`;
     }
-  }, [messageText]);
+  }, [messageText, focused]);
 
   useEffect(() => {
     if (focused) {
@@ -102,7 +106,6 @@ export const ChatInputContents = () => {
               updateSuggestion(value);
             }}
             onFocus={handleFocus}
-            // onBlur={handleBlur}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey && !client?.loading) {
                 e.preventDefault();
