@@ -6,7 +6,6 @@ import { DisplayName, RecruiterButtons, UserAvatar } from "..";
 import { AuthButton } from "@/shared/auth-button";
 import { GlobalContext } from "@/app/provider";
 import { useContext } from "react";
-import { useWindowSize } from "@/shared/useWindowSize";
 
 export const ChattingWith = () => {
   const { store } = useContext(GlobalContext);
@@ -16,10 +15,9 @@ export const ChattingWith = () => {
   const candidate = shareableLink?.user || null;
   const chattingWith = candidate || null || me;
   const linkStatus = shareableLink?.status;
-  const { isMobile } = useWindowSize();
 
   return (
-    <Accordion collapseAll={isMobile}>
+    <Accordion>
       <Accordion.Panel>
         <Accordion.Title>
           {shareableLink

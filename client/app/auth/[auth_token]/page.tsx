@@ -61,7 +61,7 @@ export default function Page({ params }: { params: { auth_token: string } }) {
   }, [params.auth_token]);
 
   return (
-    <div className="flex w-full flex-col items-center justify-center">
+    <div className="container mx-auto flex w-full flex-col items-center justify-center p-4">
       <Alert color="success" className="w-96">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-green-400">
