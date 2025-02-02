@@ -17,31 +17,22 @@ export const ChattingWith = () => {
   const linkStatus = shareableLink?.status;
 
   return (
-    <Accordion>
-      <Accordion.Panel>
-        <Accordion.Title>
-          {shareableLink
-            ? chattingWith?.full_name || "Candidate"
-            : "My Profile"}
-        </Accordion.Title>
-        <Accordion.Content>
-          <Card
-            className={clsx("w-full text-center", {
-              "border-4 border-red-200": linkStatus === false,
-            })}
-          >
-            <div className="flex flex-col items-center justify-center gap-4">
-              <UserAvatar chattingWith={chattingWith} />
-              {linkStatus === false && (
-                <Alert color="failure">Access Revoked</Alert>
-              )}
-              <DisplayName chattingWith={chattingWith} />
-              {!isAuthenticated && !shareableLink && <AuthButton />}
-            </div>
-          </Card>
-          <RecruiterButtons />
-        </Accordion.Content>
-      </Accordion.Panel>
-    </Accordion>
+    <>
+      <Card
+        className={clsx("w-full text-center", {
+          "border-4 border-red-200": linkStatus === false,
+        })}
+      >
+        <div className="flex flex-col items-center justify-center gap-4">
+          <UserAvatar chattingWith={chattingWith} />
+          {linkStatus === false && (
+            <Alert color="failure">Access Revoked</Alert>
+          )}
+          <DisplayName chattingWith={chattingWith} />
+          {!isAuthenticated && !shareableLink && <AuthButton />}
+        </div>
+      </Card>
+      <RecruiterButtons />
+    </>
   );
 };

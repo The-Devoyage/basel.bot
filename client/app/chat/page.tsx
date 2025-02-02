@@ -4,9 +4,11 @@ import { useContext, useEffect } from "react";
 import { ChatBody } from "./components";
 import { GlobalContext } from "../provider";
 import { ChatInput } from "@/shared/chat-input";
+import { toggleChatInputFocus } from "@/shared/useStore/chatInput";
 
 export default function Chat() {
   const {
+    dispatch,
     store: {
       chatInput: { focused },
     },
@@ -15,6 +17,8 @@ export default function Chat() {
   useEffect(() => {
     // Disable scrolling on <html>
     document.documentElement.style.overflow = "hidden";
+
+    dispatch(toggleChatInputFocus(true));
 
     return () => {
       // Re-enable scrolling when component unmounts

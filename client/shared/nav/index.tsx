@@ -39,11 +39,14 @@ export const Nav = async () => {
       fluid
     >
       {isAuthenticated.success ? (
-        <div className="flex items-center space-x-2 text-2xl font-bold dark:text-white md:hidden">
+        <NavbarBrand
+          href="/"
+          className="flex items-center space-x-2 text-2xl font-bold dark:text-white md:hidden"
+        >
           <NavbarToggle />
           <BiSolidLeaf className="text-green-400 md:hidden" />
           <span className="text-green-400 md:hidden">basel.bot</span>
-        </div>
+        </NavbarBrand>
       ) : (
         <NavbarBrand
           href="/"
