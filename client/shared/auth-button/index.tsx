@@ -62,7 +62,7 @@ export const AuthButton = () => {
   }, []);
 
   const handleAuth = () => {
-    handleSend(form.values);
+    handleSend(form.values, true, false, false);
   };
 
   const handleCloseModal = () => {

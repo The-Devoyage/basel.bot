@@ -10,6 +10,7 @@ export interface SocketClient<Send, Receive> {
     message: Send,
     appendMessage?: boolean,
     useSlToken?: boolean,
+    redirectToChat?: boolean,
   ) => void;
   handleClose: () => void;
   handleConnect: () => WebSocket;
@@ -87,10 +88,11 @@ export const useSocket = <Send, Receive>(
     message: Send,
     appendMessage = true,
     useSlToken = true,
+    redirectToChat = true,
   ) => {
-    if (pathname !== "/chat" && useSlToken) {
+    if (pathname !== "/chat" && useSlToken && redirectToChat) {
       router.push(`/chat?${searchParams.toString()}`);
-    } else if (pathname !== "/chat" && !useSlToken) {
+    } else if (pathname !== "/chat" && !useSlToken && redirectToChat) {
       router.push("/chat");
     }
     if (appendMessage) setMessages((prev) => [...prev, message]);
