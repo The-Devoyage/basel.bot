@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  useState,
-  useRef,
-  MutableRefObject,
-  useEffect,
-  useContext,
-} from "react";
+import { useState, useRef, MutableRefObject, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { GlobalContext } from "@/app/provider";
 
 export interface SocketClient<Send, Receive> {
   socket: MutableRefObject<WebSocket | null>;
@@ -43,7 +36,6 @@ export const useSocket = <Send, Receive>(
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const { slToken } = useContext(GlobalContext);
 
   useEffect(() => {
     if (socket.current?.readyState === WebSocket.OPEN) {
