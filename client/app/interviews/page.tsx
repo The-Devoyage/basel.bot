@@ -9,12 +9,13 @@ const InterviewsPage = async () => (
       <PageHeader title="Interviews" />
       <AddInterviewButton />
     </div>
-    <Alert color="purple">
-      <h2 className="text-xl">Straight to the Chase</h2>
+    <Alert color="purple" className="border-4 border-purple-500">
+      <h2 className="text-xl">Start Conversations, Not Applications</h2>
       <p>
-        Skip the application and instantly interview for any job with Basel.
+        Skip the application and jump straight to the interview. Basel is here
+        to sync your profile with the application.
       </p>
-    </Alert>
+    </Alert>{" "}
     <InterviewsList />
   </section>
 );

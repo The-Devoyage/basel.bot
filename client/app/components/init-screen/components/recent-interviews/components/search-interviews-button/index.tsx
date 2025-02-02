@@ -1,21 +1,17 @@
 "use client";
 
 import { Button } from "flowbite-react";
-import { useHandleMessage } from "../../..";
 import { useContext } from "react";
 import { GlobalContext } from "@/app/provider";
+import { useRouter } from "next/navigation";
 
 export const SearchInterviewsButton = () => {
-  const { handleMessage } = useHandleMessage();
+  const router = useRouter();
   const {
     store: {
       auth: { shareableLink },
     },
   } = useContext(GlobalContext);
-
-  const handleClick = () => {
-    handleMessage("search_interviews");
-  };
 
   if (shareableLink) return null;
 
@@ -24,7 +20,7 @@ export const SearchInterviewsButton = () => {
       outline
       gradientDuoTone="purpleToBlue"
       className="w-full"
-      onClick={handleClick}
+      onClick={() => router.push("/interviews")}
     >
       Search Interviews
     </Button>

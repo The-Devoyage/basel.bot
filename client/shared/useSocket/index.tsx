@@ -13,7 +13,11 @@ import { GlobalContext } from "@/app/provider";
 export interface SocketClient<Send, Receive> {
   socket: MutableRefObject<WebSocket | null>;
   messages: Send[] | Receive[];
-  handleSend: (message: Send, appendMessage?: boolean) => void;
+  handleSend: (
+    message: Send,
+    appendMessage?: boolean,
+    useSlToken?: boolean,
+  ) => void;
   handleClose: () => void;
   handleConnect: () => WebSocket;
   loading: boolean;
@@ -87,9 +91,15 @@ export const useSocket = <Send, Receive>(
     socket?.current?.close();
   };
 
-  const handleSend = (message: Send, appendMessage = true) => {
-    if (pathname !== "/chat") {
+  const handleSend = (
+    message: Send,
+    appendMessage = true,
+    useSlToken = true,
+  ) => {
+    if (pathname !== "/chat" && useSlToken) {
       router.push(`/chat?${searchParams.toString()}`);
+    } else if (pathname !== "/chat" && !useSlToken) {
+      router.push("/chat");
     }
     if (appendMessage) setMessages((prev) => [...prev, message]);
     if (!connected) {

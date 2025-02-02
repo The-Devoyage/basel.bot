@@ -3,7 +3,7 @@ import { ManageSubscription, Profile } from "./components";
 
 const AccountPage = () => {
   return (
-    <section className="flex w-full flex-col">
+    <section className="container mx-auto flex w-full flex-col p-4">
       <PageHeader title="Account" />
       <Profile />
       <ManageSubscription />

@@ -28,15 +28,19 @@ export const useHandleMessage = () => {
     context?: string,
   ) => {
     let text = "";
+    let useSlToken = true;
     switch (type) {
       case "interviews":
+        useSlToken = false;
         text =
           "I am interested in learning about what Interviews are on the Basel Platform. How do these work?";
         break;
       case "describe_standup":
+        useSlToken = false;
         text = "Basel, what is a standup and how often should I participate?";
         break;
       case "shareable_links":
+        useSlToken = false;
         text =
           "What are shareable links and how do they help me share my bot with potential employers/recruiters?";
         break;
@@ -45,6 +49,7 @@ export const useHandleMessage = () => {
           "Dynamic Resumes? So you can help keep my resume up to date at all times?";
         break;
       case "translations":
+        useSlToken = false;
         text =
           "Basel, tell me how you can assist in language or technical translation barriers when assisting recruiters and candidates in the job hunt process.";
         break;
@@ -85,7 +90,7 @@ export const useHandleMessage = () => {
       context,
     };
 
-    client?.handleSend(message);
+    client?.handleSend(message, true, useSlToken);
   };
 
   return { handleMessage };

@@ -32,7 +32,7 @@ const MyBaselPage = async () => {
   );
 
   return (
-    <section className="flex w-full flex-col space-y-4">
+    <section className="container mx-auto flex w-full flex-col space-y-4 p-4">
       <PageHeader title="My Basel" />
       <Accordion>
         <AccordionPanel>
