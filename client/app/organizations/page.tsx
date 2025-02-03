@@ -1,0 +1,21 @@
+import { PageHeader } from "@/shared/layout/page-header";
+import { AddOrganizationButton, ListOrganizations } from "./components";
+import { Alert } from "flowbite-react";
+
+const Organizations = () => {
+  return (
+    <section className="container mx-auto flex w-full flex-col space-y-2 p-4">
+      <div className="flex items-center justify-between">
+        <PageHeader title="Organizations" />
+        <AddOrganizationButton />
+      </div>
+      <Alert color="pink" className="border-2 border-purple-500">
+        <h2 className="text-xl">Recruit with Basel</h2>
+        <p>Interviews</p>
+      </Alert>
+      <ListOrganizations />
+    </section>
+  );
+};
+
+export default Organizations;

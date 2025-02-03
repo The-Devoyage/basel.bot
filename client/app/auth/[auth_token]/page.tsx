@@ -61,40 +61,45 @@ export default function Page({ params }: { params: { auth_token: string } }) {
   }, [params.auth_token]);
 
   return (
-    <div className="container mx-auto flex w-full flex-col items-center justify-center p-4">
-      <Alert color="success" className="w-96">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-green-400">
-            {!message
-              ? "Verifying"
-              : message.type === "error"
-                ? "Error"
-                : "Success"}
-          </h1>
-          <BiSolidLeaf className="my-4 h-8 w-8 animate-wiggle text-green-400" />
+    <div className="container mx-auto flex w-full flex-col p-4">
+      <Alert color="success" className="">
+        <div className="flex w-full flex-col">
+          <div className="flex items-start gap-2">
+            <BiSolidLeaf className="my-1 h-6 w-6 animate-wiggle text-green-400" />
+            <div className="flex flex-col gap-2">
+              <h1 className="text-xl font-bold text-green-400">
+                {!message
+                  ? "Verifying"
+                  : message.type === "error"
+                    ? "Error"
+                    : "Success"}
+              </h1>
+              {!message ? (
+                <p className="text-md text-gray-500">
+                  Verifying your account - Please wait...
+                </p>
+              ) : (
+                <p
+                  className={`text-${message.type === "error" ? "red" : "green"}-500`}
+                >
+                  {message.message}
+                </p>
+              )}
+              {isAuthenticated && (
+                <Button
+                  color="green"
+                  outline
+                  className="w-full"
+                  onClick={() => {
+                    router.push("/");
+                  }}
+                >
+                  Continue
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
-        {!message ? (
-          <p className="text-md text-gray-500">
-            Verifying your account - Please wait...
-          </p>
-        ) : (
-          <p
-            className={`text-${message.type === "error" ? "red" : "green"}-500`}
-          >
-            {message.message}
-          </p>
-        )}
-        {isAuthenticated && (
-          <Button
-            color="green"
-            className="mt-2 w-full"
-            onClick={() => {
-              router.push("/");
-            }}
-          >
-            Continue
-          </Button>
-        )}
       </Alert>
     </div>
   );

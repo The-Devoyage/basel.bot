@@ -33,7 +33,8 @@ export const Standup = () => {
             Standups capture daily progress—what’s been accomplished, current
             focus, and challenges. These updates build a dynamic career profile,
             shining a spotlight on growth, dedication, and the journey every
-            step of the way.
+            step of the way. The heatmap below shows this user&apos;s activity
+            level per day.
           </div>
         </div>
       </Alert>

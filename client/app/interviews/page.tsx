@@ -15,7 +15,7 @@ const InterviewsPage = async () => (
         Skip the application and jump straight to the interview. Basel is here
         to sync your profile with the application.
       </p>
-    </Alert>{" "}
+    </Alert>
     <InterviewsList />
   </section>
 );

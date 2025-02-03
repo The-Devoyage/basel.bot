@@ -108,6 +108,7 @@ export const Nav = async () => {
             </DropdownHeader>
             <DropdownItem href="/my-basel">My Basel</DropdownItem>
             <DropdownItem href="/account">Account</DropdownItem>
+            <DropdownItem href="/organizations">Organizations</DropdownItem>
             <ThemeModeItem />
             <DropdownDivider />
             <SignoutDropdownItem />
