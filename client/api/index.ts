@@ -35,7 +35,8 @@ export enum Endpoint {
   ResetIndex = "/reset-index",
   GetUserMetas = "/user-metas",
   PatchUserMeta = "/user-meta/:uuid",
-  GetInterviews = "/interviews",
+  GetInterviews = "/interview/list",
+  GetInterview = "/interview",
   GetOnboarding = "/onboarding",
   GetStandups = "/standups",
   GetNotifications = "/notifications",
@@ -110,6 +111,11 @@ export interface EndpointParams {
       search_term?: string;
       sl_token?: string;
     };
+    body: undefined;
+    path: undefined;
+  };
+  [Endpoint.GetInterview]: {
+    query: { uuid: string };
     body: undefined;
     path: undefined;
   };
@@ -190,6 +196,7 @@ export interface EndpointResponse {
   [Endpoint.GetUserMetas]: UserMeta[];
   [Endpoint.PatchUserMeta]: UserMeta;
   [Endpoint.GetInterviews]: Interview[];
+  [Endpoint.GetInterview]: Interview;
   [Endpoint.GetOnboarding]: Onboarding;
   [Endpoint.GetStandups]: Standup[];
   [Endpoint.GetNotifications]: Notification[];

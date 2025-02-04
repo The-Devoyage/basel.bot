@@ -9,7 +9,7 @@ const Organizations = () => {
         <PageHeader title="Organizations" />
         <AddOrganizationButton />
       </div>
-      <Alert color="pink" className="border-2 border-purple-500">
+      <Alert color="pink" className="border-2 border-pink-300">
         <h2 className="text-xl">Recruit with Basel</h2>
         <p>Interviews</p>
       </Alert>

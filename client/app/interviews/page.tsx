@@ -9,7 +9,7 @@ const InterviewsPage = async () => (
       <PageHeader title="Interviews" />
       <AddInterviewButton />
     </div>
-    <Alert color="purple" className="border-4 border-purple-500">
+    <Alert color="purple" className="border-2 border-purple-300">
       <h2 className="text-xl">Start Conversations, Not Applications</h2>
       <p>
         Skip the application and jump straight to the interview. Basel is here

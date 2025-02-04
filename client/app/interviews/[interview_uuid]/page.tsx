@@ -3,14 +3,21 @@ import { Typography } from "@/shared/typography";
 import Image from "next/image";
 import { HR } from "flowbite-react";
 import { TfiWrite } from "react-icons/tfi";
+import { Endpoint, callApi } from "@/api";
 
-export default function Page({
+export default async function Page({
   params,
 }: {
-  params: { interveiw_uuid: string };
+  params: { interview_uuid: string };
 }) {
-  const interview = { name: "Nick Co" };
-  // const interviewRes = callApi({endpoint: Endpoint.GetInterview})
+  const interview = await callApi({
+    endpoint: Endpoint.GetInterview,
+    body: null,
+    path: null,
+    query: { uuid: params.interview_uuid },
+  });
+
+  if (!interview.data || !interview.success) return null;
 
   return (
     <section className="container mx-auto flex w-full flex-col space-y-4 p-4">
@@ -23,7 +30,7 @@ export default function Page({
           className="rounded object-cover"
         />
         <div className="flex flex-col space-y-2">
-          <PageHeader title={interview.name} />
+          <PageHeader title={interview.data.name} />
           <Typography.Heading className="flex items-center gap-2">
             <TfiWrite className="h-4 w-4" />
             200 responses

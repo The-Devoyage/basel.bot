@@ -19,15 +19,23 @@ export default function Page({
         <Image
           src="https://placehold.co/600x400/png"
           alt="organization logo"
-          width={250}
-          height={250}
-          className="rounded object-cover"
+          width={300}
+          height={200}
+          className="h-[200px] w-full rounded object-cover"
         />
         <div className="flex flex-col space-y-2">
           <PageHeader title={organization.name} />
           <Typography.Heading className="flex items-center gap-2">
             <PiUsersBold className="h-4 w-4" />1 Member
           </Typography.Heading>
+          <Typography.Paragraph>
+            Lorem ipsum something like I wanted to talk about. Now this is a
+            general description of the company. Maybe this will get a little
+            longer. Lorem ipsum something like I wanted to talk about. Now this
+            is a general description of the company. Maybe this will get a
+            little longer. Lorem ipsum something like I wanted to talk about.
+            Now this is a general description of the company. Maybe this will
+          </Typography.Paragraph>
         </div>
       </div>
       <HR />

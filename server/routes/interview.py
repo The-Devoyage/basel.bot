@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 from beanie import SortDirection
 from chromadb.api.models.Collection import logging
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,7 +14,22 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.get("/interviews")
+@router.get("/")
+async def get_interview(uuid: str):
+    try:
+        interview = await Interview.find_one(Interview.uuid == UUID(uuid))
+
+        if not interview:
+            return create_response(success=False)
+
+        return create_response(success=True, data=await interview.to_public_dict())
+
+    except Exception as e:
+        logger.error(e)
+        return HTTPException(status_code=500, detail="Something went wrong...")
+
+
+@router.get("/list")
 async def get_interviews(
     search_term: Optional[str] = None,
     tags: Optional[List[str]] = None,
@@ -36,6 +52,8 @@ async def get_interviews(
         if sl_token:
             sl_token_claims = await get_sl_token_claims(sl_token)
             chatting_with = sl_token_claims.chatting_with
+        elif user_claims:
+            chatting_with = user_claims.user
 
         if search_term:
             query.find({"$text": {"$search": search_term}})
@@ -57,12 +75,8 @@ async def get_interviews(
                 )
 
         pipeline = get_pipeline(
-            chatting_with.id
-            if chatting_with
-            else user_claims.user.id
-            if user_claims
-            else None,
-            taken_by_me,
+            user_id=chatting_with.id if chatting_with else None,
+            taken_by_me=taken_by_me,
             shareable_link_id=sl_token_claims.shareable_link.id
             if sl_token_claims
             else None,
