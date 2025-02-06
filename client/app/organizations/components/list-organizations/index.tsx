@@ -1,19 +1,40 @@
 "use client";
 
-import { Button, Pagination, Table } from "flowbite-react";
+import { Button, Card, Pagination, Table } from "flowbite-react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useRouter } from "next/navigation";
+import { Typography } from "@/shared/typography";
+import { Loader } from "@/shared/loader";
+import { OrganizationsPageContext } from "../../context";
+import { useContext } from "react";
 
 dayjs.extend(utc);
 
 export const ListOrganizations = () => {
   const router = useRouter();
+  const { organizations, loading } = useContext(OrganizationsPageContext);
 
-  const organizations = [
-    { name: "Nick Co", status: true, created_at: new Date().toString() },
-    { name: "Nick Co 2", status: true, created_at: new Date().toString() },
-  ];
+  if (loading) {
+    return (
+      <Card>
+        <Loader />
+      </Card>
+    );
+  }
+
+  if (!organizations || !organizations.length) {
+    return (
+      <Card>
+        <Typography.Heading className="text-xl">
+          Nothing Found!
+        </Typography.Heading>
+        <Typography.Paragraph>
+          Create an organization to get started.
+        </Typography.Paragraph>
+      </Card>
+    );
+  }
 
   return (
     <>

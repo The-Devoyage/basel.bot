@@ -8,6 +8,7 @@ import {
   Notification,
   File,
   ValidMimeType,
+  Organization,
 } from "@/types";
 import { Standup } from "@/types/standup";
 
@@ -46,6 +47,8 @@ export enum Endpoint {
   GetFiles = "/file/list",
   GetFileDownloadLink = "/file/download-link",
   UpdateUser = "/user/update",
+  CreateOrganization = "/organization/create",
+  GetOrganizations = "/organization/list",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -179,6 +182,20 @@ export interface EndpointParams {
     };
     path: undefined;
   };
+  [Endpoint.CreateOrganization]: {
+    query: undefined;
+    body: {
+      name: string;
+      description: string;
+      logo?: File;
+    };
+    path: undefined;
+  };
+  [Endpoint.GetOrganizations]: {
+    query: PaginationQuery & { my_organizations?: boolean };
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -206,6 +223,8 @@ export interface EndpointResponse {
   [Endpoint.GetFiles]: File[];
   [Endpoint.GetFileDownloadLink]: { download_link: string };
   [Endpoint.UpdateUser]: User;
+  [Endpoint.CreateOrganization]: Organization;
+  [Endpoint.GetOrganizations]: Organization[];
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

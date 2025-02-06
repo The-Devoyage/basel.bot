@@ -72,7 +72,7 @@ export const callApi = async <E extends Endpoint>(
 
     const data = await res.json();
 
-    console.info("API Call Successful: ", data);
+    console.info("API Call Successful:", formattedEndpoint, data);
 
     if (options?.revalidationPath) {
       revalidatePath(options.revalidationPath);

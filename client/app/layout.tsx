@@ -27,7 +27,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" id="root" className="scroll-smooth">
+    <html lang="en" id="root" className="h-full scroll-smooth">
       <head>
         <link rel="icon" href="/logo.svg" sizes="any" />
         <meta
@@ -38,11 +38,11 @@ export default async function RootLayout({
         <ThemeModeScript />
       </head>
       <body
-        className={`flex w-full flex-col bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
+        className={`flex h-full w-full flex-col bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
       >
         <Suspense
           fallback={
-            <Loader message="Your next interview is going to be much easier." />
+            <Loader message="Your next interview is going to be so much easier." />
           }
         >
           <GlobalProvider>

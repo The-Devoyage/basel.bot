@@ -7,3 +7,4 @@ export * from "./interview";
 export * from "./onboarding";
 export * from "./notification";
 export * from "./file";
+export * from "./organization";
