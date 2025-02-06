@@ -1,12 +1,11 @@
-from typing import List
-
-from beanie import BackLink
+from beanie import Link
+from chromadb.api.models.Collection import Optional
 from database.base import BaseMongoModel
-from database.organization_user import OrganizationUser
+from database.file import File
 
 
 class Organization(BaseMongoModel):
     name: str
     description: str
     status: bool = True
-    organization_members: List[BackLink[OrganizationUser]]
+    logo: Optional[Link[File]] = None

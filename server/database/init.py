@@ -3,6 +3,8 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import (
     init_beanie,
 )
+from database.organization import Organization
+from database.organization_user import OrganizationUser
 from database.standup import Standup
 from database.user import User
 from database.user_meta import UserMeta
@@ -57,6 +59,8 @@ async def init_db():
             Standup,
             Notification,
             File,
+            Organization,
+            OrganizationUser,
         ],
         allow_index_dropping=True,
     )

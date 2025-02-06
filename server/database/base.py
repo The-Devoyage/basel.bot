@@ -38,11 +38,10 @@ class BaseMongoModel(Document):
 
     async def to_public_dict(
         self,
-        exclude: Optional[Set[str]] = None,
+        exclude: Set[str] = set(),
         json: bool = False,
     ) -> dict:
         # Combine class-level and method-level excludes
-        exclude = exclude or set()
         exclude = exclude.union(self.exclude_from_public_dict())
 
         # Serialize the model and exclude specified fields
@@ -54,6 +53,9 @@ class BaseMongoModel(Document):
 
         # Convert linked objects recursively
         for key, value in self:
+            if key in exclude:
+                continue
+
             # Make UUIDs JSON Serializable
             if key == "uuid" and json:
                 public_dict["uuid"] = str(value)
