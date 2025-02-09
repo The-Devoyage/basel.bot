@@ -8,12 +8,19 @@ import { Typography } from "@/shared/typography";
 import { Loader } from "@/shared/loader";
 import { OrganizationsPageContext } from "../../context";
 import { useContext } from "react";
+import { MdOutlineEdit } from "react-icons/md";
 
 dayjs.extend(utc);
 
 export const ListOrganizations = () => {
   const router = useRouter();
-  const { organizations, loading } = useContext(OrganizationsPageContext);
+  const {
+    organizations,
+    loading,
+    pager,
+    setSelectedOrganization,
+    toggleEditOrganizationModal,
+  } = useContext(OrganizationsPageContext);
 
   if (loading) {
     return (
@@ -43,11 +50,12 @@ export const ListOrganizations = () => {
           <Table.HeadCell>Name</Table.HeadCell>
           <Table.HeadCell>Status</Table.HeadCell>
           <Table.HeadCell>Created At</Table.HeadCell>
-          <Table.HeadCell className="text-center">Leave</Table.HeadCell>
+          <Table.HeadCell className="text-center">Edit</Table.HeadCell>
         </Table.Head>
         <Table.Body>
           {organizations.map((o) => (
             <Table.Row
+              key={o.uuid}
               className="cursor-pointer bg-white dark:border-gray-700 dark:bg-gray-800"
               onClick={() =>
                 router.push(
@@ -64,8 +72,15 @@ export const ListOrganizations = () => {
                 className="flex items-center justify-center"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Button color="failure" outline>
-                  Leave
+                <Button
+                  color="success"
+                  outline
+                  onClick={() => {
+                    toggleEditOrganizationModal();
+                    setSelectedOrganization(o);
+                  }}
+                >
+                  <MdOutlineEdit className="h-4 w-4" />
                 </Button>
               </Table.Cell>
             </Table.Row>
@@ -73,7 +88,11 @@ export const ListOrganizations = () => {
         </Table.Body>
       </Table>
       <div className="flex justify-end">
-        <Pagination currentPage={0} totalPages={0} onPageChange={() => null} />
+        <Pagination
+          currentPage={pager?.pagination.currentPage || 0}
+          totalPages={pager?.pagination.totalPages || 0}
+          onPageChange={(p) => pager?.handlePageChange(p)}
+        />
       </div>
     </>
   );

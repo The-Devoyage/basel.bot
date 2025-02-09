@@ -20,6 +20,7 @@ export interface Response<T> {
   message?: string;
   code?: number;
   total?: number;
+  detail?: string;
 }
 
 export enum Endpoint {
@@ -49,6 +50,8 @@ export enum Endpoint {
   UpdateUser = "/user/update",
   CreateOrganization = "/organization/create",
   GetOrganizations = "/organization/list",
+  GetOrganization = "/organization",
+  UpdateOrganization = "/organization/update",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -191,8 +194,23 @@ export interface EndpointParams {
     };
     path: undefined;
   };
+  [Endpoint.UpdateOrganization]: {
+    query: undefined;
+    body: {
+      uuid: string;
+      name?: string;
+      description?: string;
+      logo?: File;
+    };
+    path: undefined;
+  };
   [Endpoint.GetOrganizations]: {
     query: PaginationQuery & { my_organizations?: boolean };
+    body: undefined;
+    path: undefined;
+  };
+  [Endpoint.GetOrganization]: {
+    query: { slug: string };
     body: undefined;
     path: undefined;
   };
@@ -224,6 +242,8 @@ export interface EndpointResponse {
   [Endpoint.GetFileDownloadLink]: { download_link: string };
   [Endpoint.UpdateUser]: User;
   [Endpoint.CreateOrganization]: Organization;
+  [Endpoint.GetOrganization]: Organization;
+  [Endpoint.UpdateOrganization]: Organization;
   [Endpoint.GetOrganizations]: Organization[];
 }
 

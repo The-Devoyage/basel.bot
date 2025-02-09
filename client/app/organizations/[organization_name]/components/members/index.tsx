@@ -1,39 +1,36 @@
 import { Typography } from "@/shared/typography";
+import { OrganizationUser } from "@/types";
 import { Avatar, Card, ListGroup, ListGroupItem } from "flowbite-react";
 import Image from "next/image";
+import { FC } from "react";
 
-export const Members = () => {
-  const members = [
-    { full_name: "nick mclean", uuid: "12345" },
-    { full_name: "Oakley McLean", uuid: "132049" },
-  ];
-
-  return (
-    <Card>
-      <Typography.Heading className="text-xl">Members</Typography.Heading>
-      <ListGroup className="flex flex-col gap-2">
-        {members.map((m) => (
-          <ListGroupItem key={m.uuid}>
-            <div className="flex items-center gap-2">
-              <Avatar
-                img={(props) => (
-                  <Image
-                    alt="user profile image"
-                    src="https://avatar.iran.liara.run/public"
-                    width={100}
-                    height={100}
-                    {...props}
-                  />
-                )}
-              />
-              <Typography.Heading className="font-bold">
-                {m.full_name}
-              </Typography.Heading>
-              <Typography.Heading className="text-xs">admin</Typography.Heading>
-            </div>
-          </ListGroupItem>
-        ))}
-      </ListGroup>
-    </Card>
-  );
-};
+export const Members: FC<{ users: OrganizationUser[] }> = ({ users }) => (
+  <Card>
+    <Typography.Heading className="text-xl">Members</Typography.Heading>
+    <ListGroup className="flex flex-col gap-2">
+      {users.map((u) => (
+        <ListGroupItem key={u.uuid}>
+          <div className="flex items-center gap-2">
+            <Avatar
+              rounded
+              img={u.user.profile_image?.url}
+              bordered
+              color="success"
+              theme={{
+                root: {
+                  img: {
+                    on: "flex items-center justify-center object-cover",
+                  },
+                },
+              }}
+            />
+            <Typography.Heading className="font-bold">
+              {u.user.full_name}
+            </Typography.Heading>
+            <Typography.Heading className="text-xs">admin</Typography.Heading>
+          </div>
+        </ListGroupItem>
+      ))}
+    </ListGroup>
+  </Card>
+);

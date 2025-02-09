@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 from uuid import UUID, uuid4
 from beanie import (
+    BackLink,
     Document,
     Link,
     Save,
@@ -72,9 +73,14 @@ class BaseMongoModel(Document):
                     public_dict[key] = [
                         await v.to_public_dict(json=json) for v in value
                     ]
+                elif isinstance(value, Link) or isinstance(value, BackLink):
+                    public_dict[key] = None
+                elif any(isinstance(v, BackLink) for v in value):
+                    public_dict[key] = None
                 else:
+                    logger.debug(f"USING REGULAR VALUE {type(value)}")
                     public_dict[key] = value  # Leave as-is if not all are serializable
-            elif isinstance(value, Link):
+            elif isinstance(value, Link) or isinstance(value, BackLink):
                 public_dict[key] = None
 
         return public_dict
