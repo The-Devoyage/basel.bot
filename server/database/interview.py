@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import Annotated, List, Optional
-from beanie import Indexed, PydanticObjectId
+from beanie import Indexed, Link, PydanticObjectId
 import pymongo
 from database.base import BaseMongoModel
+from database.organization import Organization
 
 
 class InterviewType(str, Enum):
@@ -14,7 +15,7 @@ class Interview(BaseMongoModel):
     name: Annotated[str, Indexed(index_type=pymongo.TEXT)]  # type:ignore
     description: str
     url: Optional[str] = None
-    organization_name: Optional[str] = None
+    organization: Optional[Link[Organization]] = None
     interview_type: InterviewType = InterviewType.GENERAL
     position: Optional[str] = None
     tags: List[str] = []
@@ -39,6 +40,20 @@ def get_pipeline(
         {
             "$unwind": {
                 "path": "$questions",
+                "preserveNullAndEmptyArrays": True,
+            }
+        },
+        {
+            "$lookup": {
+                "from": "Organization",
+                "localField": "organization.$id",
+                "foreignField": "_id",
+                "as": "organization",
+            }
+        },
+        {
+            "$unwind": {
+                "path": "$organization",
                 "preserveNullAndEmptyArrays": True,
             }
         },
@@ -142,6 +157,7 @@ def get_pipeline(
     # Continue with the rest of the pipeline
     pipeline += [
         {"$addFields": {"questions.response_count": {"$size": "$question_responses"}}},
+        {"$addFields": {"organization": "$organization"}},
         {
             "$group": {
                 "_id": "$_id",
@@ -149,7 +165,7 @@ def get_pipeline(
                 "name": {"$first": "$name"},
                 "description": {"$first": "$description"},
                 "url": {"$first": "$url"},
-                "organization_name": {"$first": "$organization_name"},
+                "organization": {"$first": "$organization"},
                 "interview_type": {"$first": "$interview_type"},
                 "position": {"$first": "$position"},
                 "tags": {"$first": "$tags"},
@@ -175,9 +191,11 @@ def get_pipeline(
                 "name": 1,
                 "description": 1,
                 "url": 1,
-                "organization_name": 1,
                 "interview_type": 1,
                 "position": 1,
+                "organization.name": 1,
+                "organization.uuid": 1,
+                "organization.slug": 1,
                 "tags": 1,
                 "status": 1,
                 "question_count": 1,

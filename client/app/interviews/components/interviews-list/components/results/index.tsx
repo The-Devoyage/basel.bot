@@ -4,14 +4,15 @@ import { GlobalContext } from "@/app/provider";
 import { InterviewCard } from "@/shared/interview-card";
 import { Loader } from "@/shared/loader";
 import { Typography } from "@/shared/typography";
-import { Interview } from "@/types";
+import { Interview, Organization } from "@/types";
 import { Card } from "flowbite-react";
 import { FC, useContext } from "react";
 
 export const InterviewListResults: FC<{
   loading: boolean;
   interviews: Interview[];
-}> = ({ loading, interviews }) => {
+  organization_uuid?: Organization["uuid"];
+}> = ({ loading, interviews, organization_uuid }) => {
   const {
     store: {
       auth: { isAuthenticated },

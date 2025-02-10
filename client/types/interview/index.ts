@@ -1,3 +1,5 @@
+import { Organization } from "..";
+
 export enum InterviewType {
   GENERAL = "general",
   APPLICATION = "application",
@@ -8,7 +10,7 @@ export interface Interview {
   name: string;
   interview_type: InterviewType;
   url?: string;
-  organization_name?: string;
+  organization?: Pick<Organization, "uuid" | "name" | "slug">;
   position?: string;
   description: string;
   question_count: number;

@@ -9,7 +9,7 @@ from utils.responses import create_response
 from database.organization import Organization
 from utils.jwt import optional_auth, require_auth
 from database.file import File
-from beanie.operators import In
+from beanie.operators import In, ElemMatch
 
 
 router = APIRouter()
@@ -93,8 +93,14 @@ async def update_organization(
         if not organization:
             return HTTPException(status_code=400, detail="Organization not found.")
 
-        if params.name:
+        if params.name and params.name != organization.name:
+            exists = await Organization.find(Organization.name == params.name).exists()
+            if exists:
+                return HTTPException(
+                    status_code=400, detail="Organization already exists."
+                )
             organization.name = params.name
+            organization.slug = params.name.replace(" ", "-").lower()
         if params.description:
             organization.description = params.description
         if params.logo:
@@ -135,23 +141,8 @@ async def list_organizations(
         if my_organizations:
             if not user_claims:
                 raise Exception("You must be logged in to search your organizations.")
-            organization_users = await OrganizationUser.find(
-                OrganizationUser.user.id == user_claims.user.id,  # type:ignore
-                OrganizationUser.status == True,
-                fetch_links=True,
-            ).to_list()
-            if not organization_users:
-                return create_response(
-                    success=True, data=[], message="No organizations found."
-                )
             query.find(
-                In(
-                    Organization.id,
-                    [
-                        organization_user.organization.id  # type:ignore
-                        for organization_user in organization_users
-                    ],
-                ),
+                Organization.users.user._id == user_claims.user.id,  # type:ignore
                 fetch_links=True,
             )
 

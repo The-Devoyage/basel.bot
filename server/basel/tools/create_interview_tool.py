@@ -1,9 +1,11 @@
 import logging
 from typing import List, Optional
+from uuid import UUID
 from llama_index.core.bridge.pydantic import BaseModel, Field
 from llama_index.core.tools.function_tool import FunctionTool
 
 from database.interview import Interview, InterviewType
+from database.organization import Organization
 from database.user import User
 
 
@@ -17,8 +19,8 @@ class CreateInterviewParams(BaseModel):
         description="The URL of the job posting associated with the interview you are creating.",
         default=None,
     )
-    organization_name: Optional[str] = Field(
-        description="The organization or company name of which the interview belongs to.",
+    organization_uuid: Optional[str] = Field(
+        description="The organization UUID, if provided, of which the interview belongs.",
         default=None,
     )
     interview_type: InterviewType = Field(
@@ -37,20 +39,26 @@ class CreateInterviewParams(BaseModel):
 
 async def create_interview(
     current_user: User,
-    name,
-    description,
-    url=None,
-    organization_name=None,
+    name: str,
+    description: str,
+    url: Optional[str] = None,
+    organization_uuid: Optional[str] = None,
     interview_type: InterviewType = InterviewType.GENERAL,
-    position=None,
+    position: Optional[str] = None,
     tags: List[str] = [],
 ):
     try:
+        organization = None
+        if organization_uuid:
+            organization = await Organization.find_one(
+                Organization.uuid == UUID(organization_uuid)
+            )
+
         interview = await Interview(
             name=name,
             description=description,
             created_by=current_user,  # type:ignore
-            organization_name=organization_name,
+            organization=organization,  # type:ignore
             url=url,
             interview_type=interview_type,
             position=position,
@@ -66,12 +74,12 @@ async def create_interview(
 
 def create_create_interview_tool(current_user: User):
     create_interview_tool = FunctionTool.from_defaults(
-        async_fn=lambda name, description, url, organization_name, interview_type, position, tags: create_interview(
+        async_fn=lambda name, description, url=None, organization_uuid=None, interview_type=InterviewType.GENERAL, position=None, tags=[]: create_interview(
             current_user=current_user,
             name=name,
             description=description,
             url=url,
-            organization_name=organization_name,
+            organization_uuid=organization_uuid,
             interview_type=interview_type,
             position=position,
             tags=tags,

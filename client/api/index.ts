@@ -112,10 +112,10 @@ export interface EndpointParams {
   };
   [Endpoint.GetInterviews]: {
     query: PaginationQuery & {
-      created_by_me?: boolean;
       taken_by_me?: boolean;
       search_term?: string;
       sl_token?: string;
+      organization_uuid?: string;
     };
     body: undefined;
     path: undefined;

@@ -5,6 +5,7 @@ export interface Organization {
   name: string;
   description: string;
   logo?: File;
+  slug: string;
   status: boolean;
   created_at: Date;
   users: OrganizationUser[];

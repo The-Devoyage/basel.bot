@@ -3,7 +3,6 @@ import { TbReportAnalytics } from "react-icons/tb";
 import {
   ListInterviews,
   SearchInterviewsButton,
-  ToggleTakenByMe,
   InterviewsWelcome,
 } from "./components";
 import { InterviewContextProvider } from "./context";
@@ -24,7 +23,6 @@ export const RecentInterviews = () => (
     <InterviewContextProvider>
       <ListInterviews />
       <div className="block gap-2 space-y-2 md:flex md:space-y-0">
-        <ToggleTakenByMe />
         <SearchInterviewsButton />
       </div>
     </InterviewContextProvider>

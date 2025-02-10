@@ -3,12 +3,15 @@
 import { Endpoint } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
 import { Button, Pagination, TextInput, ToggleSwitch } from "flowbite-react";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, FC } from "react";
 import { InterviewListResults } from "./components";
 import { usePagination } from "@/shared/usePagination";
 import { GlobalContext } from "@/app/provider";
+import { Organization } from "@/types";
 
-export const InterviewsList = () => {
+export const InterviewsList: FC<{
+  organization_uuid?: Organization["uuid"];
+}> = ({ organization_uuid }) => {
   const [takenByMe, setTakenByMe] = useState(false);
   const {
     store: {
@@ -26,6 +29,7 @@ export const InterviewsList = () => {
         offset: nextOffset,
         taken_by_me: takenByMe,
         search_term: searchTerm,
+        organization_uuid,
       },
       body: null,
       path: null,
@@ -49,6 +53,7 @@ export const InterviewsList = () => {
         offset: nextOffset,
         taken_by_me: takenByMe,
         search_term: searchTerm,
+        organization_uuid,
       },
       body: null,
       path: null,
@@ -89,7 +94,11 @@ export const InterviewsList = () => {
           Search
         </Button>
       </div>
-      <InterviewListResults interviews={res?.data || []} loading={loading} />
+      <InterviewListResults
+        interviews={res?.data || []}
+        loading={loading}
+        organization_uuid={organization_uuid}
+      />
       <div className="flex justify-center">
         <Pagination
           currentPage={pagination.currentPage}

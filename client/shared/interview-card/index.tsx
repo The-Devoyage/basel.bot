@@ -1,12 +1,14 @@
 "use client";
 
-import { Interview } from "@/types";
+import { Interview, Organization } from "@/types";
 import { Badge, Card, Tooltip } from "flowbite-react";
 import { Typography } from "../typography";
 import { TakeInterviewButton } from "@/app/components/init-screen/components/recent-interviews/components";
 import { FC } from "react";
 import { StatusBadge } from "./components";
 import { useRouter } from "next/navigation";
+import { GrOrganization } from "react-icons/gr";
+import clsx from "clsx";
 
 export const InterviewCard: FC<{
   interview: Interview;
@@ -18,9 +20,13 @@ export const InterviewCard: FC<{
     router.push(`/interviews/${interview.uuid}`);
   };
 
+  const handleBadgeClick = (organization_slug: Organization["slug"]) => {
+    router.push(`/organizations/${organization_slug}`);
+  };
+
   return (
     <Card
-      className="cursor-pointer border-t-4 border-t-purple-200 dark:border-t-purple-400"
+      className="cursor-pointer border-t-4 border-t-purple-400 hover:shadow-xl hover:shadow-purple-500/20 dark:border-t-purple-400"
       key={interview.uuid}
       onClick={handleClick}
     >
@@ -35,7 +41,7 @@ export const InterviewCard: FC<{
           {interview.position && interview.name}
         </Typography.Heading>
         <Typography.Paragraph
-          className="h-full overflow-hidden"
+          className="h-full overflow-hidden dark:text-slate-400"
           style={{
             display: "-webkit-box",
             WebkitBoxOrient: "vertical",
@@ -46,8 +52,28 @@ export const InterviewCard: FC<{
         >
           {interview.description}
         </Typography.Paragraph>
-        <div className="mt-2 flex w-full items-end justify-between">
-          <Badge color="green">{interview.organization_name}</Badge>
+        <div
+          className={clsx(
+            "mt-2 flex w-full items-end",
+            interview.organization ? "justify-between" : "justify-end",
+          )}
+        >
+          {interview.organization && (
+            <Badge
+              color="blue"
+              role="button"
+              className="cursor-pointer hover:ring-2 hover:ring-blue-400"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBadgeClick(interview.organization!.slug);
+              }}
+            >
+              <div className="flex gap-2 py-1">
+                <GrOrganization className="h-4 w-4 text-slate-400 dark:text-slate-700" />
+                {interview.organization!.name}
+              </div>
+            </Badge>
+          )}
           <div onClick={(e) => e.stopPropagation()}>
             <Tooltip content="Ask Basel">
               <TakeInterviewButton interview={interview} />

@@ -1,15 +1,14 @@
 import { Typography } from "@/shared/typography";
 import { OrganizationUser } from "@/types";
-import { Avatar, Card, ListGroup, ListGroupItem } from "flowbite-react";
-import Image from "next/image";
+import { Avatar, Card } from "flowbite-react";
 import { FC } from "react";
 
 export const Members: FC<{ users: OrganizationUser[] }> = ({ users }) => (
   <Card>
-    <Typography.Heading className="text-xl">Members</Typography.Heading>
-    <ListGroup className="flex flex-col gap-2">
+    <Typography.Heading className="text-xl">Recruiters</Typography.Heading>
+    <ul className="flex flex-col gap-2">
       {users.map((u) => (
-        <ListGroupItem key={u.uuid}>
+        <li key={u.uuid}>
           <div className="flex items-center gap-2">
             <Avatar
               rounded
@@ -29,8 +28,8 @@ export const Members: FC<{ users: OrganizationUser[] }> = ({ users }) => (
             </Typography.Heading>
             <Typography.Heading className="text-xs">admin</Typography.Heading>
           </div>
-        </ListGroupItem>
+        </li>
       ))}
-    </ListGroup>
+    </ul>
   </Card>
 );
