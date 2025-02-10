@@ -30,7 +30,7 @@ export default async function Page({
           className="rounded object-cover"
         />
         <div className="flex flex-col space-y-2">
-          <PageHeader title={interview.data.name} />
+          <PageHeader title={interview.data.position} />
           <Typography.Heading className="flex items-center gap-2">
             <TfiWrite className="h-4 w-4" />
             200 responses

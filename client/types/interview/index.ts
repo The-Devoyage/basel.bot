@@ -7,11 +7,10 @@ export enum InterviewType {
 
 export interface Interview {
   uuid: string;
-  name: string;
   interview_type: InterviewType;
+  position: string;
   url?: string;
   organization?: Pick<Organization, "uuid" | "name" | "slug">;
-  position?: string;
   description: string;
   question_count: number;
   response_count: number;

@@ -3,10 +3,10 @@ import { Typography } from "@/shared/typography";
 import Image from "next/image";
 import { PiUsersBold } from "react-icons/pi";
 import { AddOrganizationInterviewButton, Members } from "./components";
-import { Button, Card, HR } from "flowbite-react";
-import { InterviewsList } from "@/app/interviews/components";
+import { Card, HR } from "flowbite-react";
 import { Endpoint, callApi } from "@/api";
 import { GrOrganization } from "react-icons/gr";
+import { InterviewsList } from "@/shared/interviews-list";
 
 export default async function Page({
   params,

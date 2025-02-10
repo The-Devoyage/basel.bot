@@ -1,6 +1,6 @@
 from enum import Enum
-from typing import Annotated, List, Optional
-from beanie import Indexed, Link, PydanticObjectId
+from typing import List, Optional
+from beanie import Link, PydanticObjectId
 import pymongo
 from database.base import BaseMongoModel
 from database.organization import Organization
@@ -12,14 +12,16 @@ class InterviewType(str, Enum):
 
 
 class Interview(BaseMongoModel):
-    name: Annotated[str, Indexed(index_type=pymongo.TEXT)]  # type:ignore
     description: str
+    position: str
     url: Optional[str] = None
     organization: Optional[Link[Organization]] = None
     interview_type: InterviewType = InterviewType.GENERAL
-    position: Optional[str] = None
     tags: List[str] = []
     status: bool = True
+
+    class Settings:
+        indexes = [[("description", pymongo.TEXT), ("position", pymongo.TEXT)]]
 
 
 def get_pipeline(
@@ -162,7 +164,6 @@ def get_pipeline(
             "$group": {
                 "_id": "$_id",
                 "uuid": {"$first": "$uuid"},
-                "name": {"$first": "$name"},
                 "description": {"$first": "$description"},
                 "url": {"$first": "$url"},
                 "organization": {"$first": "$organization"},
@@ -188,7 +189,6 @@ def get_pipeline(
             "$project": {
                 "_id": 0 if is_public else 1,
                 "uuid": 1,
-                "name": 1,
                 "description": 1,
                 "url": 1,
                 "interview_type": 1,

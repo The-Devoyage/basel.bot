@@ -13,8 +13,11 @@ logger = logging.getLogger(__name__)
 
 
 class CreateInterviewParams(BaseModel):
-    name: str = Field(description="The name of the interview.")
     description: str = Field(description="The description of the interview.")
+    position: str = Field(
+        description="The position associated with the application or interview.",
+        default=None,
+    )
     url: Optional[str] = Field(
         description="The URL of the job posting associated with the interview you are creating.",
         default=None,
@@ -27,10 +30,6 @@ class CreateInterviewParams(BaseModel):
         description="The type of interview being created. Default to `general`.",
         default=None,
     )
-    position: Optional[str] = Field(
-        description="The position associated with the application or interview.",
-        default=None,
-    )
     tags: List[str] = Field(
         description="Tags, categories, and descriptors of the organziation, position, and interview.",
         default=[],
@@ -39,12 +38,11 @@ class CreateInterviewParams(BaseModel):
 
 async def create_interview(
     current_user: User,
-    name: str,
     description: str,
+    position: str,
     url: Optional[str] = None,
     organization_uuid: Optional[str] = None,
     interview_type: InterviewType = InterviewType.GENERAL,
-    position: Optional[str] = None,
     tags: List[str] = [],
 ):
     try:
@@ -55,7 +53,6 @@ async def create_interview(
             )
 
         interview = await Interview(
-            name=name,
             description=description,
             created_by=current_user,  # type:ignore
             organization=organization,  # type:ignore
@@ -74,9 +71,8 @@ async def create_interview(
 
 def create_create_interview_tool(current_user: User):
     create_interview_tool = FunctionTool.from_defaults(
-        async_fn=lambda name, description, url=None, organization_uuid=None, interview_type=InterviewType.GENERAL, position=None, tags=[]: create_interview(
+        async_fn=lambda position, description, url=None, organization_uuid=None, interview_type=InterviewType.GENERAL, tags=[]: create_interview(
             current_user=current_user,
-            name=name,
             description=description,
             url=url,
             organization_uuid=organization_uuid,

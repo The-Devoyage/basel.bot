@@ -9,6 +9,12 @@ import { StatusBadge } from "./components";
 import { useRouter } from "next/navigation";
 import { GrOrganization } from "react-icons/gr";
 import clsx from "clsx";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(utc);
+dayjs.extend(relativeTime);
 
 export const InterviewCard: FC<{
   interview: Interview;
@@ -30,18 +36,23 @@ export const InterviewCard: FC<{
       key={interview.uuid}
       onClick={handleClick}
     >
-      <div className="h-54 flex h-full flex-col justify-between">
+      <div className="h-54 flex h-full flex-col justify-between gap-2">
         <div className="flex w-full items-start justify-between">
-          <Typography.Heading className="text-xl font-bold">
-            {interview.position || interview.name}
-          </Typography.Heading>
+          <div className="flex flex-col">
+            <Typography.Heading className="text-slate-400">
+              {dayjs
+                .utc(interview.created_at)
+                .local()
+                .from(dayjs.utc().local())}
+            </Typography.Heading>
+            <Typography.Heading className="text-xl font-bold">
+              {interview.position}
+            </Typography.Heading>
+          </div>
           {showStatusBadge && <StatusBadge interview={interview} />}
         </div>
-        <Typography.Heading className="italic">
-          {interview.position && interview.name}
-        </Typography.Heading>
         <Typography.Paragraph
-          className="h-full overflow-hidden dark:text-slate-400"
+          className="h-full overflow-hidden dark:text-slate-300"
           style={{
             display: "-webkit-box",
             WebkitBoxOrient: "vertical",

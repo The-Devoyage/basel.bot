@@ -1,7 +1,7 @@
 import { PageHeader } from "@/shared/layout/page-header";
 import { Alert } from "flowbite-react";
-import { InterviewsList } from "./components";
 import { AddInterviewButton } from "@/shared/add-interview-button";
+import { InterviewsList } from "@/shared/interviews-list";
 
 const InterviewsPage = async () => (
   <section className="container mx-auto flex w-full flex-col space-y-4 p-4">
