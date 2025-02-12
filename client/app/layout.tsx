@@ -3,7 +3,6 @@ import { Space_Mono } from "next/font/google";
 import { NotificationDrawer } from "@/shared/notification-drawer";
 import { ThemeModeScript } from "flowbite-react";
 import { GlobalProvider } from "./provider";
-import { ChatInput } from "@/shared/chat-input";
 import { Nav } from "@/shared/nav";
 import { Toaster } from "@/shared/toaster";
 import "./globals.css";

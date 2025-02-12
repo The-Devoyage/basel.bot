@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useContext, useRef } from "react";
-import { Alert, Button, Label, Modal, TextInput } from "flowbite-react";
+import { useState, useEffect, useContext, useRef, FC } from "react";
+import { Alert, Button, Label, Modal, Navbar, TextInput } from "flowbite-react";
 import { useSocket } from "@/shared/useSocket";
 import { GlobalContext } from "@/app/provider";
 import { Loader } from "@/shared/loader";
@@ -9,7 +9,7 @@ import { addToast } from "@/shared/useStore/toast";
 import { setAuthToken } from "@/api/auth";
 import { setAuthenticated } from "@/shared/useStore/auth";
 
-export const AuthButton = () => {
+export const AuthButton: FC<{ isButton: boolean }> = ({ isButton }) => {
   const [awaitAuth, setAwaitAuth] = useState(false);
   const [form, setForm] = useState({
     values: {
@@ -157,9 +157,13 @@ export const AuthButton = () => {
           )}
         </Modal.Body>
       </Modal>
-      <Button color="green" className="col-span-1" onClick={handleConnect}>
-        Login/Register
-      </Button>
+      {isButton ? (
+        <Button color="green" className="col-span-1" onClick={handleConnect}>
+          Login/Register
+        </Button>
+      ) : (
+        <Navbar.Link onClick={handleConnect}>Login/Register</Navbar.Link>
+      )}
     </>
   );
 };
