@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { Accordion, Alert, Card } from "flowbite-react";
+import { Alert, Card } from "flowbite-react";
 import { DisplayName, RecruiterButtons, UserAvatar } from "..";
 import { AuthButton } from "@/shared/auth-button";
 import { GlobalContext } from "@/app/provider";
@@ -29,7 +29,7 @@ export const ChattingWith = () => {
             <Alert color="failure">Access Revoked</Alert>
           )}
           <DisplayName chattingWith={chattingWith} />
-          {!isAuthenticated && !shareableLink && <AuthButton />}
+          {!isAuthenticated && !shareableLink && <AuthButton isButton />}
         </div>
       </Card>
       <RecruiterButtons />
