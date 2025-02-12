@@ -32,10 +32,7 @@ export const UserWelcome = () => {
           alt="User Avatar"
           size="lg"
           rounded
-          placeholderInitials={
-            candidate?.first_name?.at(0)?.toUpperCase() ||
-            candidate?.email.at(0)?.toUpperCase()
-          }
+          placeholderInitials={candidate?.first_initial}
           bordered
           color="success"
           img={candidate?.profile_image?.url}

@@ -39,11 +39,11 @@ class BaseMongoModel(Document):
 
     async def to_public_dict(
         self,
-        exclude: Set[str] = set(),
+        exclude: Optional[Set[str]] = None,
         json: bool = False,
     ) -> dict:
         # Combine class-level and method-level excludes
-        exclude = exclude.union(self.exclude_from_public_dict())
+        exclude = exclude if exclude else self.exclude_from_public_dict()
 
         # Serialize the model and exclude specified fields
         public_dict = self.model_dump(exclude=exclude)
@@ -78,7 +78,6 @@ class BaseMongoModel(Document):
                 elif any(isinstance(v, BackLink) for v in value):
                     public_dict[key] = None
                 else:
-                    logger.debug(f"USING REGULAR VALUE {type(value)}")
                     public_dict[key] = value  # Leave as-is if not all are serializable
             elif isinstance(value, Link) or isinstance(value, BackLink):
                 public_dict[key] = None

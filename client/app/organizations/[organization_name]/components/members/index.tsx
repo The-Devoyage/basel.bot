@@ -8,11 +8,12 @@ export const Members: FC<{ users: OrganizationUser[] }> = ({ users }) => (
     <Typography.Heading className="text-xl">Recruiters</Typography.Heading>
     <ul className="flex flex-col gap-2">
       {users.map((u) => (
-        <li key={u.uuid}>
+        <li key={u.uuid} className="rounded border-2 px-4 py-2">
           <div className="flex items-center gap-2">
             <Avatar
               rounded
               img={u.user.profile_image?.url}
+              placeholderInitials={u.user.first_initial}
               bordered
               color="success"
               theme={{

@@ -21,10 +21,10 @@ class User(BaseMongoModel):
     profile_image: Optional[Link[File]] = None
 
     def exclude_from_public_dict(self) -> Set[str]:
-        return {"id", "auth_id"}
+        return {"id", "auth_id", "email", "phone"}
 
     def get_virtual_fields(self) -> dict:
-        return {"full_name": self.full_name()}
+        return {"full_name": self.full_name(), "initials": self.get_first_initial()}
 
     def full_name(self) -> Optional[str]:
         name = ""
@@ -36,3 +36,10 @@ class User(BaseMongoModel):
         if not name:
             return None
         return name
+
+    def get_first_initial(self) -> str:
+        full_name = self.full_name()
+        if full_name:
+            return full_name[0]
+        else:
+            return self.email[0] if self.email else ""

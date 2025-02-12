@@ -12,10 +12,7 @@ export const UserAvatar: FC<{ chattingWith: User | null }> = ({
       alt="User Avatar"
       size="lg"
       rounded
-      placeholderInitials={
-        chattingWith?.first_name?.at(0)?.toUpperCase() ||
-        chattingWith?.email.at(0)?.toUpperCase()
-      }
+      placeholderInitials={chattingWith?.first_initial}
       bordered
       color="success"
       img={chattingWith?.profile_image?.url}

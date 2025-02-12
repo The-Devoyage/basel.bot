@@ -1,15 +1,10 @@
 import logging
 from datetime import datetime
-from typing import Optional, cast
-from uuid import UUID
-from classes.user_claims import ShareableLinkClaims, UserClaims
-from database.shareable_link import ShareableLink
+from typing import Optional
+from classes.user_claims import UserClaims
 from database.standup import Standup
 from fastapi import APIRouter, Depends, HTTPException
-from database.user import User
-from utils.environment import get_env_var
 from utils.jwt import get_sl_token_claims, optional_auth
-import jwt
 
 from utils.responses import create_response
 

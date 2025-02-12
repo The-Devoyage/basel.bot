@@ -15,16 +15,13 @@ import { AiTwotoneNotification } from "react-icons/ai";
 import { toggleNotificationDrawer } from "../useStore/notification";
 import { useCallApi } from "../useCallApi";
 import { Endpoint } from "@/api";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import { NotificationType } from "@/types";
 import { MdMarkEmailUnread } from "react-icons/md";
 import { addToast } from "../useStore/toast";
 import { usePagination } from "../usePagination";
 import { Typography } from "../typography";
 import { HiOutlineInbox } from "react-icons/hi";
-
-dayjs.extend(utc);
+import { toDate } from "@/utils";
 
 export const NotificationDrawer = () => {
   const { pagination, handlePageChange, handleSetTotal, nextOffset } =
@@ -148,9 +145,7 @@ export const NotificationDrawer = () => {
                   }}
                 />
                 <Timeline.Content>
-                  <Timeline.Time>
-                    {dayjs.utc(n.created_at).local().format("MMM D YYYY h:mma")}
-                  </Timeline.Time>
+                  <Timeline.Time>{toDate(n.created_at)}</Timeline.Time>
                   <Timeline.Title>{matchTitle(n.type)}</Timeline.Title>
                   <Timeline.Body className="flex flex-col">
                     {n.text}

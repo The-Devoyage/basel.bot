@@ -26,8 +26,8 @@ export default async function Page({
   return (
     <section className="container mx-auto flex w-full flex-col space-y-4 p-4">
       <Card>
-        <div className="flex items-center gap-4">
-          <div className="flex w-1/3 justify-center p-4">
+        <div className="flex gap-4">
+          <div className="flex w-1/3 items-center justify-center p-4">
             {organization.logo ? (
               <Image
                 src={organization.logo?.url || ""}
@@ -67,6 +67,7 @@ export default async function Page({
               </Typography.Heading>
               <AddOrganizationInterviewButton
                 organization_uuid={organization.uuid}
+                members={organization.users}
               />
             </div>
             <InterviewsList organization_uuid={organization.uuid} />

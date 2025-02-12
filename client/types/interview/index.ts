@@ -10,7 +10,7 @@ export interface Interview {
   interview_type: InterviewType;
   position: string;
   url?: string;
-  organization?: Pick<Organization, "uuid" | "name" | "slug">;
+  organization?: Organization;
   description: string;
   question_count: number;
   response_count: number;

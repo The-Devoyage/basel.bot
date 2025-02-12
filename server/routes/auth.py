@@ -56,7 +56,9 @@ async def me(user_claims: UserClaims = Depends(require_auth)):
         )
         if not user:
             raise Exception("User not found")
-        return create_response(success=True, data=await user.to_public_dict())
+        return create_response(
+            success=True, data=await user.to_public_dict(exclude={"auth_id", "id"})
+        )
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=401, detail="Invalid token")

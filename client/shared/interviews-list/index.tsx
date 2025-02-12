@@ -68,7 +68,7 @@ export const InterviewsList: FC<{
             <ToggleSwitch
               checked={takenByMe}
               onChange={(c) => setTakenByMe(c)}
-              label="Taken by Me"
+              label="Taken"
               color="purple"
             />
           </div>

@@ -1,15 +1,22 @@
 "use client";
 
 import { useHandleMessage } from "@/app/components/init-screen/components";
+import { GlobalContext } from "@/app/provider";
 import { Organization } from "@/types";
 import { Button, Tooltip } from "flowbite-react";
-import { FC } from "react";
+import { FC, useContext } from "react";
 import { BsPlusLg } from "react-icons/bs";
 
 export const AddOrganizationInterviewButton: FC<{
   organization_uuid: Organization["uuid"];
-}> = ({ organization_uuid }) => {
+  members: Organization["users"];
+}> = ({ organization_uuid, members }) => {
   const { handleMessage } = useHandleMessage();
+  const {
+    store: {
+      auth: { me },
+    },
+  } = useContext(GlobalContext);
 
   const handleClick = () => {
     handleMessage(
@@ -18,6 +25,10 @@ export const AddOrganizationInterviewButton: FC<{
       `Organization UUID: ${organization_uuid}`,
     );
   };
+
+  if (members.findIndex((m) => m.user.uuid === me?.uuid) === -1) {
+    return null;
+  }
 
   return (
     <Tooltip content="Create New Interview">

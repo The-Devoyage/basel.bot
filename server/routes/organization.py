@@ -9,7 +9,6 @@ from utils.responses import create_response
 from database.organization import Organization
 from utils.jwt import optional_auth, require_auth
 from database.file import File
-from beanie.operators import In, ElemMatch
 
 
 router = APIRouter()
@@ -183,7 +182,10 @@ async def get_organization(
         if not organization:
             return HTTPException(status_code=400, detail="Organization not found.")
 
-        return create_response(success=True, data=await organization.to_public_dict())
+        return create_response(
+            success=True,
+            data=await organization.to_public_dict(),
+        )
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail=str(e))

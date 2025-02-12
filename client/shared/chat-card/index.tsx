@@ -34,7 +34,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
             <Avatar
               alt="User settings"
               rounded
-              placeholderInitials={me?.email.at(0)?.toUpperCase()}
+              placeholderInitials={me?.first_initial}
               bordered
               color="success"
               img={me?.profile_image?.url}

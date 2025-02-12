@@ -7,10 +7,12 @@ import { useHandleMessage } from "../../..";
 import { Interview } from "@/types";
 import { GlobalContext } from "@/app/provider";
 import { useRouter, usePathname } from "next/navigation";
+import clsx from "clsx";
 
-export const TakeInterviewButton: FC<{ interview: Interview }> = ({
-  interview,
-}) => {
+export const TakeInterviewButton: FC<{
+  interview: Interview;
+  children?: React.ReactNode;
+}> = ({ interview, children }) => {
   const {
     store: {
       auth: { shareableLink },
@@ -25,14 +27,19 @@ export const TakeInterviewButton: FC<{ interview: Interview }> = ({
     const context = `Interview UUID: ${interview.uuid}`;
     return handleMessage(
       shareableLink ? "recruiter_interview" : "interview",
-      interview.name,
+      interview.position,
       context,
     );
   };
 
   return (
     <Button outline gradientDuoTone="purpleToBlue" onClick={handleClick}>
-      <FaLongArrowAltRight className="h-4 w-4" />
+      {children}
+      <FaLongArrowAltRight
+        className={clsx("h-5 w-5", {
+          "ml-2": !!children,
+        })}
+      />
     </Button>
   );
 };
