@@ -170,7 +170,7 @@ async def list_organizations(
 
 
 @router.get("/")
-async def get_organizations(
+async def get_organization(
     slug: str,
     _: Optional[UserClaims] = Depends(optional_auth),
 ):
@@ -179,8 +179,6 @@ async def get_organizations(
             Organization.slug == slug.lower(),
             fetch_links=True,
         )
-
-        logger.debug(f"HER HER {organization}")
 
         if not organization:
             return HTTPException(status_code=400, detail="Organization not found.")

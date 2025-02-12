@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import List, Optional
-from beanie import Link, PydanticObjectId
+from beanie import BackLink, Link, PydanticObjectId
+from pydantic import Field
 import pymongo
 from database.base import BaseMongoModel
 from database.organization import Organization
@@ -16,6 +17,9 @@ class Interview(BaseMongoModel):
     position: str
     url: Optional[str] = None
     organization: Optional[Link[Organization]] = None
+    questions: Optional[List[BackLink["InterviewQuestion"]]] = Field(  # type:ignore
+        original_field="interview"  # type:ignore
+    )
     interview_type: InterviewType = InterviewType.GENERAL
     tags: List[str] = []
     status: bool = True

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from classes.user_claims import UserClaims
 from database.interview import Interview, get_pipeline
 from database.organization import Organization
+from database.interview_question_response import InterviewQuestionResponse
 from utils.jwt import get_sl_token_claims, optional_auth
 from utils.responses import create_response
 
@@ -18,14 +19,28 @@ logger = logging.getLogger(__name__)
 @router.get("/")
 async def get_interview(uuid: str):
     try:
-        interview = await Interview.find_one(
-            Interview.uuid == UUID(uuid), fetch_links=True
+        pipeline = get_pipeline(
+            user_id=None,
+            taken_by_me=False,
+            shareable_link_id=None,
         )
 
-        if not interview:
-            return create_response(success=False)
+        interviews = (
+            await Interview.find(
+                Interview.uuid == UUID(uuid),
+            )
+            .aggregate(pipeline)
+            .to_list()
+        )
 
-        return create_response(success=True, data=await interview.to_public_dict())
+        logger.debug(interviews)
+
+        if not interviews:
+            return HTTPException(status_code=500, detail="Failed to find interview.")
+
+        interview = interviews[0]
+
+        return create_response(success=True, data=interview)
 
     except Exception as e:
         logger.error(e)

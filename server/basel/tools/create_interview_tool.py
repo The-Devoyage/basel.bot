@@ -47,10 +47,15 @@ async def create_interview(
 ):
     try:
         organization = None
+
         if organization_uuid:
             organization = await Organization.find_one(
-                Organization.uuid == UUID(organization_uuid)
+                Organization.uuid == UUID(organization_uuid),
+                Organization.users.user._id == current_user.id,  # type:ignore
+                fetch_links=True,
             )
+            if not organization:
+                raise Exception("Failed to find organization.")
 
         interview = await Interview(
             description=description,
