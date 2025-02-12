@@ -38,15 +38,18 @@ export const Nav = async () => {
       className="sticky top-0 z-20 shadow-lg shadow-blue-200/50 dark:bg-slate-950 dark:shadow-blue-950/75"
       fluid
     >
+      {/*Mobile Nav*/}
       {isAuthenticated.success ? (
-        <NavbarBrand
-          href="/"
-          className="flex items-center space-x-2 text-2xl font-bold dark:text-white md:hidden"
-        >
+        <div className="flex">
           <NavbarToggle />
-          <BiSolidLeaf className="text-green-400 md:hidden" />
-          <span className="text-green-400 md:hidden">basel.bot</span>
-        </NavbarBrand>
+          <NavbarBrand
+            href="/"
+            className="flex items-center space-x-2 text-2xl font-bold dark:text-white md:hidden"
+          >
+            <BiSolidLeaf className="text-green-400 md:hidden" />
+            <span className="text-green-400 md:hidden">basel.bot</span>
+          </NavbarBrand>
+        </div>
       ) : (
         <NavbarBrand
           href="/"
