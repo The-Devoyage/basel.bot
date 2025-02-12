@@ -45,7 +45,7 @@ export default async function Page({
               <GrOrganization className="h-32 w-32 text-slate-400 dark:text-slate-700" />
             )}
           </div>
-          <div className="flex flex-row flex-col space-y-2 md:w-2/3">
+          <div className="flex flex-row space-y-2 md:w-2/3 md:flex-col">
             <PageHeader title={organization.name} />
             <Typography.Heading className="flex items-center gap-2">
               <PiUsersBold className="h-4 w-4" />
