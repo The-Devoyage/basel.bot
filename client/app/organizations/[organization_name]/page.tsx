@@ -3,7 +3,7 @@ import { Typography } from "@/shared/typography";
 import Image from "next/image";
 import { PiUsersBold } from "react-icons/pi";
 import { AddOrganizationInterviewButton, Members } from "./components";
-import { Card, HR } from "flowbite-react";
+import { Breadcrumb, BreadcrumbItem, Card, HR } from "flowbite-react";
 import { Endpoint, callApi } from "@/api";
 import { GrOrganization } from "react-icons/gr";
 import { InterviewsList } from "@/shared/interviews-list";
@@ -25,9 +25,14 @@ export default async function Page({
 
   return (
     <section className="container mx-auto flex w-full flex-col space-y-4 p-4">
+      <Breadcrumb>
+        <BreadcrumbItem icon={GrOrganization} href="/organizations">
+          My Organizations
+        </BreadcrumbItem>
+      </Breadcrumb>
       <Card>
-        <div className="flex gap-4">
-          <div className="flex w-1/3 items-center justify-center p-4">
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div className="flex w-full items-center justify-center p-4 md:w-1/3">
             {organization.logo ? (
               <Image
                 src={organization.logo?.url || ""}
@@ -40,7 +45,7 @@ export default async function Page({
               <GrOrganization className="h-32 w-32 text-slate-400 dark:text-slate-700" />
             )}
           </div>
-          <div className="flex w-2/3 flex-col space-y-2">
+          <div className="flex flex-row flex-col space-y-2 md:w-2/3">
             <PageHeader title={organization.name} />
             <Typography.Heading className="flex items-center gap-2">
               <PiUsersBold className="h-4 w-4" />
@@ -55,11 +60,11 @@ export default async function Page({
         </div>
       </Card>
       <HR />
-      <div className="flex gap-2">
-        <div className="w-1/3">
+      <div className="flex flex-col gap-2 md:flex-row">
+        <div className="w-full md:w-1/3">
           <Members users={organization.users} />
         </div>
-        <div className="w-2/3">
+        <div className="w-full md:w-2/3">
           <Card className="flex w-full flex-col space-y-4">
             <div className="flex justify-between">
               <Typography.Heading className="text-xl">

@@ -48,8 +48,12 @@ export const ListOrganizations = () => {
       <Table hoverable>
         <Table.Head>
           <Table.HeadCell>Name</Table.HeadCell>
-          <Table.HeadCell>Status</Table.HeadCell>
-          <Table.HeadCell>Created At</Table.HeadCell>
+          <Table.HeadCell className="hidden md:table-cell">
+            Status
+          </Table.HeadCell>
+          <Table.HeadCell className="hidden md:table-cell">
+            Created At
+          </Table.HeadCell>
           <Table.HeadCell className="text-center">Edit</Table.HeadCell>
         </Table.Head>
         <Table.Body>
@@ -64,8 +68,10 @@ export const ListOrganizations = () => {
               }
             >
               <Table.Cell>{o.name}</Table.Cell>
-              <Table.Cell>{o.status ? "Active" : "Disabled"}</Table.Cell>
-              <Table.Cell>
+              <Table.Cell className="hidden md:table-cell">
+                {o.status ? "Active" : "Disabled"}
+              </Table.Cell>
+              <Table.Cell className="hidden md:table-cell">
                 {dayjs.utc(o.created_at).local().format("MMM D YYYY h:mma")}
               </Table.Cell>
               <Table.Cell

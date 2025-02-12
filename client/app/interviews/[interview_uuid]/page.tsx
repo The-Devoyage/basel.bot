@@ -1,7 +1,7 @@
 import { PageHeader } from "@/shared/layout/page-header";
 import { Typography } from "@/shared/typography";
 import Image from "next/image";
-import { Badge, Card, HR } from "flowbite-react";
+import { Badge, Breadcrumb, BreadcrumbItem, Card, HR } from "flowbite-react";
 import { Endpoint, callApi } from "@/api";
 import { GrOrganization } from "react-icons/gr";
 import { TakeInterviewButton } from "@/app/components/init-screen/components/recent-interviews/components";
@@ -27,9 +27,14 @@ export default async function Page({
 
   return (
     <section className="container mx-auto flex w-full flex-col space-y-4 p-4">
+      <Breadcrumb>
+        <BreadcrumbItem icon={TfiWrite} href="/interviews">
+          Interviews
+        </BreadcrumbItem>
+      </Breadcrumb>
       <Card>
-        <div className="flex gap-4">
-          <div className="flex w-1/3 items-center justify-center p-4">
+        <div className="flex flex-col gap-4 md:flex-row">
+          <div className="flex w-full items-center justify-center p-4 md:w-1/3">
             {interview.organization?.logo ? (
               <Image
                 src={interview.organization.logo?.url || ""}
@@ -42,7 +47,7 @@ export default async function Page({
               <GrOrganization className="h-32 w-32 text-slate-400 dark:text-slate-700" />
             )}
           </div>
-          <div className="flex w-2/3 flex-col justify-between space-y-4">
+          <div className="flex w-full flex-col justify-between space-y-4 md:w-2/3">
             <div className="space-y-2">
               <PageHeader title={interview.position} />
               <div className="flex gap-2">
