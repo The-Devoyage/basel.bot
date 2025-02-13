@@ -16,7 +16,7 @@ export const callApi = async <E extends Endpoint>(
   options?: CallApiOptions,
 ): Promise<Response<EndpointResponse[E]>> => {
   // Handle Headers
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
   const headers: HeadersInit = {
     "Content-Type": "application/json",

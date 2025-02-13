@@ -1,5 +1,3 @@
-import { Reducer } from "react";
-
 export const TOGGLE_FOCUS_CHAT_INPUT = "TOGGLE_FOCUS_CHAT_INPUT";
 
 export type ToggleFocusChatInputAction = {
@@ -12,10 +10,7 @@ export type ToggleFocusChatInputAction = {
 export type Action = ToggleFocusChatInputAction;
 export type State = { chatInput: { focused: boolean } };
 
-export const chatInputReducer: Reducer<State, Action> = (
-  state,
-  action,
-): State => {
+export const chatInputReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case TOGGLE_FOCUS_CHAT_INPUT:
       return {

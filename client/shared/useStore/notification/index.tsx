@@ -1,5 +1,3 @@
-import { Reducer } from "react";
-
 export const TOGGLE_NOTIFICATION_DRAWER = "TOGGLE_NOTIFICATION_DRAWER";
 
 export type ToggleNotificationDrawerAction = {
@@ -12,10 +10,7 @@ export type ToggleNotificationDrawerAction = {
 export type Action = ToggleNotificationDrawerAction;
 export type State = { notifications: { open: boolean } };
 
-export const notificationReducer: Reducer<State, Action> = (
-  state: State,
-  action: Action,
-): State => {
+export const notificationReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case TOGGLE_NOTIFICATION_DRAWER:
       return {

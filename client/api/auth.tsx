@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 // Set auth token cookie
 export const setAuthToken = async (token: string) => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   cookieStore.set({
     name: "token",
@@ -19,7 +19,7 @@ export const setAuthToken = async (token: string) => {
 };
 
 export const removeAuthToken = async () => {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   cookieStore.set({
     name: "token",

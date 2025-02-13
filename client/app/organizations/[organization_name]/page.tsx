@@ -8,11 +8,12 @@ import { Endpoint, callApi } from "@/api";
 import { GrOrganization } from "react-icons/gr";
 import { InterviewsList } from "@/shared/interviews-list";
 
-export default async function Page({
-  params,
-}: {
-  params: { organization_name: string };
-}) {
+export default async function Page(
+  props: {
+    params: Promise<{ organization_name: string }>;
+  }
+) {
+  const params = await props.params;
   const organizationRes = await callApi({
     endpoint: Endpoint.GetOrganization,
     query: { slug: params.organization_name },

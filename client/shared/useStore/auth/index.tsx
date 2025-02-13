@@ -1,6 +1,5 @@
 import { ShareableLink } from "@/types";
 import { User } from "@/types/user";
-import { Reducer } from "react";
 
 export const SET_AUTHENTICATED = "SET_AUTHENTICATED";
 export const SET_ME = "SET_ME";
@@ -37,10 +36,7 @@ export type State = {
   };
 };
 
-export const authReducer: Reducer<State, Action> = (
-  state: State,
-  action: Action,
-): State => {
+export const authReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case SET_AUTHENTICATED:
       return {

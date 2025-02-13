@@ -26,7 +26,7 @@ export const ActionItems: FC<{
   setMessageText: Dispatch<SetStateAction<string>>;
   messageText: string;
   handleMessage: () => void;
-  inputRef: RefObject<HTMLTextAreaElement>;
+  inputRef: RefObject<HTMLTextAreaElement | null>;
 }> = ({ setMessageText, messageText, handleMessage, inputRef }) => {
   const { setFiles } = useContext(ChatInputContext);
   const className = "h-4 w-4";

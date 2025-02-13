@@ -11,11 +11,12 @@ import { WiTime9 } from "react-icons/wi";
 import { Interview } from "@/types";
 import { QuestionsList } from "./components";
 
-export default async function Page({
-  params,
-}: {
-  params: { interview_uuid: Interview["uuid"] };
-}) {
+export default async function Page(
+  props: {
+    params: Promise<{ interview_uuid: Interview["uuid"] }>;
+  }
+) {
+  const params = await props.params;
   const interviewRes = await callApi({
     endpoint: Endpoint.GetInterview,
     body: null,

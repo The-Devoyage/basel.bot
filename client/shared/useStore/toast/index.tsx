@@ -1,5 +1,4 @@
 import { NotificationToast } from "@/shared/toaster";
-import { Reducer } from "react";
 import { v4 } from "uuid";
 
 export const ADD_TOAST = "ADD_TOAST";
@@ -22,10 +21,7 @@ export type RemoveToastAction = {
 export type Action = AddToastAction | RemoveToastAction;
 export type State = { toasts: NotificationToast[] };
 
-export const toastReducer: Reducer<State, Action> = (
-  state: State,
-  action: Action,
-): State => {
+export const toastReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case ADD_TOAST:
       return {

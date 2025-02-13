@@ -1,4 +1,4 @@
-import plugin from "flowbite-react/tailwind";
+import * as plugin from "flowbite-react/tailwind";
 import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
 

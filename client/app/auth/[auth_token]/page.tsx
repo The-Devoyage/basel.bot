@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, use } from "react";
 import { Alert, Button } from "flowbite-react";
 import { BiSolidLeaf } from "react-icons/bi";
 import { GlobalContext } from "@/app/provider";
@@ -9,7 +9,8 @@ import { Endpoint, callApi } from "@/api";
 import { setAuthToken } from "@/api/auth";
 import { setAuthenticated } from "@/shared/useStore/auth";
 
-export default function Page({ params }: { params: { auth_token: string } }) {
+export default function Page(props: { params: Promise<{ auth_token: string }> }) {
+  const params = use(props.params);
   const router = useRouter();
   const {
     dispatch,

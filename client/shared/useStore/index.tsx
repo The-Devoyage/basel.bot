@@ -28,7 +28,7 @@ export type AppState = ToastState &
 export type AppStore = [AppState, React.Dispatch<AppAction>];
 
 export const useStore = () => {
-  const store = useReducer<Reducer<AppState, AppAction>>(
+  const store = useReducer<AppState, [AppAction]>(
     (state, action) => {
       const reducers = [
         toastReducer,
