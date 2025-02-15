@@ -14,6 +14,7 @@ from basel.tools.create_interview_question_tool import (
     create_create_interview_question_tool,
 )
 from basel.tools.create_interview_tool import create_create_interview_tool
+from basel.tools.create_resume_tool import create_create_resume_tool
 from basel.tools.create_update_interviw_question_tool import (
     create_update_interview_question_tool,
 )
@@ -55,6 +56,9 @@ def get_global_tools(chatting_with: User):
 
     get_interview_questions_tool = create_get_interview_questions_tool()
     tools.append(get_interview_questions_tool)
+
+    create_resume_tool = create_create_resume_tool()
+    tools.append(create_resume_tool)
 
     return tools
 
