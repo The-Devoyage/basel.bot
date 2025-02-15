@@ -8,11 +8,9 @@ import { Endpoint, callApi } from "@/api";
 import { GrOrganization } from "react-icons/gr";
 import { InterviewsList } from "@/shared/interviews-list";
 
-export default async function Page(
-  props: {
-    params: Promise<{ organization_name: string }>;
-  }
-) {
+export default async function Page(props: {
+  params: Promise<{ organization_name: string }>;
+}) {
   const params = await props.params;
   const organizationRes = await callApi({
     endpoint: Endpoint.GetOrganization,
@@ -43,13 +41,13 @@ export default async function Page(
                 className="h-[200px] w-full rounded object-contain"
               />
             ) : (
-              <GrOrganization className="h-32 w-32 text-slate-400 dark:text-slate-700" />
+              <GrOrganization className="size-32 text-slate-400 dark:text-slate-700" />
             )}
           </div>
           <div className="flex flex-row space-y-2 md:w-2/3 md:flex-col">
             <PageHeader title={organization.name} />
             <Typography.Heading className="flex items-center gap-2">
-              <PiUsersBold className="h-4 w-4" />
+              <PiUsersBold className="size-4" />
               {organization.users.length === 1
                 ? "1 Member"
                 : `${organization.users.length} Members`}

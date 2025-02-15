@@ -19,7 +19,7 @@ export const BreakBarriers = () => (
     <div className="flex flex-col justify-between">
       <ul className="space-y-6">
         <li className="flex gap-2">
-          <div className="mr-2 flex h-12 w-12 min-w-12 items-center justify-center rounded bg-blue-800">
+          <div className="mr-2 flex size-12 min-w-12 items-center justify-center rounded bg-blue-800">
             <IoLanguage className="text-2xl text-blue-200" />
           </div>
           <div className="space-y-2">
@@ -35,7 +35,7 @@ export const BreakBarriers = () => (
           </div>
         </li>
         <li className="flex gap-2">
-          <div className="mr-2 flex h-12 w-12 min-w-12 items-center justify-center rounded bg-green-800">
+          <div className="mr-2 flex size-12 min-w-12 items-center justify-center rounded bg-green-800">
             <GiTechnoHeart className="pt-1 text-3xl text-green-200" />
           </div>
           <div className="space-y-2">

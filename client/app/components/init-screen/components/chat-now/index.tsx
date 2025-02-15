@@ -16,7 +16,7 @@ export const ChatNow = () => {
       className="w-full"
       onClick={() => router.push(`/chat?${searchParams.toString()}`)}
     >
-      <BiSolidLeaf className="mr-2 h-5 w-5 text-green-400" />
+      <BiSolidLeaf className="mr-2 size-5 text-green-400" />
       Chat Now
     </Button>
   );

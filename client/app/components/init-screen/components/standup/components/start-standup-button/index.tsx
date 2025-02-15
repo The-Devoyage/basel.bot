@@ -59,13 +59,13 @@ export const StartStandupButton = () => {
               onClick={handleClick}
               className="w-full"
             >
-              <TfiWrite className="mr-2 h-5 w-5" /> Start Standup
+              <TfiWrite className="mr-2 size-5" /> Start Standup
             </Button>
           </div>
         </Modal.Body>
       </Modal>
       <Button gradientDuoTone="redToYellow" outline onClick={handleClick}>
-        <TfiWrite className="h-5 w-5" />
+        <TfiWrite className="size-5" />
       </Button>
     </>
   );

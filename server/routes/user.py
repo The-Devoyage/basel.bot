@@ -18,7 +18,7 @@ class UpdateUserParams(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     email: Optional[str] = None
-    profile_image: Optional[File] = None
+    profile_image: Optional[UUID] = None
 
 
 @router.patch("/update")
@@ -37,7 +37,7 @@ async def update_user(
             user.last_name = params.last_name
         if params.profile_image:
             profile_image = await File.find_one(
-                File.uuid == params.profile_image.uuid,
+                File.uuid == params.profile_image,
                 File.created_by.id == user_claims.user.id,  # type:ignore
             )
             if not profile_image:

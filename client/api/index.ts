@@ -22,6 +22,7 @@ export interface Response<T> {
   code?: number;
   total?: number;
   detail?: string;
+  error?: string;
 }
 
 export enum Endpoint {
@@ -183,7 +184,7 @@ export interface EndpointParams {
       first_name?: string;
       last_name?: string;
       email?: string;
-      profile_image?: File;
+      profile_image?: File["uuid"];
     };
     path: undefined;
   };

@@ -9,7 +9,9 @@ import { Endpoint, callApi } from "@/api";
 import { setAuthToken } from "@/api/auth";
 import { setAuthenticated } from "@/shared/useStore/auth";
 
-export default function Page(props: { params: Promise<{ auth_token: string }> }) {
+export default function Page(props: {
+  params: Promise<{ auth_token: string }>;
+}) {
   const params = use(props.params);
   const router = useRouter();
   const {
@@ -59,14 +61,14 @@ export default function Page(props: { params: Promise<{ auth_token: string }> })
     };
 
     finishAuth();
-  }, [params.auth_token]);
+  }, [params.auth_token, dispatch]);
 
   return (
     <div className="container mx-auto flex w-full flex-col p-4">
       <Alert color="success" className="">
         <div className="flex w-full flex-col">
           <div className="flex items-start gap-2">
-            <BiSolidLeaf className="my-1 h-6 w-6 animate-wiggle text-green-400" />
+            <BiSolidLeaf className="my-1 size-6 animate-wiggle text-green-400" />
             <div className="flex flex-col gap-2">
               <h1 className="text-xl font-bold text-green-400">
                 {!message
@@ -76,12 +78,14 @@ export default function Page(props: { params: Promise<{ auth_token: string }> })
                     : "Success"}
               </h1>
               {!message ? (
-                <p className="text-md text-gray-500">
+                <p className="text-gray-500">
                   Verifying your account - Please wait...
                 </p>
               ) : (
                 <p
-                  className={`text-${message.type === "error" ? "red" : "green"}-500`}
+                  className={
+                    message.type === "error" ? "text-red-500" : "text-green-500"
+                  }
                 >
                   {message.message}
                 </p>

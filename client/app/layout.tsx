@@ -37,7 +37,7 @@ export default async function RootLayout({
         <ThemeModeScript />
       </head>
       <body
-        className={`flex h-full w-full flex-col bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
+        className={`flex size-full flex-col bg-slate-100 dark:bg-slate-900 ${spaceMono.className}`}
       >
         <Suspense
           fallback={

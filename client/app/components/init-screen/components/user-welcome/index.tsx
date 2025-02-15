@@ -18,7 +18,7 @@ export const UserWelcome = () => {
     return (
       <Card className="border-4 !border-green-400 text-center">
         <div className="flex flex-col items-center justify-center gap-4">
-          <BiSolidLeaf className="h-12 w-12 text-green-400" />
+          <BiSolidLeaf className="size-12 text-green-400" />
           <Typography.Heading>Hey, I&apos;m Basel!</Typography.Heading>
         </div>
       </Card>

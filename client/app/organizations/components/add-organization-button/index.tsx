@@ -15,7 +15,7 @@ export const AddOrganizationButton = () => {
         gradientMonochrome="pink"
         onClick={toggleEditOrganizationModal}
       >
-        <BsPlusLg className="h-4 w-4" />
+        <BsPlusLg className="size-4" />
       </Button>
     </>
   );

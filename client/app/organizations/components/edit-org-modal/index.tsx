@@ -95,7 +95,7 @@ export const EditOrganizationModal = () => {
               }
             />
             <Button size="sm" color="pink" outline onClick={toggleFileManager}>
-              <TiAttachmentOutline className="h-4 w-4" />
+              <TiAttachmentOutline className="size-4" />
             </Button>
           </div>
           <div className="mx-auto flex w-1/3">

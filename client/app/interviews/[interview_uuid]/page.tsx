@@ -11,11 +11,9 @@ import { WiTime9 } from "react-icons/wi";
 import { Interview } from "@/types";
 import { QuestionsList } from "./components";
 
-export default async function Page(
-  props: {
-    params: Promise<{ interview_uuid: Interview["uuid"] }>;
-  }
-) {
+export default async function Page(props: {
+  params: Promise<{ interview_uuid: Interview["uuid"] }>;
+}) {
   const params = await props.params;
   const interviewRes = await callApi({
     endpoint: Endpoint.GetInterview,
@@ -45,7 +43,7 @@ export default async function Page(
                 className="h-[200px] w-full rounded object-contain"
               />
             ) : (
-              <GrOrganization className="h-32 w-32 text-slate-400 dark:text-slate-700" />
+              <GrOrganization className="size-32 text-slate-400 dark:text-slate-700" />
             )}
           </div>
           <div className="flex w-full flex-col justify-between space-y-4 md:w-2/3">
@@ -54,13 +52,13 @@ export default async function Page(
               <div className="flex gap-2">
                 <Badge color="purple">
                   <div className="flex gap-2">
-                    <TfiWrite className="h-4 w-4" />
+                    <TfiWrite className="size-4" />
                     {interview.response_count} Responses
                   </div>
                 </Badge>
                 <Badge color="blue">
                   <div className="flex gap-2">
-                    <WiTime9 className="h-4 w-4" />
+                    <WiTime9 className="size-4" />
                     {toDate(interview.created_at, false)}
                   </div>
                 </Badge>

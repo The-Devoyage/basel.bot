@@ -40,12 +40,15 @@ export const useCallApi = <E extends Endpoint>(
         options?.callApiOptions,
       );
       setRes(res);
+
       if (!res.success) {
-        console.error("RESPONSE FAILED", res);
+        setLoading(false);
+        console.warn("RESPONSE FAILED", res, apiAction.endpoint);
         dispatch(addToast({ type: "error", description: res.detail || "" }));
         options?.onError?.(res);
         return;
       }
+
       if (options?.toast?.onSuccess) {
         dispatch(
           addToast({
@@ -58,7 +61,7 @@ export const useCallApi = <E extends Endpoint>(
       options?.onSuccess?.(res);
       return res;
     } catch (err) {
-      console.error(err);
+      console.error("useCallApi Error:", err);
       setLoading(false);
       options?.onError?.(err);
       dispatch(

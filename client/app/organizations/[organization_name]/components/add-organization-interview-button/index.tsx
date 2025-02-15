@@ -33,7 +33,7 @@ export const AddOrganizationInterviewButton: FC<{
   return (
     <Tooltip content="Create New Interview">
       <Button gradientMonochrome="purple" outline onClick={handleClick}>
-        <BsPlusLg className="h-4 w-4" />
+        <BsPlusLg className="size-4" />
       </Button>
     </Tooltip>
   );
