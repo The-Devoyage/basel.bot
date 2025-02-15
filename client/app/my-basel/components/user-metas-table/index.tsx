@@ -13,7 +13,7 @@ import {
 } from "flowbite-react";
 import { DeleteCell, StatusCell } from "./components";
 import { useCallApi } from "@/shared/useCallApi";
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import utc from "dayjs/plugin/utc";
 import { usePagination } from "@/shared/usePagination";
 dayjs.extend(utc);
@@ -38,13 +38,13 @@ export const UserMetasTable = () => {
     },
   );
 
-  const handleFetch = useCallback(async () => {
+  const handleFetch = async () => {
     await call();
-  }, [call]);
+  };
 
   useEffect(() => {
     handleFetch();
-  }, [pagination.currentPage, handleFetch]);
+  }, [pagination.currentPage]);
 
   return (
     <div className="relative">
