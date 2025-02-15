@@ -27,10 +27,10 @@ export const ScrollingChat = () => {
 
   if (!client.messages.length) {
     return (
-      <div className="flex h-full w-full items-start justify-center">
+      <div className="flex size-full items-start justify-center">
         <Card>
           <div className="flex gap-4">
-            <BiSolidLeaf className="h-12 w-12 text-green-400" />
+            <BiSolidLeaf className="size-12 text-green-400" />
             <div className="flex flex-col gap-2">
               <Typography.Heading className="text-2xl">
                 Hello! My name is Basel.

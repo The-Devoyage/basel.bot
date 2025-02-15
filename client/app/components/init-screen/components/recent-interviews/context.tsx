@@ -44,7 +44,7 @@ export const InterviewContextProvider: FC<{ children: React.ReactNode }> = ({
     body: null,
     path: null,
   });
-  const interviews = res?.data || [];
+  const interviews = useMemo(() => res?.data || [], [res?.data]);
 
   useEffect(() => {
     call();

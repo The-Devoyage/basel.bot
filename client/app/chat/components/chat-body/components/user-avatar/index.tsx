@@ -20,7 +20,7 @@ export const UserAvatar: FC<{ chattingWith: User | null }> = ({
         root: {
           img: {
             on: "flex items-center justify-center object-cover",
-            placeholder: "absolute -bottom-2 h-auto w-auto text-gray-400",
+            placeholder: "absolute -bottom-2 size-auto text-gray-400",
           },
         },
       }}

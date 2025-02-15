@@ -10,7 +10,7 @@ export const InterviewsWelcome = () => {
   return (
     <Alert color="purple">
       <div className="flex items-center gap-2">
-        <FaCircleCheck className="h-4 w-4" />
+        <FaCircleCheck className="size-4" />
         {slToken ? (
           <div className="flex-1">
             The user has shared tailored interviews for your review. Explore

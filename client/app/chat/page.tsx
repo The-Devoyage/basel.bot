@@ -24,7 +24,7 @@ export default function Chat() {
       // Re-enable scrolling when component unmounts
       document.documentElement.style.overflow = "";
     };
-  }, []);
+  }, [dispatch]);
 
   return (
     <>

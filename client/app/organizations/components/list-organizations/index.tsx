@@ -86,7 +86,7 @@ export const ListOrganizations = () => {
                     setSelectedOrganization(o);
                   }}
                 >
-                  <MdOutlineEdit className="h-4 w-4" />
+                  <MdOutlineEdit className="size-4" />
                 </Button>
               </Table.Cell>
             </Table.Row>

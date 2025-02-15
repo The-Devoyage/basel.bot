@@ -66,8 +66,9 @@ export const callApi = async <E extends Endpoint>(
     );
 
     if (!res.ok) {
-      console.info("Network Error: ", res);
-      throw new Error("Failed to call api.");
+      const error = await res.text();
+      console.info("Network Error: ", error, formattedEndpoint);
+      return { success: false, data: null, error };
     }
 
     const data = await res.json();
@@ -86,6 +87,6 @@ export const callApi = async <E extends Endpoint>(
     return data;
   } catch (err) {
     console.error(err);
-    return { success: false, data: null };
+    return { success: false, data: null, error: "Unexpected error occurred." };
   }
 };

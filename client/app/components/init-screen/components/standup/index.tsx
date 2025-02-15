@@ -28,7 +28,7 @@ export const Standup = () => {
       </div>
       <Alert color="yellow">
         <div className="flex items-center gap-2">
-          <FaCircleCheck className="h-4 w-4" />
+          <FaCircleCheck className="size-4" />
           <div className="flex-1">
             Standups capture daily progress—what’s been accomplished, current
             focus, and challenges. These updates build a dynamic career profile,

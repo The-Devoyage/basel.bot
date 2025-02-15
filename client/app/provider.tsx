@@ -87,15 +87,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
 
   const value = useMemo(
     () => ({ client, store, dispatch, slToken, notificationClient }),
-    [
-      client.socket,
-      client.messages,
-      client.handleSend,
-      client.loading,
-      client.connected,
-      store,
-      slToken,
-    ],
+    [client, store, slToken, dispatch, notificationClient],
   );
 
   return (

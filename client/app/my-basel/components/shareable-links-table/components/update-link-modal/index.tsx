@@ -13,8 +13,6 @@ import {
   Tooltip,
 } from "flowbite-react";
 import { FC, useEffect, useState } from "react";
-import { BsInfo } from "react-icons/bs";
-import { CgInfo } from "react-icons/cg";
 import { TbInfoSquareFilled } from "react-icons/tb";
 
 interface FormValues {
@@ -130,7 +128,7 @@ export const UpdateLinkModal: FC<{
               content="Attach interviews you have completed for recruiters to see when visiting your profile."
               placement="top-start"
             >
-              <TbInfoSquareFilled className="h-6 w-6 dark:text-white" />
+              <TbInfoSquareFilled className="size-6 dark:text-white" />
             </Tooltip>
           </div>
           <MultiSelect

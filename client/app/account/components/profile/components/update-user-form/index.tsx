@@ -1,15 +1,28 @@
 "use client";
 
-import { Endpoint, EndpointParams } from "@/api";
+import { Endpoint } from "@/api";
 import { FileManager } from "@/shared/file-manager";
 import { Typography } from "@/shared/typography";
 import { useCallApi } from "@/shared/useCallApi";
 import { User, ValidMimeType } from "@/types";
 import { Avatar, Button, Label, TextInput } from "flowbite-react";
 import { FC, FormEvent, useEffect, useState } from "react";
+import { File } from "@/types";
+
+interface UpdateUserForm {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  profile_image?: File;
+}
 
 export const UpdateUserForm: FC<{ me: User | null }> = ({ me }) => {
-  const [form, setForm] = useState<EndpointParams["/user/update"]["body"]>({});
+  const [form, setForm] = useState<UpdateUserForm>({
+    first_name: "",
+    last_name: "",
+    email: "",
+    profile_image: undefined,
+  });
   const [showFileManager, setShowFileManager] = useState(false);
   const updateUser = useCallApi(
     {
@@ -41,7 +54,11 @@ export const UpdateUserForm: FC<{ me: User | null }> = ({ me }) => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await updateUser.call({ body: form, query: null, path: null });
+    await updateUser.call({
+      body: { ...form, profile_image: form.profile_image?.uuid },
+      query: null,
+      path: null,
+    });
   };
   return (
     <form onSubmit={handleSubmit}>

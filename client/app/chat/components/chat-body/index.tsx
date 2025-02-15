@@ -11,7 +11,7 @@ export const ChatBody = () => {
   if (!client) return <Loader />;
 
   return (
-    <div className="relative top-0 flex h-full w-full flex-col gap-8 md:flex-row">
+    <div className="relative top-0 flex size-full flex-col gap-8 md:flex-row">
       <div className="hidden w-full md:block md:w-1/4">
         <ChattingWith />
       </div>
