@@ -1,9 +1,7 @@
 import logging
 from typing import List, Optional
 from beanie import SortDirection
-
-# from llama_index.agent.openai import OpenAIAgent
-from llama_index.core.agent import ReActAgent
+from llama_index.agent.openai import OpenAIAgent
 from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
 from llama_index.core.tools import BaseTool
@@ -32,7 +30,7 @@ async def get_agent(
     user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
     shareable_link: ShareableLink | None,
-) -> ReActAgent:
+) -> OpenAIAgent:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
     system_prompt = await get_system_prompt(
         subscription_status, user_claims, chatting_with, is_candidate, shareable_link
@@ -87,7 +85,7 @@ async def get_agent(
                     )
                     chat_history.append(history)
 
-    agent = ReActAgent.from_tools(
+    agent = OpenAIAgent.from_tools(
         tools=tools,
         verbose=True,
         system_prompt=system_prompt,
