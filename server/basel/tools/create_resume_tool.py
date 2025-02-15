@@ -74,7 +74,17 @@ def create_create_resume_tool():
     """Creates and returns the resume generation tool for the bot."""
     create_resume_tool = FunctionTool.from_defaults(
         name="create_resume_tool",
-        description="Formats a structured resume from candidate information using Markdown. Call the candidate_profile tool as needed to gather information about the candidate in order to populate the resume.",
+        description="""
+            **Purpose**
+            Formats a structured resume from candidate information 
+            using Markdown. 
+
+            **Instructions**
+            Before calling this tool, gather the required information for each argument
+            by calling the `candidate_profile` tool with a unique prompt for each argument.
+            Example prompt for 'Eduction':
+            - "Education experince, degrees, and higher level qualifications for the candidate John Doe." 
+        """,
         fn_schema=CreateResumeToolParams,
         fn=create_resume,
     )
