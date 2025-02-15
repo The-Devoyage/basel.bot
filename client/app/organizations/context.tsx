@@ -7,7 +7,6 @@ import {
   FC,
   SetStateAction,
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -32,11 +31,11 @@ interface OrganizationsPageContext {
   handleCreateOrganization: (
     form: OrganizationForm,
     callback: () => void,
-  ) => void;
+  ) => Promise<void>;
   handleUpdateOrganization: (
     form: OrganizationForm,
     callback: () => void,
-  ) => void;
+  ) => Promise<void>;
   toggleEditOrganizationModal: () => void;
   pager: ReturnType<typeof usePagination> | null;
   selectedOrganization: Organization | null;
@@ -138,42 +137,43 @@ export const OrganizationsPageProvider: FC<{ children: React.ReactNode }> = ({
     fetchOrganizations();
   }, [pager.pagination.currentPage]);
 
-  const handleUpdateOrganization =
-    () => async (form: OrganizationForm, callback: () => void) => {
-      const res = await updateOrganization({
-        body: {
-          uuid: form.uuid!,
-          name: form.name,
-          description: form.description,
-          logo: form.logo || undefined,
-        },
-        path: null,
-        query: null,
-      });
-      if (res?.success) callback();
-    };
+  const handleUpdateOrganization = async (
+    form: OrganizationForm,
+    callback: () => void,
+  ) => {
+    const res = await updateOrganization({
+      body: {
+        uuid: form.uuid!,
+        name: form.name,
+        description: form.description,
+        logo: form.logo || undefined,
+      },
+      path: null,
+      query: null,
+    });
+    if (res?.success) callback();
+  };
 
-  const handleCreateOrganization =
-    () => async (form: OrganizationForm, callback: () => void) => {
-      const res = await createOrganization({
-        body: {
-          name: form.name,
-          description: form.description,
-          logo: form.logo || undefined,
-        },
-        path: null,
-        query: null,
-      });
+  const handleCreateOrganization = async (
+    form: OrganizationForm,
+    callback: () => void,
+  ) => {
+    const res = await createOrganization({
+      body: {
+        name: form.name,
+        description: form.description,
+        logo: form.logo || undefined,
+      },
+      path: null,
+      query: null,
+    });
 
-      if (res?.success) callback();
-    };
+    if (res?.success) callback();
+  };
 
-  const toggleEditOrganizationModal = useCallback(
-    () => () => {
-      setShowEditOrganizationModal(!showEditOrganizationModal);
-    },
-    [showEditOrganizationModal],
-  );
+  const toggleEditOrganizationModal = () => {
+    setShowEditOrganizationModal(!showEditOrganizationModal);
+  };
 
   const value = useMemo(
     () => ({
