@@ -19,7 +19,6 @@ interface ChatInputContext {
   setFiles: Dispatch<SetStateAction<File[]>>;
   handleAutocomplete: () => string | undefined;
   updateSuggestion: (input: string) => void;
-  handleRepeatMessage: (prev: boolean) => void;
   handleMessage: () => void;
   messageText: string;
   setMessageText: Dispatch<SetStateAction<string>>;
@@ -30,7 +29,6 @@ export const ChatInputContext = createContext<ChatInputContext>({
   files: [],
   setFiles: () => null,
   handleAutocomplete: () => undefined,
-  handleRepeatMessage: () => null,
   updateSuggestion: () => null,
   handleMessage: () => null,
   messageText: "",
@@ -97,26 +95,6 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
     setRepeatedMessage(null);
   };
 
-  const handleRepeatMessage = (previous = true) => {
-    if (previous) {
-      const messages = client?.messages.filter(
-        (m) =>
-          m.sender !== "bot" &&
-          m.timestamp < (repeatedMessage?.timestamp || new Date()),
-      );
-      setRepeatedMessage(messages?.at(-1) ?? null);
-      setMessageText(messages?.at(-1)?.text || "");
-    } else {
-      const messages = client?.messages.filter(
-        (m) =>
-          m.sender !== "bot" &&
-          m.timestamp > (repeatedMessage?.timestamp || new Date()),
-      );
-      setRepeatedMessage(messages?.at(0) ?? null);
-      setMessageText(messages?.at(0)?.text || "");
-    }
-  };
-
   // Update the suggestion based on the current input
   const updateSuggestion = (input: string) => {
     if (!isAuthenticated) return;
@@ -181,7 +159,6 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
       setFiles,
       handleAutocomplete,
       updateSuggestion,
-      handleRepeatMessage,
       handleMessage,
       messageText,
       setMessageText,

@@ -14,7 +14,6 @@ export const ChatInputContents = () => {
     setMessageText,
     suggestion,
     handleAutocomplete,
-    handleRepeatMessage,
     updateSuggestion,
   } = useContext(ChatInputContext);
   const {
@@ -114,12 +113,6 @@ export const ChatInputContents = () => {
                 e.preventDefault();
                 const newMessageText = handleAutocomplete();
                 if (newMessageText) updateSuggestion(newMessageText);
-              } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                handleRepeatMessage(true);
-              } else if (e.key === "ArrowDown") {
-                e.preventDefault();
-                handleRepeatMessage(false);
               }
             }}
             value={messageText}

@@ -74,6 +74,9 @@ export const Nav = async () => {
         >
           Interviews
         </a>
+        <a href="/chat" className="hidden self-end text-slate-400 md:flex">
+          Chat
+        </a>
       </div>
       {isAuthenticated.success ? (
         <>
@@ -123,6 +126,7 @@ export const Nav = async () => {
           >
             <NavbarLink href="/">Home</NavbarLink>
             <NavbarLink href="/interviews">Interviews</NavbarLink>
+            <NavbarLink href="/chat">Chat</NavbarLink>
           </NavbarCollapse>
         </>
       ) : (

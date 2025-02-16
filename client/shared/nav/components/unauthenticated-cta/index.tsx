@@ -16,6 +16,7 @@ export const UnauthenticatedCta = () => {
           <Navbar.Collapse>
             <Navbar.Link href="/">Home</Navbar.Link>
             <Navbar.Link href="/interviews">Interviews</Navbar.Link>
+            <Navbar.Link href="/chat">Chat</Navbar.Link>
             <Navbar.Link
               href="#"
               onClick={() =>
