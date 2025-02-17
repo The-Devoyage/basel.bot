@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Card, Pagination, Table } from "flowbite-react";
+import { Button, Card, Pagination, Table, Tooltip } from "flowbite-react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,8 @@ import { Loader } from "@/shared/loader";
 import { OrganizationsPageContext } from "../../context";
 import { useContext } from "react";
 import { MdOutlineEdit } from "react-icons/md";
+import { useCheckPerm } from "@/utils/useCheckPerm";
+import { SubscriptionFeature } from "@/types";
 
 dayjs.extend(utc);
 
@@ -21,6 +23,7 @@ export const ListOrganizations = () => {
     setSelectedOrganization,
     toggleEditOrganizationModal,
   } = useContext(OrganizationsPageContext);
+  const allowEdit = useCheckPerm(SubscriptionFeature.MANAGE_ORGANIZATION);
 
   if (loading) {
     return (
@@ -78,16 +81,23 @@ export const ListOrganizations = () => {
                 className="flex items-center justify-center"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Button
-                  color="success"
-                  outline
-                  onClick={() => {
-                    toggleEditOrganizationModal();
-                    setSelectedOrganization(o);
-                  }}
+                <Tooltip
+                  content={
+                    !allowEdit && "Upgrade to edit organization details."
+                  }
                 >
-                  <MdOutlineEdit className="size-4" />
-                </Button>
+                  <Button
+                    color="success"
+                    outline
+                    disabled={!allowEdit}
+                    onClick={() => {
+                      toggleEditOrganizationModal();
+                      setSelectedOrganization(o);
+                    }}
+                  >
+                    <MdOutlineEdit className="size-4" />
+                  </Button>
+                </Tooltip>
               </Table.Cell>
             </Table.Row>
           ))}

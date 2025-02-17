@@ -4,7 +4,7 @@ from beanie.operators import Set
 from fastapi import APIRouter, HTTPException, Header, Request
 from fastapi.param_functions import Depends
 from classes.user_claims import UserClaims
-from database.subscription import Subscription, SubscriptionTier
+from database.subscription import TIER_FEATURES, Subscription, SubscriptionTier
 from utils.environment import get_env_var
 import stripe
 from stripe import Event
@@ -264,6 +264,7 @@ async def handle_plan_change(event: Event):
         # subscription.plan_id = new_plan_id
         subscription.updated_at = datetime.now(timezone.utc)
         subscription.tier = new_tier
+        subscription.features = TIER_FEATURES[new_tier]
 
         await subscription.save()
 

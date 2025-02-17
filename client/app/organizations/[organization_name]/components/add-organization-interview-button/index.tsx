@@ -2,7 +2,8 @@
 
 import { useHandleMessage } from "@/app/components/init-screen/components";
 import { GlobalContext } from "@/app/provider";
-import { Organization } from "@/types";
+import { Organization, SubscriptionFeature } from "@/types";
+import { useCheckPerm } from "@/utils/useCheckPerm";
 import { Button, Tooltip } from "flowbite-react";
 import { FC, useContext } from "react";
 import { BsPlusLg } from "react-icons/bs";
@@ -17,6 +18,9 @@ export const AddOrganizationInterviewButton: FC<{
       auth: { me },
     },
   } = useContext(GlobalContext);
+  const allowAddInterview = useCheckPerm(
+    SubscriptionFeature.MANAGE_ORGANIZATION,
+  );
 
   const handleClick = () => {
     handleMessage(
@@ -31,8 +35,19 @@ export const AddOrganizationInterviewButton: FC<{
   }
 
   return (
-    <Tooltip content="Create New Interview">
-      <Button gradientMonochrome="purple" outline onClick={handleClick}>
+    <Tooltip
+      content={
+        allowAddInterview
+          ? "Create New Interview"
+          : "Upgrade to create organization interviews."
+      }
+    >
+      <Button
+        gradientMonochrome="purple"
+        outline
+        onClick={handleClick}
+        disabled={!allowAddInterview}
+      >
         <BsPlusLg className="size-4" />
       </Button>
     </Tooltip>
