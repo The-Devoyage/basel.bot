@@ -43,7 +43,7 @@ async def websocket_endpoint(
     chatting_with = None
     chat_start_time = datetime.now(timezone.utc)
     subscription_status = SubscriptionStatus(
-        active=False, subscriptions=None, is_free_trial=False
+        active=False, subscription=None, is_free_trial=False
     )
     shareable_link = None
     message_count = 0
@@ -52,9 +52,7 @@ async def websocket_endpoint(
         if token:
             user_claims = await handle_decode_token(token)
             await verify_token_session(user_claims.token_session_uuid)
-            subscription_status = await verify_subscription(
-                user_claims.user, user_claims.user.created_at
-            )
+            subscription_status = await verify_subscription(user_claims.user)
 
         if sl_token:
             decoded = jwt.decode(
@@ -138,9 +136,10 @@ async def websocket_endpoint(
                     sender=SenderIdentifer.BOT,
                     buttons=[
                         Button(
-                            label="Subscribe - $3.99/mo",
+                            label="Subscribe",
                             action=ButtonAction(
-                                type="call", endpoint="/subscribe-start"
+                                type="redirect",
+                                endpoint="https://www.basel.bot/pricing",
                             ),
                         )
                     ]

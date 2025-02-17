@@ -4,45 +4,25 @@ import { Alert, Badge, Card } from "flowbite-react";
 import { SubscribeButton } from "./components";
 import { FaApplePay, FaGooglePay } from "react-icons/fa";
 import { CiCreditCard1 } from "react-icons/ci";
-import dayjs from "dayjs";
 
 export const ManageSubscription = async () => {
   const subscriptionRes = await callApi({
-    endpoint: Endpoint.GetSubscriptions,
+    endpoint: Endpoint.GetSubscription,
     path: null,
     body: null,
     query: null,
   });
-  const meRes = await callApi({
-    endpoint: Endpoint.Me,
-    path: null,
-    body: null,
-    query: null,
-  });
-  const isActive = subscriptionRes?.data?.length
-    ? subscriptionRes?.data.some((s) => s.status)
-    : null;
-  const isFreeTrial = dayjs(meRes?.data?.created_at)
-    .add(30, "d")
-    .isAfter(dayjs());
+  const subscription = subscriptionRes.data;
 
   const getSubscriptionStatus = () => {
-    if (isActive === null) {
-      if (isFreeTrial) {
-        return {
-          key: "FREE_TRIAL",
-          badgeColor: "cyan",
-          label: "Free Trial",
-        };
-      } else {
-        return {
-          key: "FREE_TRIAL_ENDED",
-          badgeColor: "warning",
-          label: "Free Trial Ended",
-        };
-      }
+    if (subscription?.subscription_status.is_free_trial) {
+      return {
+        key: "FREE_TRIAL",
+        badgeColor: "cyan",
+        label: "Free Trial",
+      };
     }
-    if (isActive) {
+    if (subscription?.subscription_status.active) {
       return {
         key: "ACTIVE",
         badgeColor: "success",
@@ -74,7 +54,7 @@ export const ManageSubscription = async () => {
       </div>
       <Alert color="light">
         <Typography.Heading className="text-lg">
-          Subscribing and Supporting
+          Your Subscription
         </Typography.Heading>
         <ul role="list" className="list-inside list-disc">
           <li>
@@ -96,9 +76,7 @@ export const ManageSubscription = async () => {
           <FaGooglePay className="text-4xl dark:text-white" />
           <CiCreditCard1 className="text-4xl dark:text-white" />
         </div>
-        <SubscribeButton
-          hasSubscribed={!!subscriptionRes?.data?.find((s) => s.status)}
-        />
+        <SubscribeButton hasSubscribed={!!subscription} />
       </span>
     </Card>
   );

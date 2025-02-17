@@ -1,33 +1,22 @@
 "use client";
 
 import { Endpoint } from "@/api";
-import { useCallApi } from "@/shared/useCallApi";
 import { Button } from "@/types";
 import { Button as FlowbiteButton, useThemeMode } from "flowbite-react";
+import { useRouter } from "next/navigation";
 import { FC, useState } from "react";
 
 export const FooterButtons: FC<{ buttons?: Button[] }> = ({ buttons }) => {
   const [loading, setLoading] = useState<number[]>([]);
   const themeMode = useThemeMode();
-  const { call: handleSubscribe } = useCallApi(
-    {
-      endpoint: Endpoint.SubscribeStart,
-      body: null,
-      query: null,
-      path: null,
-    },
-    {
-      onSuccess: (res) => {
-        window.open(res.data?.url);
-      },
-    },
-  );
+  const router = useRouter();
   if (!buttons?.length) return null;
 
+  //TODO: This is most likely going to be broken.
   const handleCallAction = async (endpoint: Endpoint) => {
     switch (endpoint) {
       case Endpoint.SubscribeStart:
-        await handleSubscribe();
+        return router.push("https://www.basel.bot/pricing");
       default:
         return;
     }
@@ -40,6 +29,8 @@ export const FooterButtons: FC<{ buttons?: Button[] }> = ({ buttons }) => {
         await handleCallAction(action.endpoint);
         setLoading((curr) => curr.filter((i) => i !== index));
         break;
+      case "redirect":
+        router.push(action.endpoint);
       default:
         return;
     }

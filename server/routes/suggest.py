@@ -32,9 +32,7 @@ async def get_standups(
         if not message:
             raise Exception("Failed to find most recent message.")
 
-        subscription_status = await verify_subscription(
-            user_claims.user, user_claims.user.created_at
-        )
+        subscription_status = await verify_subscription(user_claims.user)
 
         agent = await get_agent(
             is_candidate=True,

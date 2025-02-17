@@ -44,7 +44,12 @@ export const useCallApi = <E extends Endpoint>(
       if (!res.success) {
         setLoading(false);
         console.warn("RESPONSE FAILED", res, apiAction.endpoint);
-        dispatch(addToast({ type: "error", description: res.detail || "" }));
+        dispatch(
+          addToast({
+            type: "error",
+            description: res.detail || res.message || "",
+          }),
+        );
         options?.onError?.(res);
         return;
       }

@@ -1,7 +1,5 @@
 "use client";
 
-import { Endpoint } from "@/api";
-import { useCallApi } from "@/shared/useCallApi";
 import { Button } from "flowbite-react";
 import Link from "next/link";
 import { FC } from "react";
@@ -13,20 +11,6 @@ interface SubscribeButtonProps {
 export const SubscribeButton: FC<SubscribeButtonProps> = ({
   hasSubscribed,
 }) => {
-  const { call, loading } = useCallApi({
-    endpoint: Endpoint.SubscribeStart,
-    body: null,
-    path: null,
-    query: null,
-  });
-
-  const handleSubscribe = async () => {
-    const res = await call();
-    if (res?.success) {
-      window.open(res.data?.url);
-    }
-  };
-
   if (!process.env.NEXT_PUBLIC_BILLING_PORTAL_URL) {
     throw Error(`REQUIRED ENV NOT SET: NEXT_PUBLIC_BILLING_PORTAL_URL`);
   }
@@ -45,10 +29,9 @@ export const SubscribeButton: FC<SubscribeButtonProps> = ({
     <Button
       outline
       gradientDuoTone="greenToBlue"
-      isProcessing={loading}
-      onClick={handleSubscribe}
+      href="https://www.basel.bot/pricing"
     >
-      Subscribe - $3.99/mo
+      Plans and Pricing
     </Button>
   );
 };

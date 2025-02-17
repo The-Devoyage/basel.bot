@@ -63,3 +63,11 @@ cp ./server/example.env ./server/.env
 ## Cron
 
 Cron jobs are run from the cron folder. Populate the `.env` file and start with python.
+
+## Stripe
+
+Start up the stripe CLI pointing to `http://localhost:8000/subscribe-event`
+
+```
+stripe listen --forward-to localhost:8000/subscribe-event
+```

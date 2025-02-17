@@ -9,6 +9,7 @@ import {
   File,
   ValidMimeType,
   Organization,
+  SubscriptionTier,
 } from "@/types";
 import { InterviewQuestion } from "@/types/interview-question";
 import { Standup } from "@/types/standup";
@@ -35,7 +36,7 @@ export enum Endpoint {
   Logout = "/logout",
   Verify = "/verify",
   SubscribeStart = "/subscribe-start",
-  GetSubscriptions = "/subscriptions",
+  GetSubscription = "/subscription",
   ResetIndex = "/reset-index",
   GetUserMetas = "/user-metas",
   PatchUserMeta = "/user-meta/:uuid",
@@ -89,11 +90,11 @@ export interface EndpointParams {
     path: undefined;
   };
   [Endpoint.SubscribeStart]: {
-    query: undefined;
+    query: { tier: SubscriptionTier };
     body: undefined;
     path: undefined;
   };
-  [Endpoint.GetSubscriptions]: {
+  [Endpoint.GetSubscription]: {
     query: undefined;
     body: undefined;
     path: undefined;
@@ -234,7 +235,7 @@ export interface EndpointResponse {
   [Endpoint.AuthFinish]: { token: string };
   [Endpoint.UpdateShareableLink]: ShareableLink;
   [Endpoint.SubscribeStart]: { url: string };
-  [Endpoint.GetSubscriptions]: Subscription[];
+  [Endpoint.GetSubscription]: Subscription;
   [Endpoint.ResetIndex]: null;
   [Endpoint.GetUserMetas]: UserMeta[];
   [Endpoint.PatchUserMeta]: UserMeta;
