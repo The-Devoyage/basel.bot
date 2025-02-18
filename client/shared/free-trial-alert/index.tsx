@@ -11,14 +11,14 @@ export const FreeTrialAlert = () => {
   const [show, setShow] = useState(true);
   const {
     store: {
-      auth: { me },
+      auth: { me, isAuthenticated },
     },
   } = useContext(GlobalContext);
   const daysLeft = dayjs(
     me?.subscription_status.free_trial_expires || dayjs(),
   ).diff(dayjs(), "day");
 
-  if (!show || me?.subscription_status.active) {
+  if (!show || me?.subscription_status.active || !isAuthenticated) {
     return null;
   }
 
