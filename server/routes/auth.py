@@ -17,6 +17,7 @@ from utils.environment import get_env_var
 from utils.jwt import create_jwt, require_auth
 from mailer import send_email
 from utils.responses import create_response
+from utils.subscription import verify_subscription
 
 router = APIRouter()
 
@@ -51,14 +52,13 @@ async def verify(user_claims: UserClaims = Depends(require_auth)):
 async def me(user_claims: UserClaims = Depends(require_auth)):
     logger.debug(f"FETCHING ME: {user_claims}")
     try:
-        user = await User.find_one(
-            User.uuid == UUID(user_claims.user_uuid), fetch_links=True
-        )
+        user = await User.find_one(User.uuid == UUID(user_claims.user_uuid))
         if not user:
             raise Exception("User not found")
-        return create_response(
-            success=True, data=await user.to_public_dict(exclude={"auth_id", "id"})
-        )
+        subscription_status = await verify_subscription(user)
+        user = await user.to_public_dict(exclude={"auth_id", "id"})
+        user["subscription_status"] = subscription_status
+        return create_response(success=True, data=user)
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=401, detail="Invalid token")

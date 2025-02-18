@@ -13,6 +13,7 @@ from database.shareable_link import ShareableLink
 from database.token_session import TokenSession
 from database.user import User
 from utils.environment import get_env_var
+from utils.subscription import verify_subscription
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,9 @@ async def handle_decode_token(token: str) -> UserClaims:
         user = await User.find_one(User.uuid == UUID(decoded_token["user_uuid"]))
         if not user:
             raise Exception("User not found")
+        subscription_status = await verify_subscription(user)
         decoded_token["user"] = user
+        decoded_token["subscription_status"] = subscription_status
         return cast(UserClaims, UserClaims(**decoded_token))
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")

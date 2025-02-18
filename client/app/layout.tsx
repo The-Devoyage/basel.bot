@@ -8,6 +8,7 @@ import { Toaster } from "@/shared/toaster";
 import "./globals.css";
 import { Suspense } from "react";
 import { Loader } from "@/shared/loader";
+import { FreeTrialAlert } from "@/shared/free-trial-alert";
 
 const spaceMono = Space_Mono({
   weight: "400",
@@ -47,6 +48,7 @@ export default async function RootLayout({
           <GlobalProvider>
             <Toaster />
             <main className="flex h-full flex-col dark:bg-slate-900">
+              <FreeTrialAlert />
               <Nav />
               <NotificationDrawer />
               {children}

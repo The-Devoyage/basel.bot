@@ -66,7 +66,7 @@ export const useHandleMessage = () => {
         break;
       case "create_interview":
         text =
-          "I'd love to create or take an interview for a posting that I have found.";
+          "I'd love to create a new interview for a posting that I have found.";
         break;
       case "search_interviews":
         text = "Can you please search for interviews that might interest me?";

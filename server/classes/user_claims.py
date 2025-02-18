@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 from database.user import User
+from utils.subscription import SubscriptionStatus
 
 
 class UserClaims(BaseModel):
@@ -9,6 +10,7 @@ class UserClaims(BaseModel):
     auth_id: str
     token_session_uuid: str
     user: User
+    subscription_status: SubscriptionStatus
 
 
 class ShareableLinkClaims(BaseModel):

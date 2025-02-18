@@ -7,22 +7,22 @@ import { CiCreditCard1 } from "react-icons/ci";
 
 export const ManageSubscription = async () => {
   const subscriptionRes = await callApi({
-    endpoint: Endpoint.GetSubscription,
+    endpoint: Endpoint.GetSubscriptionStatus,
     path: null,
     body: null,
     query: null,
   });
-  const subscription = subscriptionRes.data;
+  const subscription_status = subscriptionRes.data;
 
   const getSubscriptionStatus = () => {
-    if (subscription?.subscription_status.is_free_trial) {
+    if (subscription_status?.is_free_trial) {
       return {
         key: "FREE_TRIAL",
         badgeColor: "cyan",
         label: "Free Trial",
       };
     }
-    if (subscription?.subscription_status.active) {
+    if (subscription_status?.active) {
       return {
         key: "ACTIVE",
         badgeColor: "success",
@@ -76,7 +76,7 @@ export const ManageSubscription = async () => {
           <FaGooglePay className="text-4xl dark:text-white" />
           <CiCreditCard1 className="text-4xl dark:text-white" />
         </div>
-        <SubscribeButton hasSubscribed={!!subscription} />
+        <SubscribeButton hasSubscribed={!!subscription_status?.subscription} />
       </span>
     </Card>
   );

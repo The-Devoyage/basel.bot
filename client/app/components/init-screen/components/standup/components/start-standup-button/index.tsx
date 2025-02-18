@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Modal } from "flowbite-react";
+import { Button, Modal, Tooltip } from "flowbite-react";
 import { TfiWrite } from "react-icons/tfi";
 import { useHandleMessage } from "../../..";
 import { Typography } from "@/shared/typography";
@@ -9,6 +9,8 @@ import { useContext, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FaX } from "react-icons/fa6";
 import { GlobalContext } from "@/app/provider";
+import { useCheckPerm } from "@/utils/useCheckPerm";
+import { SubscriptionFeature } from "@/types";
 
 export const StartStandupButton = () => {
   const [visible, setVisible] = useState(false);
@@ -20,6 +22,7 @@ export const StartStandupButton = () => {
   const { handleMessage } = useHandleMessage();
   const searchParams = useSearchParams();
   const standup = searchParams.get("standup");
+  const allowLog = useCheckPerm(SubscriptionFeature.LOG_STANDUP);
 
   useEffect(() => {
     if (standup) setVisible(true);
@@ -64,9 +67,20 @@ export const StartStandupButton = () => {
           </div>
         </Modal.Body>
       </Modal>
-      <Button gradientDuoTone="redToYellow" outline onClick={handleClick}>
-        <TfiWrite className="size-5" />
-      </Button>
+      <Tooltip
+        content={
+          allowLog ? "Log Standup" : "Upgrade membershipt to log standup!"
+        }
+      >
+        <Button
+          gradientDuoTone="redToYellow"
+          outline
+          onClick={handleClick}
+          disabled={!allowLog}
+        >
+          <TfiWrite className="size-5" />
+        </Button>
+      </Tooltip>
     </>
   );
 };

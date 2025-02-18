@@ -2,7 +2,6 @@ import {
   User,
   UserMeta,
   ShareableLink,
-  Subscription,
   Interview,
   Onboarding,
   Notification,
@@ -10,6 +9,7 @@ import {
   ValidMimeType,
   Organization,
   SubscriptionTier,
+  SubscriptionStatus,
 } from "@/types";
 import { InterviewQuestion } from "@/types/interview-question";
 import { Standup } from "@/types/standup";
@@ -36,7 +36,7 @@ export enum Endpoint {
   Logout = "/logout",
   Verify = "/verify",
   SubscribeStart = "/subscribe-start",
-  GetSubscription = "/subscription",
+  GetSubscriptionStatus = "/subscription-status",
   ResetIndex = "/reset-index",
   GetUserMetas = "/user-metas",
   PatchUserMeta = "/user-meta/:uuid",
@@ -94,7 +94,7 @@ export interface EndpointParams {
     body: undefined;
     path: undefined;
   };
-  [Endpoint.GetSubscription]: {
+  [Endpoint.GetSubscriptionStatus]: {
     query: undefined;
     body: undefined;
     path: undefined;
@@ -235,7 +235,7 @@ export interface EndpointResponse {
   [Endpoint.AuthFinish]: { token: string };
   [Endpoint.UpdateShareableLink]: ShareableLink;
   [Endpoint.SubscribeStart]: { url: string };
-  [Endpoint.GetSubscription]: Subscription;
+  [Endpoint.GetSubscriptionStatus]: SubscriptionStatus;
   [Endpoint.ResetIndex]: null;
   [Endpoint.GetUserMetas]: UserMeta[];
   [Endpoint.PatchUserMeta]: UserMeta;

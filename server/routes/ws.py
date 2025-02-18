@@ -22,7 +22,7 @@ from database.user import User
 from utils.environment import get_env_var
 
 from utils.jwt import handle_decode_token, verify_token_session
-from utils.subscription import SubscriptionStatus, verify_subscription
+from utils.subscription import SubscriptionStatus
 
 router = APIRouter()
 
@@ -52,7 +52,7 @@ async def websocket_endpoint(
         if token:
             user_claims = await handle_decode_token(token)
             await verify_token_session(user_claims.token_session_uuid)
-            subscription_status = await verify_subscription(user_claims.user)
+            subscription_status = user_claims.subscription_status
 
         if sl_token:
             decoded = jwt.decode(

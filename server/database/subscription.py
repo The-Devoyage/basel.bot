@@ -11,25 +11,25 @@ class SubscriptionTier(str, Enum):
     ORGANIZATION = "organization"
 
 
-class SubscriptionFeatures(str, Enum):
+class SubscriptionFeature(str, Enum):
     CREATE_INTERVIEW = "create_interview"
-    UNLIMITED_MEMORIES = "unlimited_metas"
     MANAGE_MEMORIES = "manage_memories"
     MANAGE_ORGANIZATION = "manage_organization"
+    LOG_STANDUP = "log_standup"
 
 
 TIER_FEATURES = {
     SubscriptionTier.CANDIDATE: [],
     SubscriptionTier.CANDIDATE_PRO: [
-        SubscriptionFeatures.CREATE_INTERVIEW,
-        SubscriptionFeatures.UNLIMITED_MEMORIES,
-        SubscriptionFeatures.MANAGE_MEMORIES,
+        SubscriptionFeature.CREATE_INTERVIEW,
+        SubscriptionFeature.MANAGE_MEMORIES,
+        SubscriptionFeature.LOG_STANDUP,
     ],
     SubscriptionTier.ORGANIZATION: [
-        SubscriptionFeatures.CREATE_INTERVIEW,
-        SubscriptionFeatures.UNLIMITED_MEMORIES,
-        SubscriptionFeatures.MANAGE_MEMORIES,
-        SubscriptionFeatures.MANAGE_ORGANIZATION,
+        SubscriptionFeature.CREATE_INTERVIEW,
+        SubscriptionFeature.MANAGE_MEMORIES,
+        SubscriptionFeature.MANAGE_ORGANIZATION,
+        SubscriptionFeature.LOG_STANDUP,
     ],
 }
 
@@ -42,4 +42,4 @@ class Subscription(BaseMongoModel):
     canceled_at: Optional[datetime] = None
     cancel_at: Optional[datetime] = None
     status: bool
-    features: List[SubscriptionFeatures] = TIER_FEATURES[SubscriptionTier.CANDIDATE]
+    features: List[SubscriptionFeature] = TIER_FEATURES[SubscriptionTier.CANDIDATE]

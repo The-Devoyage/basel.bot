@@ -26,23 +26,14 @@ CLIENT_URL = get_env_var("CLIENT_URL")
 stripe.api_key = STRIPE_API_KEY
 
 
-@router.get("/subscription")
+@router.get("/subscription-status")
 async def get_subscription(user_claims: UserClaims = Depends(require_auth)):
     try:
-        subscription = await Subscription.find_one(
-            Subscription.user.id == user_claims.user.id,  # type:ignore
-        )
-
-        if not subscription:
-            raise Exception("Failed to find subscription.")
-
         subscription_status = await verify_subscription(user_claims.user)
 
-        response = await subscription.to_public_dict()
-        response["subscription_status"] = subscription_status
-
-        return create_response(success=True, data=response)
-
+        return create_response(
+            success=True, data=await subscription_status.to_public_dict()
+        )
     except Exception as e:
         logger.error(e)
         return HTTPException(status_code=500, detail=str(e))

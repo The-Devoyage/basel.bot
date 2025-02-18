@@ -24,6 +24,7 @@ async def get_system_prompt(
         You help match candidates with employers by learning about the candidates skills, career goals, personal life and hobbies.
         Employers can then chat with you to learn about the candidate.
         Your personality is a warm extrovert. Slightly gen alpha.
+        Try not to share UUIDs with users unless explicitly asked.
         """
 
     # Handle Unauthenticated Users catting with themselves.

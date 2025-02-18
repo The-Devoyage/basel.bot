@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from llama_index.core.tools import BaseTool
 from basel.tools.candidate_profile_tool import create_candidate_profile_tool
 from basel.tools.create_about_tool import create_about_tool
@@ -26,9 +26,11 @@ from basel.tools.create_insert_user_meta_tool import create_insert_user_meta_too
 from basel.tools.create_update_interview_tool import create_update_interview_tool
 from basel.tools.read_s3 import create_read_s3_tool
 from database.role import Role
+from database.subscription import Subscription
 
 # DB
 from database.user import User
+from utils.subscription import SubscriptionStatus
 
 
 def get_unauthenticated_tools():
@@ -82,14 +84,16 @@ def get_general_tools(current_user: User):
     return tools
 
 
-def get_candidate_tools(current_user: User, role: Role):
+def get_candidate_tools(
+    current_user: User, role: Role, subscription_status: SubscriptionStatus
+):
     tools: List[BaseTool] = []
     # Update User
     update_user_tool = create_update_user_tool(current_user)
     tools.append(update_user_tool)
 
     # Create Standup Tool
-    create_standup_tool = create_create_standup_tool(current_user)
+    create_standup_tool = create_create_standup_tool(current_user, subscription_status)
     tools.append(create_standup_tool)
 
     # Get Standups Tool
@@ -104,7 +108,9 @@ def get_candidate_tools(current_user: User, role: Role):
     tools.append(scrape_webpage_tool)
 
     # Create Interview Tool
-    create_interview_tool = create_create_interview_tool(current_user)
+    create_interview_tool = create_create_interview_tool(
+        current_user, subscription_status
+    )
     tools.append(create_interview_tool)
 
     # Update Interview Tool

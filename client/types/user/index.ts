@@ -1,4 +1,4 @@
-import { File, Subscription } from "@/types";
+import { File, SubscriptionStatus } from "@/types";
 
 export interface User {
   uuid: string;
@@ -11,7 +11,7 @@ export interface User {
   phone: string;
   role_id: number;
   status: boolean;
-  subscription?: Subscription;
+  subscription_status: SubscriptionStatus;
   created_at: string;
   updated_at: string;
   deleted_at: string;

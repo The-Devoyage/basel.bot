@@ -6,7 +6,9 @@ from llama_index.core.tools.function_tool import FunctionTool
 
 from database.interview import Interview, InterviewType
 from database.organization import Organization
+from database.subscription import Subscription, SubscriptionFeature
 from database.user import User
+from utils.subscription import SubscriptionStatus, check_subscription_permission
 
 
 logger = logging.getLogger(__name__)
@@ -40,6 +42,7 @@ async def create_interview(
     current_user: User,
     description: str,
     position: str,
+    subscription_status: SubscriptionStatus,
     url: Optional[str] = None,
     organization_uuid: Optional[str] = None,
     interview_type: InterviewType = InterviewType.GENERAL,
@@ -47,8 +50,23 @@ async def create_interview(
 ):
     try:
         organization = None
+        allow_create = check_subscription_permission(
+            subscription_status, SubscriptionFeature.CREATE_INTERVIEW
+        )
+
+        if not allow_create:
+            raise Exception(
+                "User does not have permission to create an interview and needs to upgrade membership."
+            )
 
         if organization_uuid:
+            allow_organization = check_subscription_permission(
+                subscription_status, SubscriptionFeature.MANAGE_ORGANIZATION
+            )
+            if not allow_organization:
+                raise Exception(
+                    "User does not have permission to create an organization interview and needs to upgrade membership."
+                )
             organization = await Organization.find_one(
                 Organization.uuid == UUID(organization_uuid),
                 Organization.users.user._id == current_user.id,  # type:ignore
@@ -74,7 +92,9 @@ async def create_interview(
         return e
 
 
-def create_create_interview_tool(current_user: User):
+def create_create_interview_tool(
+    current_user: User, subscription_status: SubscriptionStatus
+):
     create_interview_tool = FunctionTool.from_defaults(
         async_fn=lambda position, description, url=None, organization_uuid=None, interview_type=InterviewType.GENERAL, tags=[]: create_interview(
             current_user=current_user,
@@ -84,6 +104,7 @@ def create_create_interview_tool(current_user: User):
             interview_type=interview_type,
             position=position,
             tags=tags,
+            subscription_status=subscription_status,
         ),
         name="create_interiew_tool",
         description="""

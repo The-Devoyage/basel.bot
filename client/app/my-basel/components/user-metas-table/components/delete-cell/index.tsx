@@ -2,8 +2,9 @@
 
 import { Endpoint, Response } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
-import { UserMeta } from "@/types";
-import { Button } from "flowbite-react";
+import { SubscriptionFeature, UserMeta } from "@/types";
+import { useCheckPerm } from "@/utils/useCheckPerm";
+import { Button, Tooltip } from "flowbite-react";
 import { FC } from "react";
 import { MdDeleteSweep } from "react-icons/md";
 
@@ -13,6 +14,7 @@ interface DeleteCellProps {
 }
 
 export const DeleteCell: FC<DeleteCellProps> = ({ userMeta, refetch }) => {
+  const allowManage = useCheckPerm(SubscriptionFeature.MANAGE_MEMORIES);
   const { call, loading } = useCallApi(
     {
       endpoint: Endpoint.PatchUserMeta,
@@ -43,13 +45,22 @@ export const DeleteCell: FC<DeleteCellProps> = ({ userMeta, refetch }) => {
     if (confirmed) await call();
   };
   return (
-    <Button
-      color="failure"
-      outline
-      onClick={handleClick}
-      isProcessing={loading}
+    <Tooltip
+      content={
+        allowManage
+          ? "Delete Memory?"
+          : "Upgrade membership to delete memories!"
+      }
     >
-      <MdDeleteSweep />
-    </Button>
+      <Button
+        color="failure"
+        outline
+        onClick={handleClick}
+        isProcessing={loading}
+        disabled={!allowManage}
+      >
+        <MdDeleteSweep />
+      </Button>
+    </Tooltip>
   );
 };

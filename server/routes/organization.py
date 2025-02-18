@@ -5,10 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from classes.user_claims import UserClaims
 from database.organization_user import OrganizationUser
+from database.subscription import SubscriptionFeature
 from utils.responses import create_response
 from database.organization import Organization
 from utils.jwt import optional_auth, require_auth
 from database.file import File
+from utils.subscription import check_subscription_permission
 
 
 router = APIRouter()
@@ -28,6 +30,14 @@ async def create_organization(
 ):
     organization = None
     try:
+        permitted = check_subscription_permission(
+            user_claims.subscription_status, SubscriptionFeature.MANAGE_ORGANIZATION
+        )
+        if not permitted:
+            return HTTPException(
+                status_code=401, detail="Subscription permission denied."
+            )
+
         existing_org = await Organization.find_one(Organization.name == params.name)
         if existing_org:
             return HTTPException(status_code=400, detail="Organization already exists.")
@@ -82,6 +92,14 @@ async def update_organization(
     params: UpdateOrganizationParams, user_claims: UserClaims = Depends(require_auth)
 ):
     try:
+        permitted = check_subscription_permission(
+            user_claims.subscription_status, SubscriptionFeature.MANAGE_ORGANIZATION
+        )
+        if not permitted:
+            return HTTPException(
+                status_code=401, detail="Subscription permission denied."
+            )
+
         if not params.name and not params.description and not params.logo:
             return HTTPException(status_code=400, detail="Missing update fields.")
 

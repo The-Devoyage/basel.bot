@@ -8,6 +8,8 @@ export const useCheckPerm = (feature: SubscriptionFeature) => {
       auth: { me },
     },
   } = useContext(GlobalContext);
-  const allowManage = me?.subscription?.features.includes(feature);
+  if (me?.subscription_status.is_free_trial) return true;
+  const allowManage =
+    me?.subscription_status.subscription?.features.includes(feature);
   return allowManage;
 };

@@ -7,11 +7,13 @@ export enum SubscriptionTier {
 export interface SubscriptionStatus {
   active: boolean;
   is_free_trial: boolean;
+  subscription?: Subscription;
+  free_trial_expires?: Date;
 }
 
 export enum SubscriptionFeature {
   CREATE_INTERVIEW = "create_interview",
-  UNLIMITED_MEMORIES = "unlimited_metas",
+  LOG_STANDUP = "log_standup",
   MANAGE_MEMORIES = "manage_memories",
   MANAGE_ORGANIZATION = "manage_organization",
 }

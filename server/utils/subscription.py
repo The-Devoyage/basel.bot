@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from pydantic import BaseModel
 import logging
-from database.subscription import Subscription, SubscriptionTier
+from database.subscription import Subscription, SubscriptionFeature, SubscriptionTier
 from utils.environment import get_env_var
 from database.user import User
 from utils.environment import get_env_var
@@ -18,6 +18,15 @@ class SubscriptionStatus(BaseModel):
     subscription: Optional[Subscription]
     active: bool
     is_free_trial: bool
+    free_trial_expires: Optional[datetime] = None
+
+    async def to_public_dict(self):
+        subscription = (
+            await self.subscription.to_public_dict() if self.subscription else None
+        )
+        public_dict = self.model_dump()
+        public_dict["subscription"] = subscription
+        return public_dict
 
 
 async def verify_subscription(user: User) -> SubscriptionStatus:
@@ -48,10 +57,14 @@ async def verify_subscription(user: User) -> SubscriptionStatus:
 
         # Handle Free Trials
         user_created_at = user.created_at.replace(tzinfo=timezone.utc)
+        free_trial_expires = user_created_at + timedelta(days=30)
         if now < user_created_at + timedelta(days=30):
             logger.debug("FREE TRIAL SUBSCRIPTION")
             return SubscriptionStatus(
-                subscription=None, is_free_trial=True, active=False
+                subscription=None,
+                is_free_trial=True,
+                active=False,
+                free_trial_expires=free_trial_expires,
             )
 
         # Default to Inacive Subscription
@@ -76,3 +89,21 @@ def get_tier_by_price(price_id: str):
         if stripe_price == price_id:
             return tier
     return None
+
+
+def check_subscription_permission(
+    subscription_status: SubscriptionStatus,
+    subscription_feature: SubscriptionFeature,
+):
+    if subscription_status.is_free_trial:
+        return True
+    if not subscription_status.active:
+        return False
+    if (
+        subscription_status.active
+        and subscription_status.subscription
+        and subscription_feature in subscription_status.subscription.features
+    ):
+        return True
+
+    return False

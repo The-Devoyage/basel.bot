@@ -45,9 +45,9 @@ export const UpdateUserForm: FC<{ me: User | null }> = ({ me }) => {
 
   useEffect(() => {
     setForm({
-      first_name: me?.first_name,
-      last_name: me?.last_name,
-      email: me?.email,
+      first_name: me?.first_name || "",
+      last_name: me?.last_name || "",
+      email: me?.email || "",
       profile_image: me?.profile_image,
     });
   }, [me]);

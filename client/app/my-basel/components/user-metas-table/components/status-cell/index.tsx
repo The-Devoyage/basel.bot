@@ -2,8 +2,9 @@
 
 import { Endpoint, Response } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
-import { UserMeta } from "@/types";
-import { ToggleSwitch } from "flowbite-react";
+import { SubscriptionFeature, UserMeta } from "@/types";
+import { useCheckPerm } from "@/utils/useCheckPerm";
+import { ToggleSwitch, Tooltip } from "flowbite-react";
 import { FC } from "react";
 
 interface StatusCellProps {
@@ -12,6 +13,7 @@ interface StatusCellProps {
 }
 
 export const StatusCell: FC<StatusCellProps> = ({ userMeta, refetch }) => {
+  const allowManage = useCheckPerm(SubscriptionFeature.MANAGE_MEMORIES);
   const { call } = useCallApi(
     {
       endpoint: Endpoint.PatchUserMeta,
@@ -41,10 +43,19 @@ export const StatusCell: FC<StatusCellProps> = ({ userMeta, refetch }) => {
   };
 
   return (
-    <ToggleSwitch
-      checked={userMeta.status}
-      onChange={handleChange}
-      color="green"
-    />
+    <Tooltip
+      content={
+        allowManage
+          ? "Enable/Disable memory."
+          : "Upgrade membership to manage memories!"
+      }
+    >
+      <ToggleSwitch
+        checked={userMeta.status}
+        onChange={handleChange}
+        color="green"
+        disabled={!allowManage}
+      />
+    </Tooltip>
   );
 };

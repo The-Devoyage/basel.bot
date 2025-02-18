@@ -63,7 +63,13 @@ async def get_agent(
 
             # Tools for the candidate
             if chatting_with.id == user_claims.user.id:
-                tools.extend(get_candidate_tools(user_claims.user, role))  # type:ignore
+                tools.extend(
+                    get_candidate_tools(
+                        user_claims.user,
+                        role,  # type:ignore
+                        user_claims.subscription_status,
+                    )
+                )
 
                 # Populate Recent Chat History
                 messages = (

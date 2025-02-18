@@ -19,9 +19,6 @@ class User(BaseMongoModel):
     status: bool = False
     auth_id: UUID = Field(default_factory=uuid4)
     profile_image: Optional[Link[File]] = None
-    subscription: Optional[BackLink["Subscription"]] = Field(  # type:ignore
-        original_field="user"  # type:ignore
-    )
 
     def exclude_from_public_dict(self) -> Set[str]:
         return {"id", "auth_id", "email", "phone"}

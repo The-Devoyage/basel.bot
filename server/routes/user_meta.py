@@ -7,9 +7,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from llama_index.core.bridge.pydantic import BaseModel
 
 from classes.user_claims import UserClaims
+from database.subscription import SubscriptionFeature
 from database.user_meta import UserMeta
 from utils.jwt import require_auth
 from utils.responses import create_response
+from utils.subscription import check_subscription_permission
 
 
 router = APIRouter()
@@ -63,6 +65,14 @@ async def patch_user_meta(
     uuid: str, body: UpdateUserMetaBody, user_claims: UserClaims = Depends(require_auth)
 ):
     try:
+        permitted = check_subscription_permission(
+            user_claims.subscription_status, SubscriptionFeature.MANAGE_MEMORIES
+        )
+        if not permitted:
+            raise Exception(
+                "User does not have permission to customize memories and needs to upgrade membership."
+            )
+
         user_meta = await UserMeta.find_one(
             UserMeta.uuid == UUID(uuid),
             UserMeta.user.id == user_claims.user.id,  # type:ignore
