@@ -5,7 +5,7 @@ import { GlobalContext } from "@/app/provider";
 import { Alert } from "flowbite-react";
 import { useContext } from "react";
 import dayjs from "dayjs";
-import { Typography } from "../typography";
+import Link from "next/link";
 
 export const FreeTrialAlert = () => {
   const [show, setShow] = useState(true);
@@ -23,23 +23,21 @@ export const FreeTrialAlert = () => {
   }
 
   return (
-    <Alert color="green">
-      <div className="flex">
+    <Alert color="green" rounded={false}>
+      <span>
         🕰️ Free Trial Alert! You have {daysLeft} days left in your free trial.
-        Keep full access by{" "}
-        <Typography.Link
-          href="/account"
-          className="ml-2 font-bold text-green-700 "
-        >
+        Keep full access by
+        <Link href="/account" className="ml-2 font-bold text-green-700 ">
           subscribing today!
-        </Typography.Link>
-        <Typography.Link
+        </Link>
+        <Link
           className="ml-2 cursor-pointer underline"
           onClick={() => setShow(false)}
+          href="#"
         >
           close
-        </Typography.Link>
-      </div>
+        </Link>
+      </span>
     </Alert>
   );
 };

@@ -76,7 +76,9 @@ export const ManageSubscription = async () => {
           <FaGooglePay className="text-4xl dark:text-white" />
           <CiCreditCard1 className="text-4xl dark:text-white" />
         </div>
-        <SubscribeButton hasSubscribed={!!subscription_status?.subscription} />
+        <SubscribeButton
+          hasSubscribed={!!subscription_status?.subscription?.customer_id}
+        />
       </span>
     </Card>
   );
