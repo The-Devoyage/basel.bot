@@ -1,7 +1,7 @@
 "use client";
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
-import { FC, createContext, useEffect, useMemo } from "react";
+import { FC, createContext, useEffect, useMemo, useState } from "react";
 import { Message, Notification } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
@@ -9,6 +9,7 @@ import { setShareableLink, setMe } from "@/shared/useStore/auth";
 import { Endpoint } from "@/api";
 import { useSearchParams } from "next/navigation";
 import { useCallApi } from "@/shared/useCallApi";
+import LogRocket from "logrocket";
 
 interface GlobalContext {
   client: SocketClient<Message, Message> | null;
@@ -43,6 +44,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const [store, dispatch] = useStore();
   const searchParams = useSearchParams();
   const slToken = searchParams.get("sl_token");
+  const [logRocketInitalized, setLogRocketInitalized] = useState(false);
   useVerifyLogin(dispatch);
   const { call } = useCallApi(
     {
@@ -77,6 +79,23 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   useEffect(() => {
     if (store.auth.isAuthenticated) call();
   }, [store.auth.isAuthenticated]);
+
+  useEffect(() => {
+    const env = process.env.NODE_ENV;
+    console.log(process.env.NODE_ENV);
+    if (env === "production") {
+      if (!logRocketInitalized) {
+        LogRocket.init("sqlyqw/basel");
+        setLogRocketInitalized(true);
+      }
+      if (store.auth.me && logRocketInitalized) {
+        LogRocket.identify(store.auth.me?.uuid, {
+          name: store.auth.me.full_name,
+          email: store.auth.me.email,
+        });
+      }
+    }
+  }, [store.auth.me, logRocketInitalized]);
 
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${slToken ? "?sl_token=" + slToken : ""}`,

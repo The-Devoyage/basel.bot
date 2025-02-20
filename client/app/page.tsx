@@ -1,6 +1,4 @@
 import { InitScreen } from "./components";
-// import LogRocket from "logrocket";
-// LogRocket.init("sqlyqw/basel");
 
 export default function Home() {
   return (
