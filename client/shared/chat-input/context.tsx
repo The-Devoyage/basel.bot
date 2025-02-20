@@ -86,6 +86,7 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
       timestamp: new Date(),
       sender: "user",
       files,
+      message_type: "message",
     };
 
     client?.handleSend(message);
