@@ -169,7 +169,7 @@ async def websocket_endpoint(
                     await Message(
                         user=chatting_with,  # type:ignore
                         sender=SenderIdentifer.BOT,
-                        text=response_gen,
+                        text=response_text,
                         created_by=chatting_with,  # type:ignore
                     ).create()
 
