@@ -27,6 +27,7 @@ export const WelcomeMessage = () => {
         text: message,
         sender: "bot",
         timestamp: new Date(),
+        message_type: "message",
       }}
     />
   );
