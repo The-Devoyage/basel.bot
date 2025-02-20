@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -16,6 +17,11 @@ class Button(BaseModel):
     action: ButtonAction
 
 
+class MessageType(str, Enum):
+    MESSAGE = "message"
+    END = "end"
+
+
 class SocketMessage(BaseModel):
     text: str
     timestamp: datetime
@@ -23,3 +29,4 @@ class SocketMessage(BaseModel):
     buttons: Optional[List[Button]] = None
     files: Optional[List[File]] = None
     context: Optional[str] = None
+    message_type: MessageType = MessageType.MESSAGE

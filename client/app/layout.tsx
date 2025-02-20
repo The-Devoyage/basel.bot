@@ -27,7 +27,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" id="root" className="h-full scroll-smooth">
+    <html
+      lang="en"
+      id="root"
+      className="h-full scroll-smooth"
+      suppressHydrationWarning
+    >
       <head>
         <link rel="icon" href="/logo.svg" sizes="any" />
         <meta

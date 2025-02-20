@@ -80,6 +80,9 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
 
   const client = useSocket<Message, Message>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${slToken ? "?sl_token=" + slToken : ""}`,
+    {
+      groupBy: "text",
+    },
   );
   const notificationClient = useSocket<{ uuids: string[] }, Notification>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/notification`,

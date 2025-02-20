@@ -15,7 +15,7 @@ from basel.agent import get_agent
 from basel.indexing import add_index, get_documents, create_s3_documents
 
 from classes.user_claims import ShareableLinkClaims
-from classes.socket_message import Button, ButtonAction, SocketMessage
+from classes.socket_message import Button, ButtonAction, MessageType, SocketMessage
 from database.shareable_link import ShareableLink
 from database.message import Message, SenderIdentifer
 from database.user import User
@@ -126,32 +126,38 @@ async def websocket_endpoint(
                     prompt += f"\n\n #Attached Files: {incoming.files}"
                 if incoming.context:
                     prompt += f"\n\n #Context: {incoming.context}"
-                chat_response = await agent.achat(prompt)
+                chat_response = await agent.astream_chat(prompt)
 
-                logger.debug(f"CHAT RESPONSE: {chat_response}")
+                chat_time = datetime.now()
 
-                response = SocketMessage(
-                    text=chat_response.response,
-                    timestamp=datetime.now(),
-                    sender=SenderIdentifer.BOT,
-                    buttons=[
-                        Button(
-                            label="Subscribe",
-                            action=ButtonAction(
-                                type="redirect",
-                                endpoint="https://www.basel.bot/pricing",
-                            ),
-                        )
-                    ]
-                    if (
-                        not subscription_status.active
-                        or subscription_status.is_free_trial
+                response_text = ""
+
+                async for token in chat_response.async_response_gen():
+                    print(token, end="")
+
+                    response = SocketMessage(
+                        text=token,
+                        message_type=MessageType.MESSAGE,
+                        timestamp=chat_time,
+                        sender=SenderIdentifer.BOT,
+                        buttons=None,
                     )
-                    and not shareable_link
-                    else None,
+                    # Respond to user
+                    await websocket.send_text(response.model_dump_json())
+                    response_text += token
+
+                # response_gen = chat_response.response_gen
+
+                logger.debug(f"CHAT RESPONSE {response_text}")
+
+                end_response = SocketMessage(
+                    text=response_text,
+                    message_type=MessageType.END,
+                    timestamp=chat_time,
+                    sender=SenderIdentifer.BOT,
+                    buttons=None,
                 )
-                # Respond to user
-                await websocket.send_text(response.model_dump_json())
+                await websocket.send_text(end_response.model_dump_json())
 
                 # Track SL Views
                 if message_count == 0 and shareable_link:
@@ -163,7 +169,7 @@ async def websocket_endpoint(
                     await Message(
                         user=chatting_with,  # type:ignore
                         sender=SenderIdentifer.BOT,
-                        text=response.text,
+                        text=response_gen,
                         created_by=chatting_with,  # type:ignore
                     ).create()
 

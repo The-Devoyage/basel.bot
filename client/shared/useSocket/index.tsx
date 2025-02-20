@@ -17,6 +17,7 @@ export interface SocketClient<Send, Receive> {
   loading: boolean;
   initializing: boolean;
   connected: boolean;
+  incomingMessage: string;
 }
 
 export const useSocket = <Send, Receive>(
@@ -25,12 +26,14 @@ export const useSocket = <Send, Receive>(
     onReceive?: (s: Receive) => void;
     onError?: (e: Event) => void;
     onClose?: () => void;
+    groupBy?: string;
   },
 ) => {
   const socket = useRef<WebSocket | null>(null);
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [messages, setMessages] = useState<(Send | Receive)[]>([]);
+  const [incomingMessage, setIncomingMessage] = useState("");
   const [messageQueue, setMessageQueue] = useState<Send[]>([]);
   const [connected, setConnected] = useState(false);
   const closed = useRef(false);
@@ -61,7 +64,15 @@ export const useSocket = <Send, Receive>(
     ws.onmessage = (message: { data: Receive }) => {
       setLoading(false);
       const parsed = JSON.parse(message.data as string);
-      setMessages((prev) => [...prev, parsed]);
+      if (parsed.message_type !== "end" && options?.groupBy) {
+        setIncomingMessage((curr) => curr + parsed[options.groupBy as string]);
+      } else if (parsed.message_type === "end" && options?.groupBy) {
+        setIncomingMessage("");
+        setMessages((prev) => [...prev, parsed]);
+      } else {
+        setMessages((prev) => [...prev, parsed]);
+      }
+
       options?.onReceive?.(parsed);
     };
 
@@ -113,5 +124,6 @@ export const useSocket = <Send, Receive>(
     loading,
     initializing,
     connected,
+    incomingMessage,
   } as SocketClient<Send, Receive>;
 };

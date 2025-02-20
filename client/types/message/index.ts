@@ -15,4 +15,5 @@ export interface Message {
   buttons?: Button[];
   files?: File[];
   context?: string;
+  message_type: "message" | "end";
 }
