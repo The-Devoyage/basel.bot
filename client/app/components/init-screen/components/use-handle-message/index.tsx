@@ -93,6 +93,7 @@ export const useHandleMessage = () => {
       timestamp: new Date(),
       sender: "user",
       context,
+      message_type: "message",
     };
 
     client?.handleSend(message, true, useSlToken);

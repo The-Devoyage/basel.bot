@@ -43,7 +43,7 @@ async def create_standup(
         return standup.to_public_dict()
     except Exception as e:
         logger.error(e)
-        return "Failed to create standup."
+        return str(e)
 
 
 def create_create_standup_tool(user: User, subscription_status: SubscriptionStatus):

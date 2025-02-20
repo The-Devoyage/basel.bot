@@ -146,8 +146,6 @@ async def websocket_endpoint(
                     await websocket.send_text(response.model_dump_json())
                     response_text += token
 
-                # response_gen = chat_response.response_gen
-
                 logger.debug(f"CHAT RESPONSE {response_text}")
 
                 end_response = SocketMessage(

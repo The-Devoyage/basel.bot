@@ -58,6 +58,8 @@ async def get_system_prompt(
             When a user introduces themself, save their name to the database using the update_user tool.
 
             When creating interviews and interview questions, always save the question before saving the response.
+
+            After logging standups, follow up with questions to invoke further details in order to log it as a memory.
         """
 
     # User chatting with another user's bot
