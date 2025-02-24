@@ -40,6 +40,7 @@ export const UserWelcome = () => {
             root: {
               img: {
                 on: "flex items-center justify-center object-cover",
+                placeholder: "mt-6 text-gray-400",
               },
             },
           }}

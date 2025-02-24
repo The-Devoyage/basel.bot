@@ -1,6 +1,6 @@
 <CORSConfiguration>
   <CORSRule>
-    <AllowedOrigin>https://basel.bot</AllowedOrigin>
+    <AllowedOrigin>https://app.basel.bot</AllowedOrigin>
     <AllowedMethod>GET</AllowedMethod>
     <AllowedMethod>POST</AllowedMethod>
     <AllowedMethod>PUT</AllowedMethod>

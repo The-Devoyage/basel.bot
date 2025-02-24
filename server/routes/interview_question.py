@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 @router.get("/list")
 async def get_interview_questions(interview_uuid: str):
     try:
-        logger.debug("HMM")
         interview_questions = await InterviewQuestion.find(
             InterviewQuestion.interview.uuid == UUID(interview_uuid),  # type:ignore
             fetch_links=True,

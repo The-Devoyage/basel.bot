@@ -12,6 +12,7 @@ import {
   SubscriptionStatus,
 } from "@/types";
 import { InterviewQuestion } from "@/types/interview-question";
+import { InterviewAssesment } from "@/types/interview_assessment";
 import { Standup } from "@/types/standup";
 
 export * from "./callApi";
@@ -56,6 +57,7 @@ export enum Endpoint {
   GetOrganization = "/organization",
   UpdateOrganization = "/organization/update",
   GetInterviewQuestions = "/interview-question/list",
+  GetInterviewAssessments = "/interview-assessment/list",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -67,7 +69,7 @@ export interface EndpointParams {
     path: { sl_token: string };
   };
   [Endpoint.ShareableLinks]: {
-    query: PaginationQuery;
+    query: PaginationQuery & { interview_uuid?: string };
     body: undefined;
     path: undefined;
   };
@@ -223,6 +225,11 @@ export interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetInterviewAssessments]: {
+    query: { interview_uuid: Interview["uuid"] };
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -255,6 +262,7 @@ export interface EndpointResponse {
   [Endpoint.UpdateOrganization]: Organization;
   [Endpoint.GetOrganizations]: Organization[];
   [Endpoint.GetInterviewQuestions]: InterviewQuestion[];
+  [Endpoint.GetInterviewAssessments]: InterviewAssesment[];
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

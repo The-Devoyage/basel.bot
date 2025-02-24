@@ -2,14 +2,23 @@ import { Interview } from "@/types";
 import clsx from "clsx";
 import { Tooltip } from "flowbite-react";
 import { FC } from "react";
-import { TbCircleCheck, TbCircleDashed, TbProgress } from "react-icons/tb";
+import {
+  TbCircleCheck,
+  TbCircleDashed,
+  TbProgress,
+  TbProgressCheck,
+} from "react-icons/tb";
 
 export const StatusBadge: FC<{ interview: Interview }> = ({ interview }) => {
   const complete = interview.question_count === interview.response_count;
   const started = interview.response_count > 0;
+  const submitted = interview.submitted;
 
   const getBadge = () => {
     const className = "ml-2 h-8 w-8";
+    if (submitted) {
+      return <TbCircleCheck className={clsx(className, "text-green-400")} />;
+    }
     if (!started)
       return (
         <TbCircleDashed
@@ -17,7 +26,7 @@ export const StatusBadge: FC<{ interview: Interview }> = ({ interview }) => {
         />
       );
     if (complete) {
-      return <TbCircleCheck className={clsx(className, "text-green-400")} />;
+      return <TbProgressCheck className={clsx(className, "text-green-400")} />;
     } else {
       return (
         <TbProgress
@@ -28,11 +37,12 @@ export const StatusBadge: FC<{ interview: Interview }> = ({ interview }) => {
   };
 
   const getContent = () => {
-    if (!started) return "Not Started";
+    if (submitted) return "Interview Submitted - Editing is now disabled.";
+    if (!started) return "Not started - Take this interview today!";
     if (complete) {
-      return "Interview Completed";
+      return "All Questions Answered - Edit or submit when ready.";
     } else {
-      return "In Progress";
+      return "In Progress - Finish answering questions to continue.";
     }
   };
 

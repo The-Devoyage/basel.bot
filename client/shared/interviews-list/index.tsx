@@ -20,7 +20,7 @@ export const InterviewsList: FC<{
   } = useContext(GlobalContext);
   const [searchTerm, setSearchTerm] = useState<string | undefined>();
   const { pagination, handlePageChange, handleSetTotal, nextOffset } =
-    usePagination();
+    usePagination(12);
   const { res, loading, call } = useCallApi(
     {
       endpoint: Endpoint.GetInterviews,

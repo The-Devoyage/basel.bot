@@ -22,7 +22,11 @@ export const AddInterviewButton = () => {
 
   const handleClick = () => {
     if (pathname !== "/") router.push("/");
-    handleMessage("create_interview", null, "Do not attach organization.");
+    handleMessage(
+      "create_interview",
+      null,
+      "Do not attach organization. I'll provide a URL; Scrape it to create the interview.",
+    );
   };
 
   if (!isAuthenticated) return null;

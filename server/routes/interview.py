@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from classes.user_claims import UserClaims
 from database.interview import Interview, get_pipeline
 from database.organization import Organization
-from database.interview_question_response import InterviewQuestionResponse
 from utils.jwt import get_sl_token_claims, optional_auth
 from utils.responses import create_response
 

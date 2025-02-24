@@ -52,7 +52,12 @@ def create_create_standup_tool(user: User, subscription_status: SubscriptionStat
             yesterday, today, blockers, user, subscription_status
         ),
         name="create_standup_tool",
-        description="Useful to assist a user log a standup which is encouraged for them to do at least once a day (weekdays).",
+        description="""
+            - Useful to assist a user log a standup which is a way to help users organize and 
+            track progress toward goals.
+            - After a user logs a standup, save what you learn to the user meta.
+            - After a user logs a standup, follow up with questions to learn more about their goals.
+        """,
         fn_schema=CreateStandupParams,
     )
     return create_standup_tool

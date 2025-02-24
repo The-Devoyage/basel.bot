@@ -14,6 +14,8 @@ export interface Interview {
   description: string;
   question_count: number;
   response_count: number;
+  total_response_count: number;
+  submitted: boolean;
   status: boolean;
   created_at: string;
   updated_at: string;

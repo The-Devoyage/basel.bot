@@ -11,8 +11,9 @@ import clsx from "clsx";
 
 export const TakeInterviewButton: FC<{
   interview: Interview;
+  action: "take_interview" | "interview";
   children?: React.ReactNode;
-}> = ({ interview, children }) => {
+}> = ({ interview, action, children }) => {
   const {
     store: {
       auth: { shareableLink },
@@ -24,9 +25,12 @@ export const TakeInterviewButton: FC<{
 
   const handleClick = () => {
     if (pathname !== "/") router.push("/");
-    const context = `Interview UUID: ${interview.uuid}`;
+    const context =
+      action === "take_interview"
+        ? `Interview UUID: ${interview.uuid}. Ask me questions one at a time. Check to see if I have completed any questions and pick up where I left off.`
+        : `Interview UUID: ${interview.uuid}`;
     return handleMessage(
-      shareableLink ? "recruiter_interview" : "interview",
+      shareableLink ? "recruiter_interview" : action,
       interview.position,
       context,
     );

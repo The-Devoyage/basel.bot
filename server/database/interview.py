@@ -99,6 +99,35 @@ def get_pipeline(
                 }
             }
         )
+        pipeline.append(
+            {
+                "$lookup": {
+                    "from": "InterviewAssessment",
+                    "let": {"interview_id": "$_id"},
+                    "pipeline": [
+                        {
+                            "$match": {
+                                "$expr": {
+                                    "$and": [
+                                        {
+                                            "$eq": [
+                                                "$interview.$id",
+                                                "$$interview_id",
+                                            ]
+                                        },
+                                        {"$eq": ["$user.$id", user_id]},
+                                    ]
+                                }
+                            }
+                        },
+                    ],
+                    "as": "assessment",
+                }
+            }
+        )
+        pipeline.append(
+            {"$addFields": {"assessment": {"$arrayElemAt": ["$assessment", 0]}}}
+        )
         if shareable_link_id:
             pipeline += [
                 {
@@ -137,32 +166,46 @@ def get_pipeline(
                 },
                 {"$match": {"matched_shareable_link": {"$ne": []}}},
             ]
-    else:
-        pipeline.append(
-            {
-                "$lookup": {
-                    "from": "InterviewQuestionResponse",
-                    "let": {"question_id": "$questions._id"},
-                    "pipeline": [
-                        {
-                            "$match": {
-                                "$expr": {
-                                    "$eq": [
-                                        "$interview_question.$id",
-                                        "$$question_id",
-                                    ]
-                                }
+
+    # Get all response count
+    pipeline.append(
+        {
+            "$lookup": {
+                "from": "InterviewQuestionResponse",
+                "let": {"question_id": "$questions._id"},
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$eq": [
+                                    "$interview_question.$id",
+                                    "$$question_id",
+                                ]
                             }
                         }
-                    ],
-                    "as": "question_responses",
-                }
+                    }
+                ],
+                "as": "total_question_responses",
             }
-        )
+        }
+    )
 
     # Continue with the rest of the pipeline
     pipeline += [
-        {"$addFields": {"questions.response_count": {"$size": "$question_responses"}}},
+        {
+            "$addFields": {
+                "questions.response_count": {
+                    "$size": {"$ifNull": ["$question_responses", []]}
+                }
+            }
+        },
+        {
+            "$addFields": {
+                "questions.total_response_count": {
+                    "$size": {"$ifNull": ["$total_question_responses", []]}
+                }
+            }
+        },
         {"$addFields": {"organization": "$organization"}},
         {
             "$group": {
@@ -177,6 +220,8 @@ def get_pipeline(
                 "status": {"$first": "$status"},
                 "question_count": {"$sum": 1},
                 "response_count": {"$sum": "$questions.response_count"},
+                "total_response_count": {"$sum": "$questions.total_response_count"},
+                "assessment": {"$first": "$assessment"},
                 "created_at": {"$first": "$created_at"},
                 "updated_at": {"$first": "$updated_at"},
                 "deleted_at": {"$first": "$deleted_at"},
@@ -204,9 +249,17 @@ def get_pipeline(
                 "status": 1,
                 "question_count": 1,
                 "response_count": 1,
+                "total_response_count": 1,
                 "created_at": 1,
                 "updated_at": 1,
                 "deleted_at": 1,
+                "submitted": {
+                    "$cond": {
+                        "if": {"$ne": ["$assessment", None]},
+                        "then": True,
+                        "else": False,
+                    }
+                },
             }
         },
     ]

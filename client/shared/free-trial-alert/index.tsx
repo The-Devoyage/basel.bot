@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GlobalContext } from "@/app/provider";
 import { Alert } from "flowbite-react";
 import { useContext } from "react";
@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import Link from "next/link";
 
 export const FreeTrialAlert = () => {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
   const {
     store: {
       auth: { me, isAuthenticated },
@@ -17,6 +17,27 @@ export const FreeTrialAlert = () => {
   const daysLeft = dayjs(
     me?.subscription_status.free_trial_expires || dayjs(),
   ).diff(dayjs(), "day");
+
+  useEffect(() => {
+    const freeTrialAlert = localStorage.getItem("freeTrialAlert");
+    const recentlyClosed = dayjs().isBefore(
+      dayjs(freeTrialAlert).add(1, "day"),
+    );
+    if (recentlyClosed) {
+      return setShow(false);
+    }
+
+    if (!show || me?.subscription_status.active || !isAuthenticated) {
+      setShow(false);
+    } else {
+      setShow(true);
+    }
+  }, []);
+
+  const handleClose = () => {
+    localStorage.setItem("freeTrialAlert", new Date().toISOString());
+    setShow(false);
+  };
 
   if (!show || me?.subscription_status.active || !isAuthenticated) {
     return null;
@@ -32,7 +53,7 @@ export const FreeTrialAlert = () => {
         </Link>
         <Link
           className="ml-2 cursor-pointer underline"
-          onClick={() => setShow(false)}
+          onClick={handleClose}
           href="#"
         >
           close

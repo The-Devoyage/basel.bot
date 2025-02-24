@@ -11,6 +11,7 @@ export type MessageType =
   | "resume"
   | "translations"
   | "candidate"
+  | "take_interview"
   | "interview"
   | "standup"
   | "create_interview"
@@ -56,10 +57,13 @@ export const useHandleMessage = () => {
         break;
       case "candidate":
         text =
-          "Hey Basel! I am here to talk with you about the candidate you represent. Can you give me a summary of this canidate&apos;s profile?";
+          "Hey Basel! I am here to talk with you about the candidate you represent. Can you give me a summary of this candidate&apos;s profile?";
         break;
       case "interview":
         text = `Please tell me about the '${modifier}' interview.`;
+        break;
+      case "take_interview":
+        text = `I&apos;d like to take the '${modifier}' interview.`;
         break;
       case "standup":
         text = `Can you please help me to log my next standup?`;

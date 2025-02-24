@@ -124,18 +124,21 @@ async def get_shareable_link(sl_token: str):
 async def get_shareable_links(
     limit: Optional[int] = 10,
     offset: Optional[int] = 0,
+    interview_uuid: Optional[UUID] = None,
     user_claims: UserClaims = Depends(require_auth),
 ):
     try:
-        shareable_links = (
-            await ShareableLink.find(
-                ShareableLink.user.id == user_claims.user.id,  # type:ignore
-                fetch_links=True,
-            )
-            .limit(limit)
-            .skip(offset)
-            .to_list()
+        query = ShareableLink.find(
+            ShareableLink.user.id == user_claims.user.id,  # type:ignore
+            fetch_links=True,
         )
+
+        if interview_uuid:
+            query.find(
+                ShareableLink.interviews.uuid == interview_uuid, fetch_links=True
+            )
+
+        shareable_links = await query.limit(limit).skip(offset).to_list()
         logger.debug(f"SHAREABLE LINKS: {shareable_links}")
         return create_response(
             success=True, data=[await link.to_public_dict() for link in shareable_links]

@@ -6,7 +6,7 @@ from llama_index.core.tools.function_tool import FunctionTool
 
 from database.interview import Interview, InterviewType
 from database.organization import Organization
-from database.subscription import Subscription, SubscriptionFeature
+from database.subscription import SubscriptionFeature
 from database.user import User
 from utils.subscription import SubscriptionStatus, check_subscription_permission
 
@@ -28,10 +28,6 @@ class CreateInterviewParams(BaseModel):
         description="The organization UUID, if provided, of which the interview belongs.",
         default=None,
     )
-    interview_type: InterviewType = Field(
-        description="The type of interview being created. Default to `general`.",
-        default=None,
-    )
     tags: List[str] = Field(
         description="Tags, categories, and descriptors of the organziation, position, and interview.",
         default=[],
@@ -45,7 +41,6 @@ async def create_interview(
     subscription_status: SubscriptionStatus,
     url: Optional[str] = None,
     organization_uuid: Optional[str] = None,
-    interview_type: InterviewType = InterviewType.GENERAL,
     tags: List[str] = [],
 ):
     try:
@@ -53,6 +48,7 @@ async def create_interview(
         allow_create = check_subscription_permission(
             subscription_status, SubscriptionFeature.CREATE_INTERVIEW
         )
+        interview_type = InterviewType.GENERAL
 
         if not allow_create:
             raise Exception(
@@ -60,6 +56,7 @@ async def create_interview(
             )
 
         if organization_uuid:
+            interview_type = InterviewType.APPLICATION
             allow_organization = check_subscription_permission(
                 subscription_status, SubscriptionFeature.MANAGE_ORGANIZATION
             )
@@ -96,12 +93,11 @@ def create_create_interview_tool(
     current_user: User, subscription_status: SubscriptionStatus
 ):
     create_interview_tool = FunctionTool.from_defaults(
-        async_fn=lambda position, description, url=None, organization_uuid=None, interview_type=InterviewType.GENERAL, tags=[]: create_interview(
+        async_fn=lambda position, description, url=None, organization_uuid=None, tags=[]: create_interview(
             current_user=current_user,
             description=description,
             url=url,
             organization_uuid=organization_uuid,
-            interview_type=interview_type,
             position=position,
             tags=tags,
             subscription_status=subscription_status,

@@ -35,7 +35,7 @@ VULTR_S3_HOSTNAME = get_env_var("VULTR_S3_HOSTNAME")
 
 Settings.chunk_size = 512
 Settings.chunk_overlap = 64
-Settings.llm = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY)
+Settings.llm = OpenAI(model="gpt-4o-mini", api_key=OPENAI_API_KEY, temperature=0.3)
 Settings.embed_model = OpenAIEmbedding(model="text-embedding-3-small")
 
 

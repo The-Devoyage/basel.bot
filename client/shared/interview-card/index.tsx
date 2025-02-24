@@ -87,7 +87,7 @@ export const InterviewCard: FC<{
           )}
           <div onClick={(e) => e.stopPropagation()}>
             <Tooltip content="Ask Basel">
-              <TakeInterviewButton interview={interview} />
+              <TakeInterviewButton interview={interview} action="interview" />
             </Tooltip>
           </div>
         </div>

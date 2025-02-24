@@ -1,9 +1,12 @@
-from typing import List, Optional
+from typing import List
 from llama_index.core.tools import BaseTool
 from basel.tools.candidate_profile_tool import create_candidate_profile_tool
 from basel.tools.create_about_tool import create_about_tool
-from basel.tools.create_create_interview_question_response_tool import (
-    create_create_interview_question_response_tool,
+from basel.tools.create_create_interview_assessment_tool import (
+    create_create_interview_assessment_tool,
+)
+from basel.tools.create_upsert_interview_question_response_tool import (
+    create_upsert_interview_question_response_tool,
 )
 from basel.tools.create_create_standup_tool import create_create_standup_tool
 from basel.tools.create_get_interview_question_response_tool import (
@@ -26,7 +29,6 @@ from basel.tools.create_insert_user_meta_tool import create_insert_user_meta_too
 from basel.tools.create_update_interview_tool import create_update_interview_tool
 from basel.tools.read_s3 import create_read_s3_tool
 from database.role import Role
-from database.subscription import Subscription
 
 # DB
 from database.user import User
@@ -73,14 +75,6 @@ def get_admin_tools():
 
 def get_general_tools(current_user: User):
     tools: List[BaseTool] = []
-
-    # Create Interview Question Response Tool
-    # NOTE: this seems incorrect.. maybe the get response is supposed to be here?
-    create_interview_question_response = create_create_interview_question_response_tool(
-        current_user
-    )
-    tools.append(create_interview_question_response)
-
     return tools
 
 
@@ -132,5 +126,16 @@ def get_candidate_tools(
     # Read Files Tool
     read_files_tool = create_read_s3_tool(user=current_user)
     tools.append(read_files_tool)
+
+    # Upsert interview question response
+    upsert_interview_question_response_tool = (
+        create_upsert_interview_question_response_tool(current_user)
+    )
+    tools.append(upsert_interview_question_response_tool)
+
+    create_interview_assessment_tool = create_create_interview_assessment_tool(
+        current_user
+    )
+    tools.append(create_interview_assessment_tool)
 
     return tools
