@@ -32,13 +32,13 @@ export default async function Page(props: {
   }
 
   return (
-    <Card>
+    <Card className="w-full">
       <Typography.Heading className="text-3xl">Questions</Typography.Heading>
       <ol>
         {interviewQuestions.map((q, i) => (
           <li key={q.uuid}>
             <div className="flex items-start">
-              <Typography.Heading>{i + 1}.</Typography.Heading>
+              <Typography.Heading>{i + 1}. </Typography.Heading>
               <Typography.Paragraph>{q.question}</Typography.Paragraph>
             </div>
             <HR />
