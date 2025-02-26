@@ -1,4 +1,4 @@
-import { Reducer, useReducer } from "react";
+import { useReducer } from "react";
 import {
   Action as ToastAction,
   toastReducer,
@@ -15,16 +15,24 @@ import {
   State as ChatInputState,
   chatInputReducer,
 } from "./chatInput";
+import {
+  Action as InterviewAssessmentAction,
+  State as InterviewAssessmentState,
+  interviewAssessmentReducer,
+} from "./interviewAssessment";
 
 export type AppAction =
   | ToastAction
   | AuthAction
   | NotificationAction
-  | ChatInputAction;
+  | ChatInputAction
+  | InterviewAssessmentAction;
+
 export type AppState = ToastState &
   AuthState &
   NotificationState &
-  ChatInputState;
+  ChatInputState &
+  InterviewAssessmentState;
 export type AppStore = [AppState, React.Dispatch<AppAction>];
 
 export const useStore = () => {
@@ -35,6 +43,7 @@ export const useStore = () => {
         authReducer,
         notificationReducer,
         chatInputReducer,
+        interviewAssessmentReducer,
       ];
       let updated = { ...state };
       for (const reducer of reducers) {
@@ -52,6 +61,7 @@ export const useStore = () => {
       },
       notifications: { open: false },
       chatInput: { focused: false },
+      interviewAssessment: { assessment: null },
     },
   );
 

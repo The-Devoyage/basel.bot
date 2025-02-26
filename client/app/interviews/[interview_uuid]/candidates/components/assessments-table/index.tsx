@@ -1,9 +1,9 @@
-import { InterviewAssesment } from "@/types/interview_assessment";
+import { InterviewAssessment } from "@/types/interview_assessment";
 import { FC } from "react";
 import { CandidateCard } from "./components/candidate-card";
 
 export const AssessmentsTable: FC<{
-  interviewAssessments: InterviewAssesment[];
+  interviewAssessments: InterviewAssessment[];
 }> = ({ interviewAssessments }) => (
   <div className="grid grid-cols-3 gap-2">
     {interviewAssessments.map((ia) => (

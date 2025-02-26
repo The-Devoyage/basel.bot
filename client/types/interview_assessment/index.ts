@@ -1,6 +1,6 @@
 import { Interview, User } from "..";
 
-export interface InterviewAssesment {
+export interface InterviewAssessment {
   uuid: string;
   user: User;
   interview: Interview;

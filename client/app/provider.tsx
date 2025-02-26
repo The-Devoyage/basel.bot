@@ -10,6 +10,7 @@ import { Endpoint } from "@/api";
 import { useSearchParams } from "next/navigation";
 import { useCallApi } from "@/shared/useCallApi";
 import LogRocket from "logrocket";
+import { SetInterviewAssessment } from "@/shared/useStore/interviewAssessment";
 
 interface GlobalContext {
   client: SocketClient<Message, Message> | null;
@@ -30,6 +31,7 @@ export const GlobalContext = createContext<GlobalContext>({
     },
     notifications: { open: false },
     chatInput: { focused: false },
+    interviewAssessment: { assessment: null },
   },
   dispatch: () => {},
   slToken: null,
@@ -73,6 +75,22 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
       callOnMount: !!slToken,
       onSuccess: (res) => {
         if (res.data) dispatch(setShareableLink(res.data));
+      },
+    },
+  );
+  useCallApi(
+    {
+      endpoint: Endpoint.GetInterviewAssessment,
+      path: null,
+      body: null,
+      query: {
+        interview_assessment_uuid: interviewAssessmentUuid!,
+      },
+    },
+    {
+      callOnMount: !!interviewAssessmentUuid,
+      onSuccess: (res) => {
+        if (res.data) dispatch(SetInterviewAssessment(res.data));
       },
     },
   );

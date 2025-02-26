@@ -12,8 +12,6 @@ export const RecruiterButtons = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  if (!slToken) return;
-
   return (
     <div className="flex gap-2">
       <Button
@@ -30,14 +28,16 @@ export const RecruiterButtons = () => {
       >
         Resume
       </Button>
-      <Button
-        gradientDuoTone="purpleToBlue"
-        outline
-        onClick={() => router.push(`/?${searchParams.toString()}`)}
-        className="mt-4 w-full"
-      >
-        Profile
-      </Button>
+      {slToken && (
+        <Button
+          gradientDuoTone="purpleToBlue"
+          outline
+          onClick={() => router.push(`/?${searchParams.toString()}`)}
+          className="mt-4 w-full"
+        >
+          Profile
+        </Button>
+      )}
     </div>
   );
 };

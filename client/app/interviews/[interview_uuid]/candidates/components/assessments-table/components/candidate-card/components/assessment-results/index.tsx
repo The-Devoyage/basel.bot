@@ -1,6 +1,6 @@
 "use client";
 
-import { InterviewAssesment } from "@/types/interview_assessment";
+import { InterviewAssessment } from "@/types/interview_assessment";
 import {
   Accordion,
   Table,
@@ -13,7 +13,7 @@ import {
 import { FC } from "react";
 
 export const AssessmentResults: FC<{
-  interviewAssessment: InterviewAssesment;
+  interviewAssessment: InterviewAssessment;
 }> = ({ interviewAssessment }) => {
   return (
     <Accordion collapseAll>

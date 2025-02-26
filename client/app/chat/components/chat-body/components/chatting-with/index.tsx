@@ -11,9 +11,10 @@ export const ChattingWith = () => {
   const { store } = useContext(GlobalContext);
   const {
     auth: { me, shareableLink, isAuthenticated },
+    interviewAssessment: { assessment },
   } = store;
-  const candidate = shareableLink?.user || null;
-  const chattingWith = candidate || null || me;
+  const candidate = shareableLink?.user || assessment?.user || null;
+  const chattingWith = candidate || me;
   const linkStatus = shareableLink?.status;
 
   return (

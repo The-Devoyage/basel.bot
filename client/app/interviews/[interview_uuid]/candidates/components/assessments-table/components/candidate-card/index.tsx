@@ -1,10 +1,10 @@
 import { Typography } from "@/shared/typography";
-import { InterviewAssesment } from "@/types/interview_assessment";
+import { InterviewAssessment } from "@/types/interview_assessment";
 import { Avatar, Button, Card, Rating, RatingStar } from "flowbite-react";
 import { FC } from "react";
 import { AssessmentResults } from "./components";
 
-export const CandidateCard: FC<{ interviewAssessment: InterviewAssesment }> = ({
+export const CandidateCard: FC<{ interviewAssessment: InterviewAssessment }> = ({
   interviewAssessment,
 }) => {
   return (
@@ -43,12 +43,6 @@ export const CandidateCard: FC<{ interviewAssessment: InterviewAssesment }> = ({
               )}
             </Rating>
           </div>
-          {/* <Badge color="purple"> */}
-          {/*   <div className="flex gap-2"> */}
-          {/*     <FaCheck /> */}
-          {/*     Reviewed */}
-          {/*   </div> */}
-          {/* </Badge> */}
           <Button
             color="green"
             outline

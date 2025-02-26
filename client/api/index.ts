@@ -12,7 +12,7 @@ import {
   SubscriptionStatus,
 } from "@/types";
 import { InterviewQuestion } from "@/types/interview-question";
-import { InterviewAssesment } from "@/types/interview_assessment";
+import { InterviewAssessment } from "@/types/interview_assessment";
 import { Standup } from "@/types/standup";
 
 export * from "./callApi";
@@ -58,6 +58,7 @@ export enum Endpoint {
   UpdateOrganization = "/organization/update",
   GetInterviewQuestions = "/interview-question/list",
   GetInterviewAssessments = "/interview-assessment/list",
+  GetInterviewAssessment = "/interview-assessment",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -230,6 +231,11 @@ export interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetInterviewAssessment]: {
+    query: { interview_assessment_uuid: InterviewAssessment["uuid"] };
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -262,7 +268,8 @@ export interface EndpointResponse {
   [Endpoint.UpdateOrganization]: Organization;
   [Endpoint.GetOrganizations]: Organization[];
   [Endpoint.GetInterviewQuestions]: InterviewQuestion[];
-  [Endpoint.GetInterviewAssessments]: InterviewAssesment[];
+  [Endpoint.GetInterviewAssessments]: InterviewAssessment[];
+  [Endpoint.GetInterviewAssessment]: InterviewAssessment;
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams
