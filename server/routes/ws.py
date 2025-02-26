@@ -15,7 +15,9 @@ from basel.agent import get_agent
 from basel.indexing import add_index, get_documents, create_s3_documents
 
 from classes.user_claims import ShareableLinkClaims
-from classes.socket_message import Button, ButtonAction, MessageType, SocketMessage
+from classes.socket_message import MessageType, SocketMessage
+from database.interview_assessment import InterviewAssessment
+from database.organization_user import OrganizationUser
 from database.shareable_link import ShareableLink
 from database.message import Message, SenderIdentifer
 from database.user import User
@@ -38,6 +40,7 @@ async def websocket_endpoint(
     websocket: WebSocket,
     token: str = Cookie(None),
     sl_token: Optional[str] = None,
+    interview_assessment_uuid: Optional[UUID] = None,
 ):
     user_claims = None
     chatting_with = None
@@ -46,8 +49,10 @@ async def websocket_endpoint(
         active=False, subscription=None, is_free_trial=False
     )
     shareable_link = None
+    interview_assessment = None
     message_count = 0
 
+    logger.debug(f"INTERVIEW ASSESSMENT UUID {interview_assessment_uuid}")
     try:
         if token:
             user_claims = await handle_decode_token(token)
@@ -64,13 +69,37 @@ async def websocket_endpoint(
             )
             chatting_with = await User.find_one(User.uuid == UUID(sl_claims.user_uuid))
             if not chatting_with:
-                logger.error("SHAREABLE LINK TOKEN USER NOT FOUND")
+                logger.debug("SHAREABLE LINK TOKEN USER NOT FOUND")
                 raise Exception("Shareable Link Token User Not Found")
-        if user_claims and not sl_token:
+
+        if interview_assessment_uuid and user_claims:
+            logger.debug("FINDING ASSESSMENT USER")
+            interview_assessment = await InterviewAssessment.find_one(
+                InterviewAssessment.uuid == interview_assessment_uuid, fetch_links=True
+            )
+            if not interview_assessment:
+                logger.debug("INTERVIEW ASSESSMENT NOT FOUND")
+                raise Exception("Interview Assessment Not Found")
+
+            organization_user = await OrganizationUser.find_one(
+                OrganizationUser.user.id == user_claims.user.id,  # type:ignore
+                OrganizationUser.organization.id  # type:ignore
+                == interview_assessment.interview.organization.id,  # type:ignore
+                fetch_links=True,
+            )
+            if not organization_user:
+                logger.debug("ORGANIZATION USER NOT FOUND")
+                raise Exception("Organization User Not Found. Access denied.")
+            chatting_with = interview_assessment.user
+
+        if user_claims and (not sl_token and not interview_assessment):
+            logger.debug("DEFAULTING TO CURRENT USER")
             chatting_with = user_claims.user
 
+        logger.debug(f"CHATTING WITH {chatting_with}")
+
     except Exception as e:
-        logger.error(f"{e}")
+        logger.debug(f"{e}")
         return WebSocketException(code=status.WS_1008_POLICY_VIOLATION)
 
     if (
@@ -172,7 +201,7 @@ async def websocket_endpoint(
                     ).create()
 
             except Exception as e:
-                logger.error(f"UNEXPECTED ERROR WHILE CONNECTED: {e}")
+                logger.debug(f"UNEXPECTED ERROR WHILE CONNECTED: {e}")
                 socket_response = SocketMessage(
                     text="Sorry, I am having some trouble with that. Let's try again.",
                     timestamp=datetime.now(),
@@ -199,7 +228,7 @@ async def websocket_endpoint(
             add_index(documents, "user_meta")
 
         except Exception as e:
-            logger.error(e)
+            logger.debug(e)
 
     except Exception as e:
-        logger.error(f"UNKNOWN ERROR: {e}")
+        logger.debug(f"UNKNOWN ERROR: {e}")

@@ -16,6 +16,9 @@ class Organization(BaseMongoModel):
     users: List[BackLink[OrganizationUser]] = Field(
         original_field="organization"  # type:ignore
     )
+    interviews: List[BackLink["Interview"]] = Field(  # type:ignore
+        original_field="organization"  # type:ignore
+    )
     slug: str
 
     def exclude_from_public_dict(self) -> Set[str]:

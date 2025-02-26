@@ -32,7 +32,7 @@ export const InterviewCard: FC<{
 
   return (
     <Card
-      className="cursor-pointer border-t-4 border-t-purple-400 hover:shadow-xl hover:shadow-purple-500/20 dark:border-t-purple-400"
+      className="cursor-pointer border-t-4 border-t-purple-400 transition-all hover:shadow-xl hover:shadow-purple-500/20 dark:border-t-purple-400"
       key={interview.uuid}
       onClick={handleClick}
     >

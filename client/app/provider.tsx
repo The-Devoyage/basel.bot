@@ -44,6 +44,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const [store, dispatch] = useStore();
   const searchParams = useSearchParams();
   const slToken = searchParams.get("sl_token");
+  const interviewAssessmentUuid = searchParams.get("interview_assessment_uuid");
   const [logRocketInitalized, setLogRocketInitalized] = useState(false);
   useVerifyLogin(dispatch);
   const { call } = useCallApi(
@@ -82,7 +83,6 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const env = process.env.NODE_ENV;
-    console.log(process.env.NODE_ENV);
     if (env === "production") {
       if (!logRocketInitalized) {
         LogRocket.init("sqlyqw/basel");
@@ -97,8 +97,17 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
     }
   }, [store.auth.me, logRocketInitalized]);
 
+  const getEndpoint = () => {
+    if (slToken) {
+      return `?sl_token=${slToken}`;
+    } else if (interviewAssessmentUuid) {
+      return `?interview_assessment_uuid=${interviewAssessmentUuid}`;
+    }
+    return "";
+  };
+
   const client = useSocket<Message, Message>(
-    `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${slToken ? "?sl_token=" + slToken : ""}`,
+    `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${getEndpoint()}`,
     {
       groupBy: "text",
     },
