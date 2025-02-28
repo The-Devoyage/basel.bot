@@ -52,7 +52,9 @@ async def verify(user_claims: UserClaims = Depends(require_auth)):
 async def me(user_claims: UserClaims = Depends(require_auth)):
     logger.debug(f"FETCHING ME: {user_claims}")
     try:
-        user = await User.find_one(User.uuid == UUID(user_claims.user_uuid))
+        user = await User.find_one(
+            User.uuid == UUID(user_claims.user_uuid), fetch_links=True
+        )
         if not user:
             raise Exception("User not found")
         subscription_status = await verify_subscription(user)
