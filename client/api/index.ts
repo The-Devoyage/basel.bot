@@ -10,6 +10,7 @@ import {
   Organization,
   SubscriptionTier,
   SubscriptionStatus,
+  Message,
 } from "@/types";
 import { InterviewQuestion } from "@/types/interview-question";
 import { InterviewAssessment } from "@/types/interview_assessment";
@@ -59,6 +60,7 @@ export enum Endpoint {
   GetInterviewQuestions = "/interview-question/list",
   GetInterviewAssessments = "/interview-assessment/list",
   GetInterviewAssessment = "/interview-assessment",
+  GetMessages = "/message/list",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -236,6 +238,11 @@ export interface EndpointParams {
     body: undefined;
     path: undefined;
   };
+  [Endpoint.GetMessages]: {
+    query?: PaginationQuery;
+    body: undefined;
+    path: undefined;
+  };
 }
 
 export interface EndpointResponse {
@@ -270,6 +277,7 @@ export interface EndpointResponse {
   [Endpoint.GetInterviewQuestions]: InterviewQuestion[];
   [Endpoint.GetInterviewAssessments]: InterviewAssessment[];
   [Endpoint.GetInterviewAssessment]: InterviewAssessment;
+  [Endpoint.GetMessages]: Message[];
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

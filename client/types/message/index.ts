@@ -1,5 +1,5 @@
 import { Endpoint } from "@/api";
-import { File } from "@/types";
+import { File, User } from "@/types";
 
 export interface Button {
   label: string;
@@ -8,7 +8,7 @@ export interface Button {
     | { type: "redirect"; endpoint: string };
 }
 
-export interface Message {
+export interface SocketMessage {
   text: string;
   timestamp: Date;
   sender: "user" | "bot";
@@ -16,4 +16,11 @@ export interface Message {
   files?: File[];
   context?: string;
   message_type: "message" | "end";
+}
+
+export interface Message {
+  user: User;
+  sender: "user" | "bot";
+  text: string;
+  created_at: string;
 }

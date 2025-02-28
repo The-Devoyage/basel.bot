@@ -1,9 +1,9 @@
 import { FC } from "react";
-import { Message } from "@/types";
+import { SocketMessage } from "@/types";
 import { BiFile } from "react-icons/bi";
 import { Typography } from "@/shared/typography";
 
-export const AttachedFiles: FC<{ message: Message }> = ({ message }) => {
+export const AttachedFiles: FC<{ message: SocketMessage }> = ({ message }) => {
   if (!message.files?.length) return null;
   return (
     <div className="flex">

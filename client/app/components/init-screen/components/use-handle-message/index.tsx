@@ -1,7 +1,7 @@
 "use client";
 
 import { GlobalContext } from "@/app/provider";
-import { Message } from "@/types";
+import { SocketMessage } from "@/types";
 import { useContext } from "react";
 
 export type MessageType =
@@ -92,7 +92,7 @@ export const useHandleMessage = () => {
         text = "Tell me a bit about the Basel platform.";
     }
 
-    const message: Message = {
+    const message: SocketMessage = {
       text,
       timestamp: new Date(),
       sender: "user",

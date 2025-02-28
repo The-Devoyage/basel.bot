@@ -10,7 +10,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Message, File } from "@/types";
+import { SocketMessage, File } from "@/types";
 import { usePathname, useRouter } from "next/navigation";
 import { GlobalContext } from "@/app/provider";
 
@@ -56,7 +56,7 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
   const [files, setFiles] = useState<File[]>([]);
   const [messageText, setMessageText] = useState<string>("");
   const [suggestion, setSuggestion] = useState<string>("");
-  const [repeatedMessage, setRepeatedMessage] = useState<Message | null>(null);
+  const [repeatedMessage, setRepeatedMessage] = useState<SocketMessage | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const {
@@ -81,7 +81,7 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
     const formattedText =
       commandResponses?.[baseCommand]?.[subCommand] || messageText;
 
-    const message: Message = {
+    const message: SocketMessage = {
       text: formattedText,
       timestamp: new Date(),
       sender: "user",

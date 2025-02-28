@@ -82,6 +82,7 @@ async def get_agent(
                     )
                     .to_list()
                 )
+
                 for message in messages:
                     history = ChatMessage(
                         role=MessageRole.ASSISTANT
@@ -90,6 +91,7 @@ async def get_agent(
                         content=message.text,
                     )
                     chat_history.append(history)
+                chat_history.reverse()
 
     agent = OpenAIAgent.from_tools(
         tools=tools,

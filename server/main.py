@@ -22,6 +22,7 @@ from routes.user import router as user_router
 from routes.organization import router as organization_router
 from routes.interview_question import router as interview_question_router
 from routes.interview_assessment import router as interview_assessment_router
+from routes.message import router as message_router
 
 load_dotenv()
 
@@ -58,6 +59,7 @@ app.include_router(user_router, prefix="/user")
 app.include_router(organization_router, prefix="/organization")
 app.include_router(interview_question_router, prefix="/interview-question")
 app.include_router(interview_assessment_router, prefix="/interview-assessment")
+app.include_router(message_router, prefix="/message")
 
 app.add_middleware(
     CORSMiddleware,

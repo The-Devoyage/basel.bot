@@ -2,7 +2,7 @@
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
 import { FC, createContext, useEffect, useMemo, useState } from "react";
-import { Message, Notification } from "@/types";
+import { SocketMessage, Notification } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
 import { setShareableLink, setMe } from "@/shared/useStore/auth";
@@ -13,7 +13,7 @@ import LogRocket from "logrocket";
 import { SetInterviewAssessment } from "@/shared/useStore/interviewAssessment";
 
 interface GlobalContext {
-  client: SocketClient<Message, Message> | null;
+  client: SocketClient<SocketMessage, SocketMessage> | null;
   notificationClient: SocketClient<{ uuids: string[] }, Notification> | null;
   store: ReturnType<typeof useStore>[0];
   dispatch: ReturnType<typeof useStore>[1];
@@ -49,7 +49,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   const interviewAssessmentUuid = searchParams.get("interview_assessment_uuid");
   const [logRocketInitalized, setLogRocketInitalized] = useState(false);
   useVerifyLogin(dispatch);
-  const { call } = useCallApi(
+  const { call: getMe } = useCallApi(
     {
       endpoint: Endpoint.Me,
       query: null,
@@ -96,10 +96,6 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
   );
 
   useEffect(() => {
-    if (store.auth.isAuthenticated) call();
-  }, [store.auth.isAuthenticated]);
-
-  useEffect(() => {
     const env = process.env.NODE_ENV;
     if (env === "production") {
       if (!logRocketInitalized) {
@@ -124,12 +120,47 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
     return "";
   };
 
-  const client = useSocket<Message, Message>(
+  const client = useSocket<SocketMessage, SocketMessage>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/ws${getEndpoint()}`,
     {
       groupBy: "text",
     },
   );
+
+  const { call: getMessages } = useCallApi(
+    {
+      endpoint: Endpoint.GetMessages,
+      body: null,
+      query: { limit: 10, offset: 0 },
+      path: null,
+    },
+    {
+      onSuccess: (res) => {
+        if (res) {
+          const items = res?.data?.map((m) => ({
+            text: m.text,
+            timestamp: new Date(m.created_at),
+            sender: m.sender,
+            message_type: "message" as const,
+          }));
+          if (items) client.handlePrependMessages(items);
+        }
+      },
+    },
+  );
+
+  useEffect(() => {
+    if (store.auth.isAuthenticated) {
+      getMe();
+    }
+  }, [store.auth.isAuthenticated]);
+
+  useEffect(() => {
+    if (store.auth.isAuthenticated && !slToken && !interviewAssessmentUuid) {
+      getMessages();
+    }
+  }, [store.auth.isAuthenticated, slToken, interviewAssessmentUuid]);
+
   const notificationClient = useSocket<{ uuids: string[] }, Notification>(
     `${process.env.NEXT_PUBLIC_SOCKET_URL}/notification`,
   );

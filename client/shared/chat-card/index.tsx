@@ -4,14 +4,14 @@ import { Avatar, Card } from "flowbite-react";
 import { BiFile, BiSolidLeaf } from "react-icons/bi";
 import { forwardRef, useContext } from "react";
 import { Typography } from "../typography";
-import { Message } from "@/types";
+import { SocketMessage } from "@/types";
 import Markdown from "react-markdown";
 import "./module.styles.css";
 import { AttachedFiles, FooterButtons } from "./components";
 import { GlobalContext } from "@/app/provider";
 
 interface ChatCardProps {
-  message: Message;
+  message: SocketMessage;
   icon?: React.ReactNode;
   loading?: boolean;
 }

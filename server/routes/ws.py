@@ -105,7 +105,7 @@ async def websocket_endpoint(
     if (
         user_claims is not None
         and chatting_with is not None
-        and user_claims.user.id == chatting_with.id
+        and user_claims.user.id == chatting_with.id  # type:ignore
     ):
         is_candidate = True
     else:
@@ -113,7 +113,7 @@ async def websocket_endpoint(
 
     agent = await get_agent(
         is_candidate,
-        chatting_with,
+        chatting_with,  # type:ignore
         user_claims,
         subscription_status,
         shareable_link,
@@ -146,7 +146,7 @@ async def websocket_endpoint(
                         user=chatting_with,  # type:ignore
                         sender=incoming.sender,
                         text=incoming.text,
-                        created_by=chatting_with,  # type:ignore
+                        created_by=user_claims.user,  # type:ignore
                     ).create()
 
                 # Handle create response
@@ -197,7 +197,7 @@ async def websocket_endpoint(
                         user=chatting_with,  # type:ignore
                         sender=SenderIdentifer.BOT,
                         text=response_text,
-                        created_by=chatting_with,  # type:ignore
+                        created_by=user_claims.user,  # type:ignore
                     ).create()
 
             except Exception as e:
@@ -216,7 +216,7 @@ async def websocket_endpoint(
             if (
                 not user_claims
                 or not chatting_with
-                or user_claims.user.id != chatting_with.id
+                or user_claims.user.id != chatting_with.id  # type:ignore
                 or (
                     not subscription_status.active
                     and not subscription_status.is_free_trial

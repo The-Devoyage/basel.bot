@@ -18,6 +18,7 @@ export interface SocketClient<Send, Receive> {
   initializing: boolean;
   connected: boolean;
   incomingMessage: string;
+  handlePrependMessages: (items: Send[] | Receive[]) => void;
 }
 
 export const useSocket = <Send, Receive>(
@@ -50,6 +51,10 @@ export const useSocket = <Send, Receive>(
       setMessageQueue([]);
     }
   }, [socket.current?.readyState]);
+
+  const handlePrependMessages = (items: Send[] | Receive[]) => {
+    setMessages((curr) => [...items, ...curr]);
+  };
 
   const handleConnect = () => {
     setInitializing(true);
@@ -125,5 +130,6 @@ export const useSocket = <Send, Receive>(
     initializing,
     connected,
     incomingMessage,
+    handlePrependMessages,
   } as SocketClient<Send, Receive>;
 };
