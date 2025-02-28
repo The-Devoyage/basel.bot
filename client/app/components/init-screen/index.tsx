@@ -1,3 +1,4 @@
+import { Endpoint, callApi } from "@/api";
 import {
   BreakBarriers,
   Standup,
@@ -11,7 +12,14 @@ import {
   ChatNow,
 } from "./components";
 
-export const InitScreen = () => {
+export const InitScreen = async () => {
+  const shareableLinks = await callApi({
+    endpoint: Endpoint.ShareableLinks,
+    path: null,
+    body: null,
+    query: { limit: 0 },
+  });
+
   return (
     <div className="mx-auto flex h-full flex-col space-y-4">
       <Onboarding />
@@ -25,7 +33,7 @@ export const InitScreen = () => {
             <RecruiterWelcome />
           </div>
           <div>
-            <ProfileViews />
+            <ProfileViews shareableLinks={shareableLinks?.data || []} />
           </div>
           <ChatNow />
         </div>

@@ -1,22 +1,23 @@
-import { Endpoint, callApi } from "@/api";
+"use client";
+
+import { GlobalContext } from "@/app/provider";
 import { Typography } from "@/shared/typography";
+import { ShareableLink } from "@/types";
 import { Card } from "flowbite-react";
+import { FC, useContext } from "react";
 
-export const ProfileViews = async () => {
-  const shareableLinks = await callApi({
-    endpoint: Endpoint.ShareableLinks,
-    path: null,
-    body: null,
-    query: { limit: 0 },
-  });
-  const verify = await callApi({
-    endpoint: Endpoint.Verify,
-    path: null,
-    body: null,
-    query: null,
-  });
+export const ProfileViews: FC<{ shareableLinks: ShareableLink[] }> = ({
+  shareableLinks,
+}) => {
+  const {
+    store: {
+      auth: { isAuthenticated },
+      interviewAssessment: { assessment },
+    },
+    slToken,
+  } = useContext(GlobalContext);
 
-  if (!verify.success) return null;
+  if (!isAuthenticated || assessment || slToken) return null;
 
   return (
     <Card className="border-4 !border-blue-400 text-center">
@@ -24,7 +25,7 @@ export const ProfileViews = async () => {
         Profile Views
       </Typography.Heading>
       <Typography.Heading className="text-3xl">
-        {shareableLinks.data?.reduce((prev, next) => {
+        {shareableLinks.reduce((prev, next) => {
           prev = prev + next.views;
           return prev;
         }, 0)}
