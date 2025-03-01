@@ -15,7 +15,7 @@ export interface SocketMessage {
   buttons?: Button[];
   files?: File[];
   context?: string;
-  message_type: "message" | "end";
+  message_type: "message" | "end" | "card";
 }
 
 export interface Message {

@@ -111,15 +111,16 @@ async def websocket_endpoint(
     else:
         is_candidate = False
 
+    await websocket.accept()
+
     agent = await get_agent(
         is_candidate,
         chatting_with,  # type:ignore
         user_claims,
         subscription_status,
         shareable_link,
+        websocket,
     )
-
-    await websocket.accept()
 
     try:
         while True:
@@ -162,8 +163,6 @@ async def websocket_endpoint(
                 response_text = ""
 
                 async for token in chat_response.async_response_gen():
-                    print(token, end="")
-
                     response = SocketMessage(
                         text=token,
                         message_type=MessageType.MESSAGE,

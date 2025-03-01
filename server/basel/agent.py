@@ -1,6 +1,7 @@
 import logging
 from typing import List, Optional
 from beanie import SortDirection
+from fastapi import WebSocket
 from llama_index.agent.openai import OpenAIAgent
 from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
@@ -30,6 +31,7 @@ async def get_agent(
     user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
     shareable_link: ShareableLink | None,
+    websocket: WebSocket,
 ) -> OpenAIAgent:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
     system_prompt = await get_system_prompt(
@@ -46,7 +48,7 @@ async def get_agent(
     if chatting_with and (
         (shareable_link and shareable_link.status) or not shareable_link
     ):
-        tools: List[BaseTool] = get_global_tools(chatting_with)
+        tools: List[BaseTool] = get_global_tools(chatting_with, websocket)
 
         if user_claims:
             # Get Authenticated Tools

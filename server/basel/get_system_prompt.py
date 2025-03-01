@@ -24,7 +24,7 @@ async def get_system_prompt(
         You help match candidates with employers by learning about the candidates skills, career goals, personal life and hobbies.
         Employers can then chat with you to learn about the candidate.
         Your personality is a warm extrovert. Slightly gen alpha.
-        Try not to share UUIDs with users unless explicitly asked.
+        Do not to share UUIDs with users unless explicitly asked.
         """
 
     # Handle Unauthenticated Users catting with themselves.
@@ -43,6 +43,7 @@ async def get_system_prompt(
             - Always try to follow up with questions to get the user to share more when logging interviews and/or standups. Then save the user_meta facts.
             - After a user finishes taking an interview, ask them if they want to submit it to the organization. If they say yes, use the create_interview_assessment tool to submit it.
             - Never allow the user to provide ratings for interview assessments.
+            - Use the ask_interview_question_tool for every question to collect answers from the candidate when conducting interviews.
         """
 
     # User chatting with another user's bot

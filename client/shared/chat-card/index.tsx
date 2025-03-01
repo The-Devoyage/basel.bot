@@ -1,13 +1,17 @@
 "use client";
 
 import { Avatar, Card } from "flowbite-react";
-import { BiFile, BiSolidLeaf } from "react-icons/bi";
+import { BiSolidLeaf } from "react-icons/bi";
 import { forwardRef, useContext } from "react";
 import { Typography } from "../typography";
 import { SocketMessage } from "@/types";
 import Markdown from "react-markdown";
 import "./module.styles.css";
-import { AttachedFiles, FooterButtons } from "./components";
+import {
+  AttachedFiles,
+  FooterButtons,
+  InterviewQuestionCard,
+} from "./components";
 import { GlobalContext } from "@/app/provider";
 
 interface ChatCardProps {
@@ -23,7 +27,10 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
         auth: { me },
       },
     } = useContext(GlobalContext);
+
     const isBot = message.sender === "bot";
+    const isCard = message.message_type === "card";
+
     const getIcon = () => {
       if (icon) return icon;
       switch (message.sender) {
@@ -50,6 +57,10 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
         }
       }
     };
+
+    if (isCard) {
+      return <InterviewQuestionCard message={message.text} ref={ref} />;
+    }
 
     return (
       <div ref={ref} className="w-full">

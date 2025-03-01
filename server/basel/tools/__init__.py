@@ -1,5 +1,9 @@
 from typing import List
+from fastapi import WebSocket
 from llama_index.core.tools import BaseTool
+from basel.tools.ask_interview_question_tool import (
+    create_ask_interview_question_tool,
+)
 from basel.tools.candidate_profile_tool import create_candidate_profile_tool
 from basel.tools.create_about_tool import create_about_tool
 from basel.tools.create_create_interview_assessment_tool import (
@@ -47,7 +51,7 @@ def get_unauthenticated_tools():
     return tools
 
 
-def get_global_tools(chatting_with: User):
+def get_global_tools(chatting_with: User, websocket: WebSocket):
     tools: List[BaseTool] = []
 
     candidate_profile_tool = create_candidate_profile_tool(chatting_with)
@@ -63,6 +67,11 @@ def get_global_tools(chatting_with: User):
 
     create_resume_tool = create_create_resume_tool()
     tools.append(create_resume_tool)
+
+    ask_interview_question_tool = create_ask_interview_question_tool(
+        websocket, chatting_with
+    )
+    tools.append(ask_interview_question_tool)
 
     return tools
 
@@ -128,10 +137,10 @@ def get_candidate_tools(
     tools.append(read_files_tool)
 
     # Upsert interview question response
-    upsert_interview_question_response_tool = (
-        create_upsert_interview_question_response_tool(current_user)
-    )
-    tools.append(upsert_interview_question_response_tool)
+    # upsert_interview_question_response_tool = (
+    #     create_upsert_interview_question_response_tool(current_user)
+    # )
+    # tools.append(upsert_interview_question_response_tool)
 
     create_interview_assessment_tool = create_create_interview_assessment_tool(
         current_user

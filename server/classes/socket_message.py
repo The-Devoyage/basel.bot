@@ -20,6 +20,7 @@ class Button(BaseModel):
 class MessageType(str, Enum):
     MESSAGE = "message"
     END = "end"
+    CARD = "card"
 
 
 class SocketMessage(BaseModel):
