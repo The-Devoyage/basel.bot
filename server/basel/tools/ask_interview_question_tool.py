@@ -1,12 +1,11 @@
 from datetime import datetime
 from uuid import UUID
-from fastapi import WebSocket
 from llama_index.agent.openai.openai_assistant_agent import json
 from llama_index.core.tools import FunctionTool
 from pydantic import BaseModel, Field
 import logging
 from classes.socket_message import MessageType, SocketMessage
-
+from utils.brokers import ui_events
 from database.interview_question import InterviewQuestion
 from database.interview_question_response import InterviewQuestionResponse
 from database.message import SenderIdentifer
@@ -21,9 +20,7 @@ class AskInterviewQuestionParams(BaseModel):
     )
 
 
-async def ask_interview_question(
-    websocket: WebSocket, user: User, interview_question_uuid
-):
+async def ask_interview_question(user: User, interview_question_uuid):
     try:
         interview_question = await InterviewQuestion.find_one(
             InterviewQuestion.uuid == UUID(interview_question_uuid)
@@ -57,7 +54,12 @@ async def ask_interview_question(
             buttons=None,
         )
 
-        await websocket.send_text(response.model_dump_json())
+        if user.uuid not in ui_events:
+            ui_events[user.uuid] = []
+
+        # Append the new question event to the list
+        ui_events[user.uuid].append(response.model_dump_json())
+        # await websocket.send_text(response.model_dump_json())
 
         return "The user has been asked the question."
 
@@ -66,7 +68,7 @@ async def ask_interview_question(
         return f"Something went wrong when asking the question: {str(e)}"
 
 
-def create_ask_interview_question_tool(websocket: WebSocket, user: User):
+def create_ask_interview_question_tool(user: User):
     ask_interview_question_tool = FunctionTool.from_defaults(
         name="ask_interview_question_tool",
         description="""
@@ -74,7 +76,6 @@ def create_ask_interview_question_tool(websocket: WebSocket, user: User):
         will trigger a UI event that allows the user to submit a response to the question.
         """,
         async_fn=lambda interview_question_uuid: ask_interview_question(
-            websocket=websocket,
             interview_question_uuid=interview_question_uuid,
             user=user,
         ),

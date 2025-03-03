@@ -1,6 +1,7 @@
 "use client";
 
 import { Endpoint } from "@/api";
+import { useHandleMessage } from "@/app/components/init-screen/components";
 import { Typography } from "@/shared/typography";
 import { useCallApi } from "@/shared/useCallApi";
 import { Button, Card, Textarea } from "flowbite-react";
@@ -12,17 +13,25 @@ export const InterviewQuestionCard = forwardRef<
 >(({ message }, ref) => {
   const [value, setValue] = useState("");
   const cardData = JSON.parse(message);
-  const { call, loading } = useCallApi({
-    endpoint: Endpoint.UpsertInterviewQuestionResponse,
-    method: "POST",
-    query: null,
-    path: {
-      interview_question_uuid: "",
+  const { handleMessage } = useHandleMessage();
+  const { call, loading } = useCallApi(
+    {
+      endpoint: Endpoint.UpsertInterviewQuestionResponse,
+      method: "POST",
+      query: null,
+      path: {
+        interview_question_uuid: "",
+      },
+      body: {
+        response: "",
+      },
     },
-    body: {
-      response: "",
+    {
+      onSuccess: () => {
+        handleMessage("next_question");
+      },
     },
-  });
+  );
 
   useEffect(() => {
     if (cardData.response) setValue(cardData.response);
@@ -57,6 +66,12 @@ export const InterviewQuestionCard = forwardRef<
           placeholder="Write your answer here..."
           value={value}
           onChange={(e) => setValue(e.currentTarget.value)}
+          disabled={loading}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSubmit();
+            }
+          }}
           theme={{
             colors: {
               purple: "border-2 border-purple-400 focus:border-purple-600",

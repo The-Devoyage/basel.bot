@@ -22,6 +22,7 @@ from database.shareable_link import ShareableLink
 from database.message import Message, SenderIdentifer
 from database.user import User
 from utils.environment import get_env_var
+from utils.brokers import ws_broker, ui_events
 
 from utils.jwt import handle_decode_token, verify_token_session
 from utils.subscription import SubscriptionStatus
@@ -113,13 +114,15 @@ async def websocket_endpoint(
 
     await websocket.accept()
 
+    if user_claims and user_claims.user and user_claims.user.uuid:
+        ws_broker[user_claims.user.uuid] = websocket
+
     agent = await get_agent(
         is_candidate,
         chatting_with,  # type:ignore
         user_claims,
         subscription_status,
         shareable_link,
-        websocket,
     )
 
     try:
@@ -135,6 +138,10 @@ async def websocket_endpoint(
                 if incoming.files and user_claims:
                     create_s3_documents(user=user_claims.user, files=incoming.files)
 
+                logger.debug(
+                    f"CRED CHECK: {user_claims} - {subscription_status} - {chatting_with}"
+                )
+
                 # Handle save message
                 if (
                     user_claims
@@ -148,6 +155,7 @@ async def websocket_endpoint(
                         sender=incoming.sender,
                         text=incoming.text,
                         created_by=user_claims.user,  # type:ignore
+                        context=incoming.context,
                     ).create()
 
                 # Handle create response
@@ -156,6 +164,7 @@ async def websocket_endpoint(
                     prompt += f"\n\n #Attached Files: {incoming.files}"
                 if incoming.context:
                     prompt += f"\n\n #Context: {incoming.context}"
+
                 chat_response = await agent.astream_chat(prompt)
 
                 chat_time = datetime.now()
@@ -184,6 +193,16 @@ async def websocket_endpoint(
                     buttons=None,
                 )
                 await websocket.send_text(end_response.model_dump_json())
+
+                # Send UI Events
+                if (
+                    user_claims
+                    and user_claims.user
+                    and user_claims.user.uuid in ui_events
+                ):
+                    for event in ui_events[user_claims.user.uuid]:
+                        await websocket.send_text(event)
+                    ui_events[user_claims.user.uuid] = []
 
                 # Track SL Views
                 if message_count == 0 and shareable_link:

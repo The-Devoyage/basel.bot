@@ -27,7 +27,7 @@ export const TakeInterviewButton: FC<{
     if (pathname !== "/") router.push("/");
     const context =
       action === "take_interview"
-        ? `Interview UUID: ${interview.uuid}. Ask me questions one at a time. Check to see if I have completed any questions and pick up where I left off.`
+        ? `Interview UUID: ${interview.uuid}. Ask me questions one at a time. Check to see if I have completed any questions and pick up where I left off. Use the ask_interview_question tool to ask questions.`
         : `Interview UUID: ${interview.uuid}`;
     return handleMessage(
       shareableLink ? "recruiter_interview" : action,

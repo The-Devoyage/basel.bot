@@ -1,5 +1,4 @@
 from typing import List
-from fastapi import WebSocket
 from llama_index.core.tools import BaseTool
 from basel.tools.ask_interview_question_tool import (
     create_ask_interview_question_tool,
@@ -51,7 +50,7 @@ def get_unauthenticated_tools():
     return tools
 
 
-def get_global_tools(chatting_with: User, websocket: WebSocket):
+def get_global_tools(chatting_with: User):
     tools: List[BaseTool] = []
 
     candidate_profile_tool = create_candidate_profile_tool(chatting_with)
@@ -67,11 +66,6 @@ def get_global_tools(chatting_with: User, websocket: WebSocket):
 
     create_resume_tool = create_create_resume_tool()
     tools.append(create_resume_tool)
-
-    ask_interview_question_tool = create_ask_interview_question_tool(
-        websocket, chatting_with
-    )
-    tools.append(ask_interview_question_tool)
 
     return tools
 
@@ -146,5 +140,9 @@ def get_candidate_tools(
         current_user
     )
     tools.append(create_interview_assessment_tool)
+
+    # Ask interview question tool
+    ask_interview_question_tool = create_ask_interview_question_tool(current_user)
+    tools.append(ask_interview_question_tool)
 
     return tools

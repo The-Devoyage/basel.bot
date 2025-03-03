@@ -54,9 +54,7 @@ def create_create_interview_question_tool(current_user: User, role: Role):
         ),
         name="create_interview_question_tool",
         description="""
-        Useful to create an associate a question to an interview. 
-        General users may only add questions to interviews they have created.
-        Admin users may add questions to any interview.
+        Useful for adding new questions to interviews.
         """,
         fn_schema=CreateInterviewQuestionParams,
     )
