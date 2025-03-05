@@ -11,6 +11,12 @@ from fastapi import (
     status,
 )
 import jwt
+from llama_index.core.agent.workflow import (
+    AgentOutput,
+    AgentStream,
+    ToolCall,
+    ToolCallResult,
+)
 from basel.agent import get_agent
 from basel.indexing import add_index, get_documents, create_s3_documents
 
@@ -117,7 +123,7 @@ async def websocket_endpoint(
     if user_claims and user_claims.user and user_claims.user.uuid:
         ws_broker[user_claims.user.uuid] = websocket
 
-    agent = await get_agent(
+    handler = await get_agent(
         is_candidate,
         chatting_with,  # type:ignore
         user_claims,
@@ -165,23 +171,52 @@ async def websocket_endpoint(
                 if incoming.context:
                     prompt += f"\n\n #Context: {incoming.context}"
 
-                chat_response = await agent.astream_chat(prompt)
+                # chat_response = await agent.astream_chat(prompt)
+                handler.run(user_msg=prompt)
 
+                current_agent = None
+                response_text = ""
                 chat_time = datetime.now()
 
-                response_text = ""
+                async for event in handler.stream_events():
+                    if (
+                        hasattr(event, "current_agent_name")
+                        and event.current_agent_name != current_agent
+                    ):
+                        current_agent = event.current_agent_name
+                        print(f"\n{'='*50}")
+                        print(f"🤖 Agent: {current_agent}")
+                        print(f"{'='*50}\n")
 
-                async for token in chat_response.async_response_gen():
-                    response = SocketMessage(
-                        text=token,
-                        message_type=MessageType.MESSAGE,
-                        timestamp=chat_time,
-                        sender=SenderIdentifer.BOT,
-                        buttons=None,
-                    )
-                    # Respond to user
-                    await websocket.send_text(response.model_dump_json())
-                    response_text += token
+                    if isinstance(event, AgentStream):
+                        if event.delta:
+                            print(f"\n{'='*50}")
+                            print(f"⭐ Agent Stream")
+                            print(f"{'='*50}\n")
+                            print(event.delta, end="", flush=True)
+                            response = SocketMessage(
+                                text=event.delta,
+                                message_type=MessageType.MESSAGE,
+                                timestamp=chat_time,
+                                sender=SenderIdentifer.BOT,
+                                buttons=None,
+                            )
+                            # Respond to user
+                            await websocket.send_text(response.model_dump_json())
+                            response_text += event.delta
+                    elif isinstance(event, AgentOutput):
+                        if event.tool_calls:
+                            print(
+                                "🛠️  Planning to use tools:",
+                                [call.tool_name for call in event.tool_calls],
+                            )
+                    elif isinstance(event, ToolCallResult):
+                        print(f"🔧 Tool Result ({event.tool_name}):")
+                        print(f"  Arguments: {event.tool_kwargs}")
+                        print(f"  Output: {event.tool_output}")
+                    elif isinstance(event, ToolCall):
+                        print(f"🔨 Calling Tool: {event.tool_name}")
+                        print(f"  With arguments: {event.tool_kwargs}")
 
                 logger.debug(f"CHAT RESPONSE {response_text}")
 

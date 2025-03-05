@@ -1,9 +1,9 @@
 import logging
 from typing import List, Optional
 from beanie import SortDirection
-from llama_index.agent.openai import OpenAIAgent
 from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
+from llama_index.core.agent.workflow import AgentWorkflow, FunctionAgent
 from llama_index.core.tools import BaseTool
 from basel.get_system_prompt import get_system_prompt
 from basel.tools import (
@@ -30,7 +30,7 @@ async def get_agent(
     user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
     shareable_link: ShareableLink | None,
-) -> OpenAIAgent:
+) -> AgentWorkflow:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
     system_prompt = await get_system_prompt(
         subscription_status, user_claims, chatting_with, is_candidate, shareable_link
@@ -95,10 +95,14 @@ async def get_agent(
                     chat_history.append(history)
                 chat_history.reverse()
 
-    agent = OpenAIAgent.from_tools(
+    basel_agent = FunctionAgent(
+        name="root agent",
+        description="The root agent, and currently only agent in the workflow.",
         tools=tools,
-        verbose=True,
         system_prompt=system_prompt,
-        chat_history=chat_history,
+        # chat_history=chat_history,
     )
-    return agent
+
+    agent_workflow = AgentWorkflow(agents=[basel_agent])
+
+    return agent_workflow
