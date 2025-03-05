@@ -1,5 +1,5 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from beanie import SortDirection
 from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
@@ -24,13 +24,13 @@ from utils.subscription import SubscriptionStatus
 logger = logging.getLogger(__name__)
 
 
-async def get_agent(
+async def get_agent_workflow(
     is_candidate,
     chatting_with: Optional[User],
     user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
     shareable_link: ShareableLink | None,
-) -> AgentWorkflow:
+) -> Tuple[AgentWorkflow, List[ChatMessage]]:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
     system_prompt = await get_system_prompt(
         subscription_status, user_claims, chatting_with, is_candidate, shareable_link
@@ -84,13 +84,15 @@ async def get_agent(
                 )
 
                 for message in messages:
+                    if not message.text:
+                        continue
                     history = ChatMessage(
                         role=MessageRole.ASSISTANT
                         if message.sender == "bot"
                         else MessageRole.USER,
                         content=message.text + f"/n{message.context}"
                         if message.context
-                        else "",
+                        else message.text,
                     )
                     chat_history.append(history)
                 chat_history.reverse()
@@ -105,4 +107,4 @@ async def get_agent(
 
     agent_workflow = AgentWorkflow(agents=[basel_agent])
 
-    return agent_workflow
+    return (agent_workflow, chat_history)

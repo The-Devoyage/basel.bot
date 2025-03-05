@@ -17,7 +17,7 @@ from llama_index.core.agent.workflow import (
     ToolCall,
     ToolCallResult,
 )
-from basel.agent import get_agent
+from basel.agent_workflow import get_agent_workflow
 from basel.indexing import add_index, get_documents, create_s3_documents
 
 from classes.user_claims import ShareableLinkClaims
@@ -123,14 +123,6 @@ async def websocket_endpoint(
     if user_claims and user_claims.user and user_claims.user.uuid:
         ws_broker[user_claims.user.uuid] = websocket
 
-    handler = await get_agent(
-        is_candidate,
-        chatting_with,  # type:ignore
-        user_claims,
-        subscription_status,
-        shareable_link,
-    )
-
     try:
         while True:
             data = await websocket.receive_text()
@@ -171,8 +163,16 @@ async def websocket_endpoint(
                 if incoming.context:
                     prompt += f"\n\n #Context: {incoming.context}"
 
+                (handler, chat_history) = await get_agent_workflow(
+                    is_candidate,
+                    chatting_with,  # type:ignore
+                    user_claims,
+                    subscription_status,
+                    shareable_link,
+                )
+
                 # chat_response = await agent.astream_chat(prompt)
-                handler.run(user_msg=prompt)
+                handler.run(user_msg=prompt, chat_history=chat_history)
 
                 current_agent = None
                 response_text = ""
