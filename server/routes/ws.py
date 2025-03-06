@@ -123,6 +123,14 @@ async def websocket_endpoint(
     if user_claims and user_claims.user and user_claims.user.uuid:
         ws_broker[user_claims.user.uuid] = websocket
 
+    (handler, chat_history) = await get_agent_workflow(
+        is_candidate,
+        chatting_with,  # type:ignore
+        user_claims,
+        subscription_status,
+        shareable_link,
+    )
+
     try:
         while True:
             data = await websocket.receive_text()
@@ -163,14 +171,6 @@ async def websocket_endpoint(
                 if incoming.context:
                     prompt += f"\n\n #Context: {incoming.context}"
 
-                (handler, chat_history) = await get_agent_workflow(
-                    is_candidate,
-                    chatting_with,  # type:ignore
-                    user_claims,
-                    subscription_status,
-                    shareable_link,
-                )
-
                 # chat_response = await agent.astream_chat(prompt)
                 handler.run(user_msg=prompt, chat_history=chat_history)
 
@@ -184,16 +184,12 @@ async def websocket_endpoint(
                         and event.current_agent_name != current_agent
                     ):
                         current_agent = event.current_agent_name
-                        print(f"\n{'='*50}")
-                        print(f"🤖 Agent: {current_agent}")
-                        print(f"{'='*50}\n")
+                        logger.info(f"\n{'='*50}")
+                        logger.info(f"🤖 Agent: {current_agent}")
+                        logger.info(f"{'='*50}\n")
 
                     if isinstance(event, AgentStream):
                         if event.delta:
-                            print(f"\n{'='*50}")
-                            print(f"⭐ Agent Stream")
-                            print(f"{'='*50}\n")
-                            print(event.delta, end="", flush=True)
                             response = SocketMessage(
                                 text=event.delta,
                                 message_type=MessageType.MESSAGE,
@@ -206,17 +202,17 @@ async def websocket_endpoint(
                             response_text += event.delta
                     elif isinstance(event, AgentOutput):
                         if event.tool_calls:
-                            print(
+                            logger.info(
                                 "🛠️  Planning to use tools:",
                                 [call.tool_name for call in event.tool_calls],
                             )
                     elif isinstance(event, ToolCallResult):
-                        print(f"🔧 Tool Result ({event.tool_name}):")
-                        print(f"  Arguments: {event.tool_kwargs}")
-                        print(f"  Output: {event.tool_output}")
+                        logger.info(f"🔧 Tool Result ({event.tool_name}):")
+                        logger.info(f"  Arguments: {event.tool_kwargs}")
+                        logger.info(f"  Output: {event.tool_output}")
                     elif isinstance(event, ToolCall):
-                        print(f"🔨 Calling Tool: {event.tool_name}")
-                        print(f"  With arguments: {event.tool_kwargs}")
+                        logger.info(f"🔨 Calling Tool: {event.tool_name}")
+                        logger.info(f"  With arguments: {event.tool_kwargs}")
 
                 logger.debug(f"CHAT RESPONSE {response_text}")
 
