@@ -203,8 +203,7 @@ async def websocket_endpoint(
                     elif isinstance(event, AgentOutput):
                         if event.tool_calls:
                             logger.info(
-                                "🛠️  Planning to use tools:",
-                                [call.tool_name for call in event.tool_calls],
+                                f"🛠️  Planning to use tools: {[call.tool_name for call in event.tool_calls]}",
                             )
                     elif isinstance(event, ToolCallResult):
                         logger.info(f"🔧 Tool Result ({event.tool_name}):")
