@@ -65,8 +65,7 @@ def create_insert_user_meta_tool(user: User):
         name="insert_user_meta_tool",
         description="""
             Useful to save identified career facts about the candidate throughout the conversation as needed.
-            Anytime a user highlights skills, career facts, hobbies, or personal interests, use this tool to log it to your database.
-            """,
+        """,
         async_fn=lambda fact: insert_user_meta(user, fact),
         fn_schema=InsertUserMetaToolParams,
     )
