@@ -109,7 +109,9 @@ async def get_agent_workflow(
     agents = aggregate_public_agents()
     if user_claims and chatting_with:
         authenticated_agents = aggregate_authenticated_agents(
-            chatting_with, is_candidate=is_candidate
+            chatting_with=chatting_with,
+            is_candidate=is_candidate,
+            subscription_status=subscription_status,
         )
         agents.extend(authenticated_agents)
 
