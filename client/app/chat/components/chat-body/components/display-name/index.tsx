@@ -15,7 +15,7 @@ export const DisplayName: FC<{ chattingWith: User | null }> = ({
     );
 
   return (
-    <Typography.Heading className="w-2/3 text-wrap">
+    <Typography.Heading className="w-2/3 break-words">
       {chattingWith?.email.split("@")?.at(0) || "Welcome!"}
     </Typography.Heading>
   );
