@@ -5,6 +5,7 @@ from basel.agents.manager_user_agent import init_manage_user_agent
 from basel.agents.resume_agent import init_resume_generator_agent
 from basel.agents.root_agent import init_root_agent
 from basel.agents.standup_agent import init_standup_agent
+from basel.agents.update_inerview_agent import init_update_interview_agent
 from database.user import User
 from utils.subscription import SubscriptionStatus
 
@@ -52,5 +53,9 @@ def aggregate_authenticated_agents(
             chatting_with, subscription_status
         )
         agents.append(create_interview_agent)
+
+        # Update Interview Agent
+        update_interview_agent = init_update_interview_agent(current_user=chatting_with)
+        agents.append(update_interview_agent)
 
     return agents
