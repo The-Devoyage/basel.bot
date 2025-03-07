@@ -26,16 +26,16 @@ logger = logging.getLogger(__name__)
 
 
 async def get_agent_workflow(
-    is_candidate,
+    is_current_user,
     chatting_with: Optional[User],
     user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
     shareable_link: ShareableLink | None,
 ) -> Tuple[AgentWorkflow, List[ChatMessage]]:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
-    system_prompt = await get_system_prompt(
-        subscription_status, user_claims, chatting_with, is_candidate, shareable_link
-    )
+    # system_prompt = await get_system_prompt(
+    #     subscription_status, user_claims, chatting_with, is_candidate, shareable_link
+    # )
 
     tools: List[BaseTool] = []
     chat_history: List[ChatMessage] = []
@@ -102,7 +102,7 @@ async def get_agent_workflow(
         name="root agent",
         description="The root agent, and currently only agent in the workflow.",
         tools=tools,
-        system_prompt=system_prompt,
+        # system_prompt=system_prompt,
         # chat_history=chat_history,
     )
 
@@ -110,7 +110,7 @@ async def get_agent_workflow(
     if user_claims and chatting_with:
         authenticated_agents = aggregate_authenticated_agents(
             chatting_with=chatting_with,
-            is_candidate=is_candidate,
+            is_current_user=is_current_user,
             subscription_status=subscription_status,
         )
         agents.extend(authenticated_agents)

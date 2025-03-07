@@ -36,7 +36,7 @@ async def get_standups(
         subscription_status = await verify_subscription(user_claims.user)
 
         (handler, _) = await get_agent_workflow(
-            is_candidate=True,
+            is_current_user=True,
             chatting_with=user_claims.user,
             user_claims=user_claims,
             subscription_status=subscription_status,

@@ -114,11 +114,11 @@ def get_candidate_tools(
     update_interview_tool = create_update_interview_tool(current_user, role)
     tools.append(update_interview_tool)
 
-    # Create Interview Question Tool
-    create_interview_question_tool = create_create_interview_question_tool(
-        current_user, role
-    )
-    tools.append(create_interview_question_tool)
+    # # Create Interview Question Tool
+    # create_interview_question_tool = create_create_interview_question_tool(
+    #     current_user, role
+    # )
+    # tools.append(create_interview_question_tool)
 
     # Update Interview Question Tool
     update_interview_question_tool = create_update_interview_question_tool(

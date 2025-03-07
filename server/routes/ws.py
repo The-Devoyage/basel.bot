@@ -114,9 +114,9 @@ async def websocket_endpoint(
         and chatting_with is not None
         and user_claims.user.id == chatting_with.id  # type:ignore
     ):
-        is_candidate = True
+        is_current_user = True
     else:
-        is_candidate = False
+        is_current_user = False
 
     await websocket.accept()
 
@@ -124,7 +124,7 @@ async def websocket_endpoint(
         ws_broker[user_claims.user.uuid] = websocket
 
     (handler, chat_history) = await get_agent_workflow(
-        is_candidate,
+        is_current_user,
         chatting_with,  # type:ignore
         user_claims,
         subscription_status,
