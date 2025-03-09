@@ -55,9 +55,11 @@ async def insert_user_meta(user: User, fact: str):
                 logger.warn("WEBSOCKET NOT FOUND")
             else:
                 await websocket.send_json(await notification.to_public_dict(json=True))
+                return True
         except Exception as e:
             # Log errors in the notification process
             logger.error(f"Error in notification process: {e}")
+            return False
 
 
 def create_insert_user_meta_tool(user: User):

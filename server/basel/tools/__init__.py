@@ -134,10 +134,10 @@ def get_candidate_tools(
     # )
     # tools.append(upsert_interview_question_response_tool)
 
-    create_interview_assessment_tool = create_create_interview_assessment_tool(
-        current_user
-    )
-    tools.append(create_interview_assessment_tool)
+    # create_interview_assessment_tool = create_create_interview_assessment_tool(
+    #     current_user
+    # )
+    # tools.append(create_interview_assessment_tool)
 
     # Ask interview question tool
     ask_interview_question_tool = create_ask_interview_question_tool(current_user)

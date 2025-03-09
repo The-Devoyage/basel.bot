@@ -17,6 +17,12 @@ from llama_index.core.agent.workflow import (
     ToolCall,
     ToolCallResult,
 )
+from llama_index.core.workflow import (
+    Context,
+    HumanResponseEvent,
+    InputRequiredEvent,
+    JsonPickleSerializer,
+)
 from basel.agent_workflow import get_agent_workflow
 from basel.indexing import add_index, get_documents, create_s3_documents
 
@@ -123,13 +129,15 @@ async def websocket_endpoint(
     if user_claims and user_claims.user and user_claims.user.uuid:
         ws_broker[user_claims.user.uuid] = websocket
 
-    (handler, chat_history) = await get_agent_workflow(
+    (workflow, chat_history, ctx) = await get_agent_workflow(
         is_current_user,
         chatting_with,  # type:ignore
         user_claims,
         subscription_status,
         shareable_link,
     )
+    ctx_dict = None
+    persist_context = False
 
     try:
         while True:
@@ -164,6 +172,21 @@ async def websocket_endpoint(
                         context=incoming.context,
                     ).create()
 
+                if ctx_dict:
+                    # Handle Input Required Events
+                    restored_ctx = Context.from_dict(
+                        workflow, ctx_dict, serializer=JsonPickleSerializer()
+                    )
+                    handler = workflow.run(ctx=restored_ctx)
+                    if handler.ctx:
+                        handler.ctx.send_event(
+                            HumanResponseEvent(
+                                response=incoming.text,
+                            )
+                        )
+                    ctx_dict = None
+                    persist_context = False
+
                 # Handle create response
                 prompt = incoming.text
                 if incoming.files:
@@ -172,7 +195,7 @@ async def websocket_endpoint(
                     prompt += f"\n\n #Context: {incoming.context}"
 
                 # chat_response = await agent.astream_chat(prompt)
-                handler.run(user_msg=prompt, chat_history=chat_history)
+                handler = workflow.run(user_msg=prompt, chat_history=chat_history)
 
                 current_agent = None
                 response_text = ""
@@ -212,6 +235,11 @@ async def websocket_endpoint(
                     elif isinstance(event, ToolCall):
                         logger.info(f"🔨 Calling Tool: {event.tool_name}")
                         logger.info(f"  With arguments: {event.tool_kwargs}")
+                    elif isinstance(event, InputRequiredEvent):
+                        logger.info(f"⏳ Input Required: {event.prefix}")
+                        response_text = event.prefix
+                        persist_context = True
+                        break
 
                 logger.debug(f"CHAT RESPONSE {response_text}")
 
@@ -223,6 +251,10 @@ async def websocket_endpoint(
                     buttons=None,
                 )
                 await websocket.send_text(end_response.model_dump_json())
+
+                # save context
+                if handler.ctx and persist_context:
+                    ctx_dict = handler.ctx.to_dict(serializer=JsonPickleSerializer())
 
                 # Send UI Events
                 if (

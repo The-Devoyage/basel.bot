@@ -1,4 +1,5 @@
 from typing import List, Optional
+from uuid import UUID
 from llama_index.core.bridge.pydantic import Field
 from llama_index.core.tools.function_tool import FunctionTool
 from llama_index.llms.openai.utils import BaseModel
@@ -7,6 +8,12 @@ from database.interview import Interview
 
 
 class GetInterviewsParams(BaseModel):
+    uuid: Optional[UUID] = Field(
+        default=None,
+        description="""
+            Search for a specific interview by the UUID of the interview, if provided.
+        """,
+    )
     search_term: Optional[str] = Field(
         default=None,
         description="""
@@ -28,11 +35,23 @@ class GetInterviewsParams(BaseModel):
     )
 
 
-async def get_interviews(search_term=None, limit=10, offset=0, tags=None, url=None):
+class InterviewShortView(BaseModel):
+    uuid: UUID
+    description: str
+    position: str
+    url: Optional[str] = None
+    tags: List[str] = []
+    status: bool = True
+
+
+async def get_interviews(
+    search_term=None, limit=10, offset=0, tags=None, url=None, uuid=None
+):
     interviews = (
         Interview.find(
             Interview.status == True, Interview.deleted_at == None, fetch_links=True
         )
+        .project(InterviewShortView)
         .limit(limit)
         .skip(offset)
     )
@@ -44,10 +63,10 @@ async def get_interviews(search_term=None, limit=10, offset=0, tags=None, url=No
         interviews.find({"$or": tags_query})
     if url:
         interviews.find({"url": url})
+    if uuid:
+        interviews.find(Interview.uuid == UUID(uuid))
 
     interviews = await interviews.to_list()
-
-    interviews = [await interview.to_public_dict() for interview in interviews]
 
     return interviews
 

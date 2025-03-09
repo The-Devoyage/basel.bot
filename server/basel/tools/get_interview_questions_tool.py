@@ -12,15 +12,22 @@ class GetInterviewQuestionsParams(BaseModel):
     )
 
 
+class InterviewQuestionShortView(BaseModel):
+    uuid: UUID
+    question: str
+
+
 async def get_interview_questions(interview_uuid):
-    interview_questions = await InterviewQuestion.find(
-        InterviewQuestion.interview.uuid == UUID(interview_uuid),  # type:ignore
-        fetch_links=True,
-    ).to_list()
-    return [
-        await interview_question.to_public_dict()
-        for interview_question in interview_questions
-    ]
+    interview_questions = (
+        await InterviewQuestion.find(
+            InterviewQuestion.interview.uuid == UUID(interview_uuid),  # type:ignore
+            # InterviewQuestion.status == True,
+            fetch_links=True,
+        )
+        .project(InterviewQuestionShortView)
+        .to_list()
+    )
+    return interview_questions
 
 
 def create_get_interview_questions_tool():

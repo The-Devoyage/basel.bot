@@ -18,8 +18,9 @@ def init_manage_user_agent(current_user: User):
 
     manage_user_agent = FunctionAgent(
         name="manage_user_agent",
-        description="Useful for saving data about a user.",
+        description="Useful for saving new profile information about the current user.",
         system_prompt="""
+            You are the `manage_user_agent` that can save user profile information including identity information and memories about the users career.
             - When a user mentions skills, career facts, hobbies, or personal interests, log the information using the `insert_user_meta_tool`.  
             - When a user provides profile details (e.g., first name, last name), update their information using the `update_user_tool`.          
         """,

@@ -3,7 +3,6 @@ from basel.get_system_prompt import get_system_prompt
 
 
 def init_root_agent():
-    # system_prompt = get_system_prompt()
     root_agent = FunctionAgent(
         name="root_agent",
         description="An agent with access to tools for a user who has not authenticated.",
@@ -16,6 +15,15 @@ def init_root_agent():
 
             - When a user mentions skills, career facts, hobbies, or personal interests, pass it off to the `manage_user_agent` to create a memory.
         """,
+        can_handoff_to=[
+            "conduct_interview_agent",
+            "candidate_agent",
+            "create_interview_agent",
+            "manage_user_agent",
+            "resume_generator_agent",
+            "standup_agent",
+            "update_interview_agent",
+        ],
     )
 
     return root_agent

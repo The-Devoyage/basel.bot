@@ -1,16 +1,20 @@
-from basel.agents.canidate_agent import init_candidate_agent
+from typing import Optional
+
+from basel.agents.candidate_agent import init_candidate_agent
+from basel.agents.conduct_interview_agent import init_conduct_interview_agent
 from basel.agents.create_interview_agent import init_create_interview_agent
 from basel.agents.interview_retriever import init_interview_retriever_agent
-from basel.agents.manager_user_agent import init_manage_user_agent
+from basel.agents.manage_user_agent import init_manage_user_agent
 from basel.agents.resume_agent import init_resume_generator_agent
 from basel.agents.root_agent import init_root_agent
 from basel.agents.standup_agent import init_standup_agent
+from basel.agents.submit_interview_agent import init_submit_interview_agent
 from basel.agents.update_interview_agent import init_update_interview_agent
 from database.user import User
 from utils.subscription import SubscriptionStatus
 
 
-def aggregate_public_agents():
+def aggregate_public_agents(chatting_with: Optional[User]):
     agents = []
 
     # Root Agent
@@ -18,7 +22,7 @@ def aggregate_public_agents():
     agents.append(root_agent)
 
     # Get Interviews and Questions
-    interview_retriever = init_interview_retriever_agent()
+    interview_retriever = init_interview_retriever_agent(chatting_with=chatting_with)
     agents.append(interview_retriever)
 
     return agents
@@ -57,5 +61,15 @@ def aggregate_authenticated_agents(
         # Update Interview Agent
         update_interview_agent = init_update_interview_agent(current_user=chatting_with)
         agents.append(update_interview_agent)
+
+        # Conduct Interview Agent
+        conduct_interview_agent = init_conduct_interview_agent(
+            current_user=chatting_with
+        )
+        agents.append(conduct_interview_agent)
+
+        # Submit Interview Agent
+        submit_interview_agent = init_submit_interview_agent(current_user=chatting_with)
+        agents.append(submit_interview_agent)
 
     return agents

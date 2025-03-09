@@ -102,12 +102,12 @@ def create_create_interview_tool(
             tags=tags,
             subscription_status=subscription_status,
         ),
-        name="create_interiew_tool",
-        description="""
-        Useful to insert an interview into the database by the request of a user. 
-        Once created interview questions may be created and associated with the interview.
-        Always confirm before creating.
-        """,
+        name="create_interview_tool",
+        description=(
+            "Useful to insert an interview into the database by the request of a user."
+            "Once created interview questions may be created and associated with the interview."
+            "Always confirm before creating."
+        ),
         fn_schema=CreateInterviewParams,
     )
 

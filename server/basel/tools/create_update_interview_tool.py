@@ -67,7 +67,14 @@ async def update_interview(
 def create_update_interview_tool(current_user: User):
     update_interview_tool = FunctionTool.from_defaults(
         name="update_interview_tool",
-        description="Update an existing interview including organization name, description, interview type, tags, position and status.",
+        description="""
+        Update an existing interview including the following fields:
+        - description: A short summary about the interview.
+        - interview type: If the interview is a general or application rated.
+        - tags: Key words to organize interviews.
+        - position: The name of the position the interview is for.
+        - status: If the interview is enabled or disabled.
+        """,
         async_fn=lambda interview_uuid, description, interview_type, tags, position, status: update_interview(
             interview_uuid=interview_uuid,
             user=current_user,

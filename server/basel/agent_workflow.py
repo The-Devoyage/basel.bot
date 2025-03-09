@@ -5,8 +5,8 @@ from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
 from llama_index.core.agent.workflow import AgentWorkflow, FunctionAgent
 from llama_index.core.tools import BaseTool
+from llama_index.core.workflow import Context
 from basel.agents import aggregate_authenticated_agents, aggregate_public_agents
-from basel.get_system_prompt import get_system_prompt
 from basel.tools import (
     get_admin_tools,
     get_candidate_tools,
@@ -31,7 +31,7 @@ async def get_agent_workflow(
     user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
     shareable_link: ShareableLink | None,
-) -> Tuple[AgentWorkflow, List[ChatMessage]]:
+) -> Tuple[AgentWorkflow, List[ChatMessage], Context]:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
     # system_prompt = await get_system_prompt(
     #     subscription_status, user_claims, chatting_with, is_candidate, shareable_link
@@ -106,7 +106,7 @@ async def get_agent_workflow(
         # chat_history=chat_history,
     )
 
-    agents = aggregate_public_agents()
+    agents = aggregate_public_agents(chatting_with=chatting_with)
     if user_claims and chatting_with:
         authenticated_agents = aggregate_authenticated_agents(
             chatting_with=chatting_with,
@@ -116,5 +116,6 @@ async def get_agent_workflow(
         agents.extend(authenticated_agents)
 
     agent_workflow = AgentWorkflow(agents=agents, root_agent="root_agent")
+    ctx = Context(agent_workflow)
 
-    return (agent_workflow, chat_history)
+    return (agent_workflow, chat_history, ctx)

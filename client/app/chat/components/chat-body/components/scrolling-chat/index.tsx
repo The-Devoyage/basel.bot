@@ -110,7 +110,7 @@ export const ScrollingChat = () => {
     >
       {client.messages.map((m, index) => (
         <ChatCard
-          key={m.timestamp?.toString()}
+          key={index}
           message={m}
           ref={
             !client.incomingMessage && index === client?.messages.length - 1

@@ -15,17 +15,24 @@ class GetInterviewQuestionResponsesParams(BaseModel):
     )
 
 
-async def get_interview_question_responses(user: User, interview_uuid: str):
-    interview_question_responses = await InterviewQuestionResponse.find(
-        InterviewQuestionResponse.interview_question.interview.uuid  # type:ignore
-        == UUID(interview_uuid),
-        InterviewQuestionResponse.user.id == user.id,  # type:ignore
-        fetch_links=True,
-    ).to_list()
+class InterviewQuestionResponseShortView(BaseModel):
+    uuid: UUID
+    response: str
 
-    return [
-        await response.to_public_dict() for response in interview_question_responses
-    ]
+
+async def get_interview_question_responses(user: User, interview_uuid: str):
+    interview_question_responses = (
+        await InterviewQuestionResponse.find(
+            InterviewQuestionResponse.interview_question.interview.uuid  # type:ignore
+            == UUID(interview_uuid),
+            InterviewQuestionResponse.user.id == user.id,  # type:ignore
+            fetch_links=True,
+        )
+        .project(InterviewQuestionResponseShortView)
+        .to_list()
+    )
+
+    return interview_question_responses
 
 
 def create_get_interview_question_responses_tool(user: User):

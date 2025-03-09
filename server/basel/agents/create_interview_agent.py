@@ -29,14 +29,13 @@ def init_create_interview_agent(
 
     create_interview_agent = FunctionAgent(
         name="create_interview_agent",
-        description="Useful to create an interview with an initial set of questions",
-        system_prompt="""
-            - You are the interview creation agent, responsible for generating an `interview` object with an initial set of questions in the database.  
-            - Always request the URL to the job posting before creating the interview.
-            - Use the `scrape_webpage_tool` to scrape the URL to the job posting provided by the user or request one if there is no URL.
-            - Use the `create_interview_tool` to create the interview with the scraped data.
-            - Always automatically use the `create_interview_question_tool` to add questions to the interview after it has been created.
-        """,
+        description="Useful to create an interview for a new job posting.",
+        system_prompt=(
+            "You are the create_interview_agent that can create interviews for new job postings on the Basel Platform."
+            "You should always request the URL to the job posting before creating the interview."
+            "You should always scrape the posting's web page with the `scrape_webpage_tool` to learn about the posting."
+            "You should aways add questions when creating a new interview."
+        ),
         tools=tools,
     )
     return create_interview_agent
