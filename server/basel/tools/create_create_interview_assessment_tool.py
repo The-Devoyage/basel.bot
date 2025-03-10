@@ -3,14 +3,9 @@ from typing import Optional
 from uuid import UUID
 from beanie.operators import In
 from chromadb.api.models.Collection import logging
-from llama_index.agent.openai import OpenAIAgent
 from llama_index.core.bridge.pydantic import BaseModel, Field
 from llama_index.core.tools.function_tool import FunctionTool
 from llama_index.core.workflow import Context, HumanResponseEvent, InputRequiredEvent
-from basel.tools.create_get_interview_question_response_tool import (
-    create_get_interview_question_responses_tool,
-)
-from basel.tools.get_interview_questions_tool import create_get_interview_questions_tool
 from database.interview import Interview
 from database.interview_assessment import InterviewAssessment
 from database.interview_question import InterviewQuestion
@@ -103,9 +98,10 @@ async def create_interview_assessment(
     technical_industry_knowledge: Optional[int] = None,
 ):
     logger.debug("CREATING ASSESSMENT")
+
     ctx.write_event_to_stream(
         InputRequiredEvent(
-            prefix="Are you sure you want to submit this for assessment? This can not be undone. You must type `yes` to approve.",
+            prefix="It looks like you are done with the interview. Do you want to submit this for assessment? This can not be undone. Type `yes` to approve.",
         )
     )
     logger.debug("WAITING FOR APPROVAL")
@@ -159,73 +155,14 @@ async def create_interview_assessment(
                 created_by=user,  # type:ignore
                 interview=interview,  # type:ignore
             ).create()
+
             return interview_assessment
         except Exception as e:
             logger.debug(f"CREATE ASSESMENT ERROR: {str(e)}")
             return str(e)
     else:
         logger.debug("ABORTED")
-        return "Assessment Aborted"
-
-
-# async def create_assessment_agent(ctx: Context, user: User, interview_uuid: str):
-#     logger.debug("CREATING ASSESSMENT")
-#     ctx.write_event_to_stream(
-#         InputRequiredEvent(
-#             prefix="Are you sure you want to submit this for assessment? This can not be undone. You must type `yes` to approve.",
-#         )
-#     )
-#     logger.debug("WAITING FOR APPROVAL")
-
-#     response = await ctx.wait_for_event(HumanResponseEvent)
-#     logger.debug("APPROVAL")
-
-#     if response.response.lower() == "yes":
-#         logger.debug("RESPONSE APPROVED")
-# interview_assessment_tool = FunctionTool.from_defaults(
-#     name="interview_assessment_tool",
-#     description="""
-#         Useful to create and save an assessment for interview responses.
-#     """,
-#     async_fn=lambda interview_uuid, overall, content_relevance=None, communication_skills=None, confidence_delivery=None, structure_organization=None, adaptability_critical_thinking=None, technical_industry_knowledge=None: create_interview_assessment(
-#         user=user,
-#         interview_uuid=interview_uuid,
-#         overall=overall,
-#         content_relevance=content_relevance,
-#         communication_skills=communication_skills,
-#         confidence_delivery=confidence_delivery,
-#         structure_organization=structure_organization,
-#         adaptability_critical_thinking=adaptability_critical_thinking,
-#         technical_industry_knowledge=technical_industry_knowledge,
-#     ),
-#     fn_schema=CreateInterviewAssessmentParams,
-# )
-# agent = OpenAIAgent.from_tools(
-#     tools=[
-#         interview_assessment_tool,
-#         create_get_interview_questions_tool(),
-#         create_get_interview_question_responses_tool(user),
-#     ],
-#     verbose=True,
-#     system_prompt="""
-#         - Your job is to assess the responses for an interview provided by the user.
-#         - Assessments for each category range between 1 and 5.
-#         - Assessments should be critical and rigorous and users that provide thorough well thought responses should receive high scores.
-#     """,
-# )
-# response = await agent.aquery(
-#     f"""
-#         Create an assessment for the following interview uuid: {interview_uuid}.
-#         1. First, Use the get_interview_questions tool to get the interview questions.
-#         2. Then, Use the get_interview_question_responses tool to get the interview responses.
-#         3. Finally, Use the create_interview_assessment tool to perform the assessment.
-#     """
-# )
-
-# return response.response
-# else:
-#     logger.debug("ABORTED")
-#     return "Assessment aborted."
+        raise Exception("Assessment Aborted")
 
 
 def create_create_interview_assessment_tool(user: User):

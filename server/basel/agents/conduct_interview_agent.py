@@ -21,31 +21,22 @@ def init_conduct_interview_agent(current_user: User):
     get_interviews_tool = create_get_interviews_tool()
     tools.append(get_interviews_tool)
 
-    if current_user:
-        # Get Interview Question Responses
-        get_interview_question_responses_tool = (
-            create_get_interview_question_responses_tool(current_user)
-        )
-        tools.append(get_interview_question_responses_tool)
-
-        # Upsert interview question response
-        upsert_interview_question_response_tool = (
-            create_upsert_interview_question_response_tool(current_user)
-        )
-        tools.append(upsert_interview_question_response_tool)
-
-        # Ask interview question tool
-        # ask_interview_question_tool = create_ask_interview_question_tool(current_user)
-        # tools.append(ask_interview_question_tool)
+    # Ask interview question tool
+    ask_interview_question_tool = create_ask_interview_question_tool(current_user)
+    tools.append(ask_interview_question_tool)
 
     conduct_interview_agent = FunctionAgent(
         name="conduct_interview_agent",
         description="Useful for conducting an interviews and saving user responses.",
         system_prompt="""
-            You are the conduct_interview_agent that can ask interview questions to the candidate and collect/save their responses.
-            Pick up where the user left off with the interview and ask the user all of the questions. Hand off to the submit_interview_agent
-            when the user is done.
-        """,
+            You are the conduct_interview_agent that asks interview questions to the user.  
+            - Use the `get_interview_questions_tool` to get the pre-determined questions to ask.
+            - Use the `ask_interview_question_tool` to ask the questions.  
+            - Make the interview experience **friendly and conversational**—introduce yourself, add small talk, or acknowledge the user's answers through the argument named `question_prompt` in the ask_interveiw_question_tool.
+            - Always ask the pre-determined question first, then ask **at least 2 follow-up questions** to dive deeper.
+            - Personalize the follow-up questions based on the user's response.
+            - After collecting all responses, **handoff to submit_interview_agent**.  
+            """,
         tools=tools,
         can_handoff_to=["submit_interview_agent"],
     )

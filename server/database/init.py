@@ -3,6 +3,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import (
     init_beanie,
 )
+from database.interview_transcript import InterviewTranscript
 from database.organization import Organization
 from database.organization_user import OrganizationUser
 from database.standup import Standup
@@ -63,6 +64,7 @@ async def init_db():
             Organization,
             OrganizationUser,
             InterviewAssessment,
+            InterviewTranscript,
         ],
         allow_index_dropping=True,
     )

@@ -65,7 +65,6 @@ async def websocket_endpoint(
     interview_assessment = None
     message_count = 0
 
-    logger.debug(f"INTERVIEW ASSESSMENT UUID {interview_assessment_uuid}")
     try:
         if token:
             user_claims = await handle_decode_token(token)
@@ -172,7 +171,10 @@ async def websocket_endpoint(
                         context=incoming.context,
                     ).create()
 
+                # Get Handler
+                handler = None
                 if ctx_dict:
+                    logger.debug(f"RESTORING CONTEXT: {ctx_dict}")
                     # Handle Input Required Events
                     restored_ctx = Context.from_dict(
                         workflow, ctx_dict, serializer=JsonPickleSerializer()
@@ -186,20 +188,19 @@ async def websocket_endpoint(
                         )
                     ctx_dict = None
                     persist_context = False
+                else:
+                    # Handle create initial prompt
+                    prompt = incoming.text
+                    if incoming.files:
+                        prompt += f"\n\n #Attached Files: {incoming.files}"
+                    if incoming.context:
+                        prompt += f"\n\n #Context: {incoming.context}"
+                    handler = workflow.run(user_msg=prompt, chat_history=chat_history)
 
-                # Handle create response
-                prompt = incoming.text
-                if incoming.files:
-                    prompt += f"\n\n #Attached Files: {incoming.files}"
-                if incoming.context:
-                    prompt += f"\n\n #Context: {incoming.context}"
-
-                # chat_response = await agent.astream_chat(prompt)
-                handler = workflow.run(user_msg=prompt, chat_history=chat_history)
-
+                # Handle Agent
                 current_agent = None
-                response_text = ""
                 chat_time = datetime.now()
+                response_text = ""
 
                 async for event in handler.stream_events():
                     if (
