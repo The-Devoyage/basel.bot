@@ -27,11 +27,11 @@ from basel.agent_workflow import get_agent_workflow
 from basel.indexing import add_index, get_documents, create_s3_documents
 
 from classes.user_claims import ShareableLinkClaims
-from classes.socket_message import ChatMode, MessageType, SocketMessage
+from classes.socket_message import MessageType, SocketMessage
 from database.interview_assessment import InterviewAssessment
 from database.organization_user import OrganizationUser
 from database.shareable_link import ShareableLink
-from database.message import Message, SenderIdentifer
+from database.message import Message, SenderIdentifer, ChatMode
 from database.user import User
 from utils.environment import get_env_var
 from utils.brokers import ws_broker, ui_events
@@ -182,7 +182,7 @@ async def websocket_endpoint(
                                 response=incoming.text,
                             )
                         )
-                    ctx_dict = None
+                    # ctx_dict = None
                     persist_context = False
                 else:
                     # Handle create initial prompt
@@ -285,6 +285,7 @@ async def websocket_endpoint(
                         sender=SenderIdentifer.BOT,
                         text=response_text,
                         created_by=user_claims.user,  # type:ignore
+                        chat_mode=chat_mode,
                     ).create()
 
             except Exception as e:

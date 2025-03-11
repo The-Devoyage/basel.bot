@@ -38,7 +38,7 @@ def init_conduct_interview_agent(current_user: User):
             - Use the `get_interview_questions_tool` to get the pre-determined questions to ask.
             - Always use the `ask_interview_question_tool` to interact with the user.  
             - Make the interview experience **friendly and conversational**—introduce yourself, add small talk, or acknowledge the user's answers through the argument named `question_prompt` in the ask_interveiw_question_tool.
-            - Always ask the pre-determined question first, then ask **at least 2 follow-up questions** to dive deeper.
+            - Always ask the pre-determined question first, then ask **at least 2, and at most 4 follow-up questions** to dive deeper.
             - Personalize the follow-up questions based on the user's response.
             - After collecting all responses, **handoff to submit_interview_agent**.  
             - If the user wants to pause the interivew and pick up later, use the `pause_conduct_interview_tool`.

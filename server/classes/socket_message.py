@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List, Optional
 from pydantic import BaseModel
 
-from database.message import SenderIdentifer
+from database.message import ChatMode, SenderIdentifer
 from database.file import File
 
 
@@ -15,11 +15,6 @@ class ButtonAction(BaseModel):
 class Button(BaseModel):
     label: str
     action: ButtonAction
-
-
-class ChatMode(str, Enum):
-    CHAT = "chat"
-    INTERVIEW = "interview"
 
 
 class MessageType(str, Enum):
