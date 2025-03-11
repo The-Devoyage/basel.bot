@@ -27,7 +27,7 @@ from basel.agent_workflow import get_agent_workflow
 from basel.indexing import add_index, get_documents, create_s3_documents
 
 from classes.user_claims import ShareableLinkClaims
-from classes.socket_message import MessageType, SocketMessage
+from classes.socket_message import ChatMode, MessageType, SocketMessage
 from database.interview_assessment import InterviewAssessment
 from database.organization_user import OrganizationUser
 from database.shareable_link import ShareableLink
@@ -128,7 +128,7 @@ async def websocket_endpoint(
     if user_claims and user_claims.user and user_claims.user.uuid:
         ws_broker[user_claims.user.uuid] = websocket
 
-    (workflow, chat_history, ctx) = await get_agent_workflow(
+    (workflow, chat_history, _) = await get_agent_workflow(
         is_current_user,
         chatting_with,  # type:ignore
         user_claims,
@@ -150,10 +150,6 @@ async def websocket_endpoint(
                 # Handle Index Files Attached to Message
                 if incoming.files and user_claims:
                     create_s3_documents(user=user_claims.user, files=incoming.files)
-
-                logger.debug(
-                    f"CRED CHECK: {user_claims} - {subscription_status} - {chatting_with}"
-                )
 
                 # Handle save message
                 if (
@@ -201,6 +197,7 @@ async def websocket_endpoint(
                 current_agent = None
                 chat_time = datetime.now()
                 response_text = ""
+                chat_mode = ChatMode.CHAT
 
                 async for event in handler.stream_events():
                     if (
@@ -220,6 +217,7 @@ async def websocket_endpoint(
                                 timestamp=chat_time,
                                 sender=SenderIdentifer.BOT,
                                 buttons=None,
+                                chat_mode=chat_mode,
                             )
                             # Respond to user
                             await websocket.send_text(response.model_dump_json())
@@ -244,12 +242,20 @@ async def websocket_endpoint(
 
                 logger.debug(f"CHAT RESPONSE {response_text}")
 
+                if handler.ctx:
+                    chat_mode = (
+                        ChatMode.INTERVIEW
+                        if await handler.ctx.get("interview_in_progress", False)
+                        else ChatMode.CHAT
+                    )
+
                 end_response = SocketMessage(
                     text=response_text,
                     message_type=MessageType.END,
                     timestamp=chat_time,
                     sender=SenderIdentifer.BOT,
                     buttons=None,
+                    chat_mode=chat_mode,
                 )
                 await websocket.send_text(end_response.model_dump_json())
 

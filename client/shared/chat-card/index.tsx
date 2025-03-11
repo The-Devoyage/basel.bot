@@ -1,10 +1,10 @@
 "use client";
 
-import { Avatar, Card } from "flowbite-react";
+import { Avatar, Badge, Card } from "flowbite-react";
 import { BiSolidLeaf } from "react-icons/bi";
 import { forwardRef, useContext } from "react";
 import { Typography } from "../typography";
-import { SocketMessage } from "@/types";
+import { ChatMode, SocketMessage } from "@/types";
 import Markdown from "react-markdown";
 import "./module.styles.css";
 import {
@@ -13,6 +13,7 @@ import {
   InterviewQuestionCard,
 } from "./components";
 import { GlobalContext } from "@/app/provider";
+import clsx from "clsx";
 
 interface ChatCardProps {
   message: SocketMessage;
@@ -30,6 +31,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
 
     const isBot = message.sender === "bot";
     const isCard = message.message_type === "card";
+    const isInterview = message.chat_mode === ChatMode.INTERVIEW;
 
     const getIcon = () => {
       if (icon) return icon;
@@ -59,6 +61,7 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
     };
 
     if (isCard) {
+      //NOTE: DEPRECATED
       return <InterviewQuestionCard message={message.text} ref={ref} />;
     }
 
@@ -75,11 +78,14 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
               : "-7px 3px 20px RGBA(118, 169, 250, 0.2)",
           }}
         >
-          <div className="flex flex-row items-center space-x-4">
-            {getIcon()}
-            <Typography.Heading className="text-xl capitalize">
-              {isBot ? "Basel" : me?.full_name || "You"}
-            </Typography.Heading>
+          <div className="flex flex-row items-center justify-between">
+            <div className="flex flex-row items-center space-x-4">
+              {getIcon()}
+              <Typography.Heading className="text-xl capitalize">
+                {isBot ? "Basel" : me?.full_name || "You"}
+              </Typography.Heading>
+            </div>
+            {isInterview && <Badge color="purple">Interview Mode</Badge>}
           </div>
           {!loading ? (
             <Markdown

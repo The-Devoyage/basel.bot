@@ -1,7 +1,7 @@
 "use client";
 
 import { GlobalContext } from "@/app/provider";
-import { SocketMessage } from "@/types";
+import { ChatMode, SocketMessage } from "@/types";
 import { useContext } from "react";
 
 export type MessageType =
@@ -102,6 +102,7 @@ export const useHandleMessage = () => {
       sender: "user",
       context,
       message_type: "message",
+      chat_mode: ChatMode.CHAT,
     };
 
     client?.handleSend(message, true, useSlToken);

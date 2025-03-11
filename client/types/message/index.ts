@@ -8,6 +8,11 @@ export interface Button {
     | { type: "redirect"; endpoint: string };
 }
 
+export enum ChatMode {
+  CHAT = "chat",
+  INTERVIEW = "interview",
+}
+
 export interface SocketMessage {
   text: string;
   timestamp: Date;
@@ -16,6 +21,7 @@ export interface SocketMessage {
   files?: File[];
   context?: string;
   message_type: "message" | "end" | "card";
+  chat_mode: ChatMode;
 }
 
 export interface Message {

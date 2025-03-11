@@ -2,7 +2,7 @@
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
 import { FC, createContext, useEffect, useMemo, useState } from "react";
-import { SocketMessage, Notification } from "@/types";
+import { SocketMessage, Notification, ChatMode } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
 import { setShareableLink, setMe } from "@/shared/useStore/auth";
@@ -142,6 +142,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
             timestamp: new Date(m.created_at),
             sender: m.sender,
             message_type: "message" as const,
+            chat_mode: ChatMode.CHAT,
           }));
           if (items) client.handlePrependMessages(items);
         }

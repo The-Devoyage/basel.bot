@@ -1,7 +1,7 @@
 from typing import List
 from llama_index.core.tools import BaseTool
 from basel.tools.ask_interview_question_tool import (
-    create_ask_interview_question_tool,
+    init_ask_interview_question_tool,
 )
 from basel.tools.candidate_profile_tool import create_candidate_profile_tool
 from basel.tools.create_about_tool import create_about_tool
@@ -140,7 +140,7 @@ def get_candidate_tools(
     # tools.append(create_interview_assessment_tool)
 
     # Ask interview question tool
-    ask_interview_question_tool = create_ask_interview_question_tool(current_user)
+    ask_interview_question_tool = init_ask_interview_question_tool(current_user)
     tools.append(ask_interview_question_tool)
 
     return tools

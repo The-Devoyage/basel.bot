@@ -17,7 +17,13 @@ class AskInterviewQuestionParams(BaseModel):
 async def ask_interview_question(ctx: Context, user: User, question_prompt: str):
     try:
         logger.debug("ASKING QUESTION")
+        interview_in_progress = await ctx.get("interview_in_progress", False)
+
+        if not interview_in_progress:
+            return "Before asking questions, confirm with the user that they want to start the interview using the `start_conduct_interview_tool`."
+
         question_asked = await ctx.get("question_asked", False)
+        await ctx.set("interview_in_progress", True)
         logger.debug(f"QUESTION ASKED: {question_asked}")
         if not question_asked:
             logger.debug("WAITING FOR QUESTION RESPONSE")
@@ -34,16 +40,20 @@ async def ask_interview_question(ctx: Context, user: User, question_prompt: str)
 
         if event.response:
             logger.debug("NEXT QUESTION")
-            return f"The user responded: {event.response}"
+            return f"""
+                The user responded: {event.response}
+
+                Continue the interview by using the ask_interview_question_tool.
+            """
         else:
             raise Exception("Failed to collect response")
 
     except Exception as e:
-        logger.error(e)
+        logger.debug(f"ERROR: {e}")
         raise Exception(f"Something went wrong when asking the question.: {str(e)}")
 
 
-def create_ask_interview_question_tool(user: User):
+def init_ask_interview_question_tool(user: User):
     ask_interview_question_tool = FunctionTool.from_defaults(
         name="ask_interview_question_tool",
         description="""

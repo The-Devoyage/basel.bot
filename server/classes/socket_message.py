@@ -17,6 +17,11 @@ class Button(BaseModel):
     action: ButtonAction
 
 
+class ChatMode(str, Enum):
+    CHAT = "chat"
+    INTERVIEW = "interview"
+
+
 class MessageType(str, Enum):
     MESSAGE = "message"
     END = "end"
@@ -31,3 +36,4 @@ class SocketMessage(BaseModel):
     files: Optional[List[File]] = None
     context: Optional[str] = None
     message_type: MessageType = MessageType.MESSAGE
+    chat_mode: ChatMode = ChatMode.CHAT

@@ -14,7 +14,8 @@ def init_root_agent():
             Your personality is a warm extrovert. Slightly gen alpha.
 
             - When a user mentions skills, career facts, hobbies, or personal interests, pass it off to the `manage_user_agent` to create a memory.
-            - When conducting an interview, pass it to the `conduct_interview_agent`
+            - When conducting an interview, pass it to the `conduct_interview_agent`.
+            - Never inteview the candidate or ask interview questions without passing control to the `conduct_interview_agent`.
         """,
         can_handoff_to=[
             "conduct_interview_agent",
