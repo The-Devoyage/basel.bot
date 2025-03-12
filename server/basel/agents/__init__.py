@@ -10,15 +10,29 @@ from basel.agents.root_agent import init_root_agent
 from basel.agents.standup_agent import init_standup_agent
 from basel.agents.submit_interview_agent import init_submit_interview_agent
 from basel.agents.update_interview_agent import init_update_interview_agent
+from classes.user_claims import UserClaims
+from database.shareable_link import ShareableLink
 from database.user import User
 from utils.subscription import SubscriptionStatus
 
 
-def aggregate_public_agents(chatting_with: Optional[User]):
+def aggregate_public_agents(
+    chatting_with: Optional[User],
+    subscription_status: SubscriptionStatus,
+    is_candidate: bool,
+    user_claims: Optional[UserClaims],
+    shareable_link: Optional[ShareableLink],
+):
     agents = []
 
     # Root Agent
-    root_agent = init_root_agent()
+    root_agent = init_root_agent(
+        chatting_with=chatting_with,
+        is_candidate=is_candidate,
+        subscription_status=subscription_status,
+        shareable_link=shareable_link,
+        user_claims=user_claims,
+    )
     agents.append(root_agent)
 
     # Get Interviews and Questions

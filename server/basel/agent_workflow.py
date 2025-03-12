@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 from beanie import SortDirection
 from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
-from llama_index.core.agent.workflow import AgentWorkflow, FunctionAgent
+from llama_index.core.agent.workflow import AgentWorkflow
 from llama_index.core.tools import BaseTool
 from llama_index.core.workflow import Context
 from basel.agents import aggregate_authenticated_agents, aggregate_public_agents
@@ -33,9 +33,6 @@ async def get_agent_workflow(
     shareable_link: ShareableLink | None,
 ) -> Tuple[AgentWorkflow, List[ChatMessage], Context]:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
-    # system_prompt = await get_system_prompt(
-    #     subscription_status, user_claims, chatting_with, is_candidate, shareable_link
-    # )
 
     tools: List[BaseTool] = []
     chat_history: List[ChatMessage] = []
@@ -98,15 +95,13 @@ async def get_agent_workflow(
                     chat_history.append(history)
                 chat_history.reverse()
 
-    basel_agent = FunctionAgent(
-        name="root agent",
-        description="The root agent, and currently only agent in the workflow.",
-        tools=tools,
-        # system_prompt=system_prompt,
-        # chat_history=chat_history,
+    agents = aggregate_public_agents(
+        chatting_with=chatting_with,
+        shareable_link=shareable_link,
+        user_claims=user_claims,
+        is_candidate=is_current_user,
+        subscription_status=subscription_status,
     )
-
-    agents = aggregate_public_agents(chatting_with=chatting_with)
     if user_claims and chatting_with:
         authenticated_agents = aggregate_authenticated_agents(
             chatting_with=chatting_with,
