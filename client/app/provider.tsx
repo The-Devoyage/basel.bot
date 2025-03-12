@@ -142,7 +142,7 @@ export const GlobalProvider: FC<GlobalProviderProps> = ({ children }) => {
             timestamp: new Date(m.created_at),
             sender: m.sender,
             message_type: "message" as const,
-            chat_mode: ChatMode.CHAT,
+            chat_mode: m.chat_mode,
           }));
           if (items) client.handlePrependMessages(items);
         }

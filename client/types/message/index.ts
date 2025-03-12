@@ -29,4 +29,5 @@ export interface Message {
   sender: "user" | "bot";
   text: string;
   created_at: string;
+  chat_mode: ChatMode;
 }

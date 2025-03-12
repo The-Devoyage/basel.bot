@@ -27,6 +27,7 @@ async def pause_conduct_interview(ctx: Context):
         if event.response.lower() == "yes":
             logger.debug("PAUSING INTERVIEW")
             await ctx.set("interview_in_progress", False)
+            await ctx.set("current_interview_uuid", None)
             return "The user has agreed to pause the interview."
         else:
             return f"Do not pause the interview. Keep the interview going. The user has responded: {event.response}"

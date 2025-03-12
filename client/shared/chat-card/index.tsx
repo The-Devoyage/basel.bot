@@ -13,7 +13,6 @@ import {
   InterviewQuestionCard,
 } from "./components";
 import { GlobalContext } from "@/app/provider";
-import clsx from "clsx";
 
 interface ChatCardProps {
   message: SocketMessage;

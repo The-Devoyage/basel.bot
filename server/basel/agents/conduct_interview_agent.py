@@ -26,7 +26,7 @@ def init_conduct_interview_agent(current_user: User):
     tools.append(pause_conduct_interview_tool)
 
     # Start Conduct Interview Tool
-    start_conduct_interview_tool = init_start_conduct_interview_tool()
+    start_conduct_interview_tool = init_start_conduct_interview_tool(current_user)
     tools.append(start_conduct_interview_tool)
 
     conduct_interview_agent = FunctionAgent(
