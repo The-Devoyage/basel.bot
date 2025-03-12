@@ -7,6 +7,7 @@ from llama_index.core.workflow import Context, HumanResponseEvent, InputRequired
 from pydantic import BaseModel, Field
 
 from database.interview import Interview
+from database.interview_assessment import InterviewAssessment
 from database.interview_transcript import InterviewTranscript
 from database.message import SenderIdentifer
 from database.user import User
@@ -41,8 +42,17 @@ async def start_conduct_interview(
 
         pending_start_interview = await ctx.get("pending_start_interview", False)
         if not pending_start_interview:
+            # Verify the user has not submitted
+            assessment = await InterviewAssessment.find_one(
+                InterviewAssessment.user.id == current_user.id,  # type:ignore
+                InterviewAssessment.interview.id == interview.id,  # type:ignore
+                fetch_links=True,
+            ).exists()
+
+            if assessment:
+                return "The user has already taken this interview."
+
             await ctx.set("current_interview_uuid", interview.uuid)
-            logger.debug("PENDING USER RESPONSE TO START INTERVIEW")
             await ctx.set("pending_start_interview", True)
             ctx.write_event_to_stream(
                 InputRequiredEvent(
@@ -54,7 +64,6 @@ async def start_conduct_interview(
         await ctx.set("pending_start_interview", False)
 
         if event.response.lower() == "yes":
-            logger.debug("STARTING INTERVIEW")
             await ctx.set("interview_in_progress", True)
 
             interview_transcripts = (
@@ -67,8 +76,10 @@ async def start_conduct_interview(
             )
 
             return f"""
-                The user has agreed to start the interview. 
-                Proceed to ask them questions using the `ask_interview_questions_tool`.
+                - The user has agreed to start the interview. 
+                - If they are in progress, welcome them back, remind them where they were in the process, 
+                and pick up where they left off.
+                - Proceed to ask them questions using the `ask_interview_questions_tool`.
 
                 Current Transcript: {interview_transcripts}
             """

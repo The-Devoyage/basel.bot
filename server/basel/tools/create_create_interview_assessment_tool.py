@@ -1,31 +1,18 @@
 from functools import partial
 from typing import Optional
-from uuid import UUID
-from beanie.operators import In
 from chromadb.api.models.Collection import logging
 from llama_index.core.bridge.pydantic import BaseModel, Field
 from llama_index.core.tools.function_tool import FunctionTool
 from llama_index.core.workflow import Context, HumanResponseEvent, InputRequiredEvent
 from database.interview import Interview
 from database.interview_assessment import InterviewAssessment
-from database.interview_question import InterviewQuestion
-from database.interview_question_response import InterviewQuestionResponse
 
 from database.user import User
 
 logger = logging.getLogger(__name__)
 
 
-class CreateInterviewAssessmentAgentParams(BaseModel):
-    interview_uuid: UUID = Field(
-        description="The UUID of the interview that the user has just taken."
-    )
-
-
 class CreateInterviewAssessmentParams(BaseModel):
-    interview_uuid: UUID = Field(
-        description="The UUID of the interview that the user has just taken."
-    )
     overall: int = Field(
         description="""
             Overall Interview Performance Rating 1 - 5:
@@ -88,7 +75,6 @@ class CreateInterviewAssessmentParams(BaseModel):
 async def create_interview_assessment(
     ctx: Context,
     user: User,
-    interview_uuid: str,
     overall: int,
     content_relevance: Optional[int] = None,
     communication_skills: Optional[int] = None,
@@ -99,21 +85,32 @@ async def create_interview_assessment(
 ):
     logger.debug("CREATING ASSESSMENT")
 
-    ctx.write_event_to_stream(
-        InputRequiredEvent(
-            prefix="It looks like you are done with the interview. Do you want to submit this for assessment? This can not be undone. Type `yes` to approve.",
+    pending_create_confirmation = await ctx.get("pending_create_response", False)
+
+    current_interview_uuid = await ctx.get("current_interview_uuid", None)
+    interview_in_progress = await ctx.get("interview_in_progress")
+    if not current_interview_uuid or not interview_in_progress:
+        return "Interview is not in progress. Use the `start_conduct_interview_tool` to start the interview."
+
+    # Confirm
+    if not pending_create_confirmation:
+        await ctx.set("pending_create_response", True)
+        ctx.write_event_to_stream(
+            InputRequiredEvent(
+                prefix="It looks like you are done with the interview. Do you want to submit this for assessment? This can not be undone. Type `yes` to approve.",
+            )
         )
-    )
-    logger.debug("WAITING FOR APPROVAL")
 
     response = await ctx.wait_for_event(HumanResponseEvent)
-    logger.debug("APPROVAL")
+
+    # Finish Assessment
+    await ctx.set("pending_create_confirmation", False)
 
     if response.response.lower() == "yes":
-        logger.debug(f"RESPONSE APPROVED: {interview_uuid}")
-
         try:
-            interview = await Interview.find_one(Interview.uuid == UUID(interview_uuid))
+            interview = await Interview.find_one(
+                Interview.uuid == current_interview_uuid
+            )
 
             if not interview:
                 raise Exception(
@@ -127,21 +124,6 @@ async def create_interview_assessment(
 
             if assessment:
                 raise Exception("The user has already submitted their assessment.")
-
-            questions = await InterviewQuestion.find(
-                InterviewQuestion.interview.id == interview.id  # type:ignore
-            ).to_list()
-            responses = await InterviewQuestionResponse.find(
-                InterviewQuestionResponse.user.id == user.id,  # type:ignore
-                In(
-                    InterviewQuestionResponse.interview_question.id,  # type:ignore
-                    [q.id for q in questions],
-                ),
-            ).count()
-
-            if not questions or not responses or (len(questions) != responses):
-                logger.error(f"QUESTIONS: {questions}; RESPONSES {responses}")
-                raise Exception("User has not completed the interview.")
 
             interview_assessment = await InterviewAssessment(
                 overall=overall,
