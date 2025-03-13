@@ -15,7 +15,6 @@ from database.shareable_link import ShareableLink
 from database.role import Role, RoleIdentifier
 from database.message import Message
 from database.interview_question import InterviewQuestion
-from database.interview_question_response import InterviewQuestionResponse
 from database.interview import Interview
 from database.notification import Notification
 from database.file import File
@@ -51,7 +50,6 @@ async def init_db():
             User,
             UserMeta,
             Interview,
-            InterviewQuestionResponse,
             InterviewQuestion,
             TokenSession,
             Subscription,

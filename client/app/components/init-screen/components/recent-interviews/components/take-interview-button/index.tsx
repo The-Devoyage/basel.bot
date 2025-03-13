@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "flowbite-react";
+import { Button, ButtonProps } from "flowbite-react";
 import { FC, useContext } from "react";
 import { FaLongArrowAltRight } from "react-icons/fa";
 import { useHandleMessage } from "../../..";
@@ -9,11 +9,18 @@ import { GlobalContext } from "@/app/provider";
 import { useRouter, usePathname } from "next/navigation";
 import clsx from "clsx";
 
-export const TakeInterviewButton: FC<{
+interface TakeInterviewButtonProps extends ButtonProps {
   interview: Interview;
   action: "take_interview" | "interview";
   children?: React.ReactNode;
-}> = ({ interview, action, children }) => {
+}
+
+export const TakeInterviewButton: FC<TakeInterviewButtonProps> = ({
+  interview,
+  action,
+  children,
+  ...props
+}) => {
   const {
     store: {
       auth: { shareableLink },
@@ -37,7 +44,12 @@ export const TakeInterviewButton: FC<{
   };
 
   return (
-    <Button outline gradientDuoTone="purpleToBlue" onClick={handleClick}>
+    <Button
+      outline
+      gradientDuoTone="purpleToBlue"
+      onClick={handleClick}
+      {...props}
+    >
       {children}
       <FaLongArrowAltRight
         className={clsx("h-5 w-5", {

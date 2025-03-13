@@ -128,7 +128,7 @@ async def websocket_endpoint(
     if user_claims and user_claims.user and user_claims.user.uuid:
         ws_broker[user_claims.user.uuid] = websocket
 
-    (workflow, chat_history, _) = await get_agent_workflow(
+    (workflow, chat_history) = await get_agent_workflow(
         is_current_user,
         chatting_with,  # type:ignore
         user_claims,
@@ -182,7 +182,7 @@ async def websocket_endpoint(
                                 response=incoming.text,
                             )
                         )
-                    # ctx_dict = None
+                    ctx_dict = None
                     persist_context = False
                 else:
                     # Handle create initial prompt

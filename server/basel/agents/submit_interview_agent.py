@@ -2,10 +2,6 @@ from llama_index.core.agent.workflow import FunctionAgent
 from basel.tools.create_create_interview_assessment_tool import (
     create_create_interview_assessment_tool,
 )
-from basel.tools.create_get_interview_question_response_tool import (
-    create_get_interview_question_responses_tool,
-)
-
 from database.user import User
 
 
@@ -17,12 +13,6 @@ def init_submit_interview_agent(current_user: User):
         user=current_user
     )
     tools.append(create_interview_assessment_tool)
-
-    # Get Interview Question Responses
-    get_interview_question_responses_tool = (
-        create_get_interview_question_responses_tool(current_user)
-    )
-    tools.append(get_interview_question_responses_tool)
 
     submit_interview_agent = FunctionAgent(
         name="submit_interview_agent",

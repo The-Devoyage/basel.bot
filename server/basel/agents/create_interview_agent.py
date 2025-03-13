@@ -25,7 +25,7 @@ def init_create_interview_agent(
     tools.append(create_interview_question_tool)
 
     # Scrape webpage tool
-    tools.append(scrape_webpage_tool)
+    # tools.append(scrape_webpage_tool)
 
     create_interview_agent = FunctionAgent(
         name="create_interview_agent",

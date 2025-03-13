@@ -4,18 +4,9 @@ from beanie import SortDirection
 from llama_index.agent.openai.openai_assistant_agent import MessageRole
 from llama_index.core.base.llms.types import ChatMessage
 from llama_index.core.agent.workflow import AgentWorkflow
-from llama_index.core.tools import BaseTool
 from llama_index.core.workflow import Context
 from basel.agents import aggregate_authenticated_agents, aggregate_public_agents
-from basel.tools import (
-    get_admin_tools,
-    get_candidate_tools,
-    get_general_tools,
-    get_global_tools,
-    get_unauthenticated_tools,
-)
 from classes.user_claims import UserClaims
-from database.role import RoleIdentifier
 from database.message import Message
 from database.shareable_link import ShareableLink
 from database.user import User
@@ -31,21 +22,15 @@ async def get_agent_workflow(
     user_claims: Optional[UserClaims],
     subscription_status: SubscriptionStatus,
     shareable_link: ShareableLink | None,
-) -> Tuple[AgentWorkflow, List[ChatMessage], Context]:
+) -> Tuple[AgentWorkflow, List[ChatMessage]]:
     logger.debug(f"GETTING AGENT FOR USER {chatting_with}")
 
-    tools: List[BaseTool] = []
     chat_history: List[ChatMessage] = []
-
-    # Unauthenticated Tools
-    tools.extend(get_unauthenticated_tools())
 
     # Authenticated Tools + Setup Agent
     if chatting_with and (
         (shareable_link and shareable_link.status) or not shareable_link
     ):
-        tools: List[BaseTool] = get_global_tools(chatting_with)
-
         if user_claims:
             # Get Authenticated Tools
             # Handle Admin Role Tools
@@ -53,22 +38,8 @@ async def get_agent_workflow(
             if not role:
                 raise Exception("Can't find role")
 
-            if role.identifier == RoleIdentifier.ADMIN:  # type:ignore
-                tools.extend(get_admin_tools())
-
-            # Handle General User Role Tools
-            tools.extend(get_general_tools(user_claims.user))
-
             # Tools for the candidate
             if chatting_with.id == user_claims.user.id:
-                tools.extend(
-                    get_candidate_tools(
-                        user_claims.user,
-                        role,  # type:ignore
-                        user_claims.subscription_status,
-                    )
-                )
-
                 # Populate Recent Chat History
                 messages = (
                     await Message.find(
@@ -113,4 +84,4 @@ async def get_agent_workflow(
     agent_workflow = AgentWorkflow(agents=agents, root_agent="root_agent")
     ctx = Context(agent_workflow)
 
-    return (agent_workflow, chat_history, ctx)
+    return (agent_workflow, chat_history)

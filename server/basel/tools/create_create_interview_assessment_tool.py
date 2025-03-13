@@ -88,7 +88,7 @@ async def create_interview_assessment(
     pending_create_confirmation = await ctx.get("pending_create_response", False)
 
     current_interview_uuid = await ctx.get("current_interview_uuid", None)
-    interview_in_progress = await ctx.get("interview_in_progress")
+    interview_in_progress = await ctx.get("interview_in_progress", False)
     if not current_interview_uuid or not interview_in_progress:
         return "Interview is not in progress. Use the `start_conduct_interview_tool` to start the interview."
 
@@ -138,13 +138,16 @@ async def create_interview_assessment(
                 interview=interview,  # type:ignore
             ).create()
 
+            await ctx.set("current_interview_uuid", None)
+            await ctx.set("interview_in_progress", False)
+
             return interview_assessment
         except Exception as e:
             logger.debug(f"CREATE ASSESMENT ERROR: {str(e)}")
-            return str(e)
+            return "Something went wrong. Ask user if they want to try to submit the interview again."
     else:
         logger.debug("ABORTED")
-        raise Exception("Assessment Aborted")
+        return f"The user has decided to keep the interview process going. Use the `ask_interview_question_tool` to contineu the process. User Message: {response.response}"
 
 
 def create_create_interview_assessment_tool(user: User):

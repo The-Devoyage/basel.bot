@@ -37,20 +37,6 @@ def get_pipeline(
     pipeline = [
         {
             "$lookup": {
-                "from": "InterviewQuestion",
-                "localField": "_id",
-                "foreignField": "interview.$id",
-                "as": "questions",
-            }
-        },
-        {
-            "$unwind": {
-                "path": "$questions",
-                "preserveNullAndEmptyArrays": True,
-            }
-        },
-        {
-            "$lookup": {
                 "from": "Organization",
                 "localField": "organization.$id",
                 "foreignField": "_id",
@@ -65,13 +51,13 @@ def get_pipeline(
         },
     ]
 
-    # Add the conditional `$lookup` for `InterviewQuestionResponse`
+    # Add the conditional `$lookup` for `InterviewTranscript`
     if user_id:
         pipeline.append(
             {
                 "$lookup": {
-                    "from": "InterviewQuestionResponse",
-                    "let": {"question_id": "$questions._id"},
+                    "from": "InterviewTranscript",
+                    "let": {"interview_id": "$_id"},
                     "pipeline": [
                         {
                             "$match": {
@@ -79,8 +65,8 @@ def get_pipeline(
                                     "$and": [
                                         {
                                             "$eq": [
-                                                "$interview_question.$id",
-                                                "$$question_id",
+                                                "$interview.$id",
+                                                "$$interview_id",
                                             ]
                                         },
                                         {"$eq": ["$user.$id", user_id]},
@@ -88,17 +74,19 @@ def get_pipeline(
                                 }
                             }
                         },
-                        {
-                            "$group": {
-                                "_id": "$interview_question.$id",  # Group by question ID
-                                "response_count": {"$sum": 1},  # Count unique responses
-                            }
-                        },
                     ],
-                    "as": "question_responses",
+                    "as": "interview_transcripts",
                 }
             }
         )
+        # pipeline.append(
+        #     {
+        #         "$unwind": {
+        #             "path": "$interview_transcripts",
+        #             "preserveNullAndEmptyArrays": True,
+        #         }
+        #     }
+        # )
         pipeline.append(
             {
                 "$lookup": {
@@ -167,25 +155,25 @@ def get_pipeline(
                 {"$match": {"matched_shareable_link": {"$ne": []}}},
             ]
 
-    # Get all response count
+    # Get all assessment count
     pipeline.append(
         {
             "$lookup": {
-                "from": "InterviewQuestionResponse",
-                "let": {"question_id": "$questions._id"},
+                "from": "InterviewAssessment",
+                "let": {"interview_id": "$_id"},
                 "pipeline": [
                     {
                         "$match": {
                             "$expr": {
                                 "$eq": [
-                                    "$interview_question.$id",
-                                    "$$question_id",
+                                    "$interview.$id",
+                                    "$$interview_id",
                                 ]
                             }
                         }
                     }
                 ],
-                "as": "total_question_responses",
+                "as": "total_assessments",
             }
         }
     )
@@ -194,15 +182,15 @@ def get_pipeline(
     pipeline += [
         {
             "$addFields": {
-                "questions.response_count": {
-                    "$size": {"$ifNull": ["$question_responses", []]}
+                "total_assessments_count": {
+                    "$size": {"$ifNull": ["$total_assessments", []]}
                 }
             }
         },
         {
             "$addFields": {
-                "questions.total_response_count": {
-                    "$size": {"$ifNull": ["$total_question_responses", []]}
+                "interview_transcripts_count": {
+                    "$size": {"$ifNull": ["$interview_transcripts", []]}
                 }
             }
         },
@@ -218,9 +206,10 @@ def get_pipeline(
                 "position": {"$first": "$position"},
                 "tags": {"$first": "$tags"},
                 "status": {"$first": "$status"},
-                "question_count": {"$sum": 1},
-                "response_count": {"$sum": "$questions.response_count"},
-                "total_response_count": {"$sum": "$questions.total_response_count"},
+                "total_assessments": {"$first": "$total_assessments_count"},
+                "interview_transcripts_count": {
+                    "$first": "$interview_transcripts_count"
+                },
                 "assessment": {"$first": "$assessment"},
                 "created_at": {"$first": "$created_at"},
                 "updated_at": {"$first": "$updated_at"},
@@ -229,7 +218,7 @@ def get_pipeline(
         },
         {
             "$match": {
-                "response_count": {"$gt": 0}
+                "interview_transcripts_count": {"$gt": 0}
                 if (taken_by_me and user_id)
                 else {"$gte": 0}
             }
@@ -247,12 +236,17 @@ def get_pipeline(
                 "organization.slug": 1,
                 "tags": 1,
                 "status": 1,
-                "question_count": 1,
-                "response_count": 1,
-                "total_response_count": 1,
+                "total_assessments": 1,
                 "created_at": 1,
                 "updated_at": 1,
                 "deleted_at": 1,
+                "started": {
+                    "$cond": {
+                        "if": {"$gt": ["$interview_transcripts_count", 0]},
+                        "then": True,
+                        "else": False,
+                    }
+                },
                 "submitted": {
                     "$cond": {
                         "if": {"$ne": ["$assessment", None]},

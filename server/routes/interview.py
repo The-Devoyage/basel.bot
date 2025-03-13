@@ -16,10 +16,10 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-async def get_interview(uuid: str):
+async def get_interview(uuid: str, user_claims: UserClaims = Depends(optional_auth)):
     try:
         pipeline = get_pipeline(
-            user_id=None,
+            user_id=user_claims.user.id if user_claims else None,
             taken_by_me=False,
             shareable_link_id=None,
         )

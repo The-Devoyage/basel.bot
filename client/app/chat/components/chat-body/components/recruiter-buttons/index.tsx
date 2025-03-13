@@ -8,26 +8,28 @@ import { useContext } from "react";
 
 export const RecruiterButtons = () => {
   const { handleMessage } = useHandleMessage();
-  const { slToken } = useContext(GlobalContext);
+  const { slToken, store } = useContext(GlobalContext);
   const router = useRouter();
   const searchParams = useSearchParams();
 
   return (
     <div className="flex gap-2">
-      <Button
-        gradientDuoTone="greenToBlue"
-        outline
-        onClick={() =>
-          handleMessage(
-            "generate_resume",
-            null,
-            "Only provide information that has been supplied by the candidate.",
-          )
-        }
-        className="mt-4 w-full"
-      >
-        Resume
-      </Button>
+      {store.auth.isAuthenticated && (
+        <Button
+          gradientDuoTone="greenToBlue"
+          outline
+          onClick={() =>
+            handleMessage(
+              "generate_resume",
+              null,
+              "Only provide information that has been supplied by the candidate.",
+            )
+          }
+          className="mt-4 w-full"
+        >
+          Resume
+        </Button>
+      )}
       {slToken && (
         <Button
           gradientDuoTone="purpleToBlue"

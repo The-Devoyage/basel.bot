@@ -1,8 +1,8 @@
 from chromadb.api.models.Collection import logging
 from fastapi import APIRouter, Depends, HTTPException
+from database.interview_assessment import InterviewAssessment
 from database.user_meta import UserMeta
 from database.shareable_link import ShareableLink
-from database.interview_question_response import InterviewQuestionResponse
 
 from classes.user_claims import UserClaims
 from utils.jwt import require_auth
@@ -28,12 +28,12 @@ async def get_onboarding(
         views = 0
         for link in links:
             views += link.views
-        interviews = await InterviewQuestionResponse.find(
-            InterviewQuestionResponse.user.id == user_claims.user.id  # type:ignore
+        assessments = await InterviewAssessment.find(
+            InterviewAssessment.user.id == user_claims.user.id  # type:ignore
         ).count()
         onboard_progress = {
             "metas": metas > 0,
-            "interviews": interviews > 0,
+            "interviews": assessments > 0,
             "links": len(links) > 0,
             "views": views > 0,
         }

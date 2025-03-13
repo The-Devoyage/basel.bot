@@ -70,9 +70,7 @@ export const useSocket = <Send, Receive>(
       setLoading(false);
       const parsed = JSON.parse(message.data as string);
 
-      if (parsed.message_type === "card") {
-        setMessages((prev) => [...prev, parsed]);
-      } else if (parsed.message_type !== "end" && options?.groupBy) {
+      if (parsed.message_type !== "end" && options?.groupBy) {
         setIncomingMessage((curr) => curr + parsed[options.groupBy as string]);
       } else if (parsed.message_type === "end" && options?.groupBy) {
         setIncomingMessage("");

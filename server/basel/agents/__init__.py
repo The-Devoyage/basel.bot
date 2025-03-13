@@ -36,8 +36,16 @@ def aggregate_public_agents(
     agents.append(root_agent)
 
     # Get Interviews and Questions
-    interview_retriever = init_interview_retriever_agent(chatting_with=chatting_with)
+    interview_retriever = init_interview_retriever_agent()
     agents.append(interview_retriever)
+
+    if (shareable_link or user_claims) and chatting_with:
+        # Canidate Agent
+        canidate_agent = init_candidate_agent(chatting_with)
+        agents.append(canidate_agent)
+        # Resume Generator Agent
+        resume_generator_agent = init_resume_generator_agent()
+        agents.append(resume_generator_agent)
 
     return agents
 
@@ -48,14 +56,6 @@ def aggregate_authenticated_agents(
     is_current_user: bool = False,
 ):
     agents = []
-
-    # Canidate Agent
-    canidate_agent = init_candidate_agent(chatting_with)
-    agents.append(canidate_agent)
-
-    # Resume Generator Agent
-    resume_generator_agent = init_resume_generator_agent()
-    agents.append(resume_generator_agent)
 
     # Candidate only agents
     if is_current_user:

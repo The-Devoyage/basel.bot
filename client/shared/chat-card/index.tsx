@@ -7,11 +7,7 @@ import { Typography } from "../typography";
 import { ChatMode, SocketMessage } from "@/types";
 import Markdown from "react-markdown";
 import "./module.styles.css";
-import {
-  AttachedFiles,
-  FooterButtons,
-  InterviewQuestionCard,
-} from "./components";
+import { AttachedFiles, FooterButtons } from "./components";
 import { GlobalContext } from "@/app/provider";
 
 interface ChatCardProps {
@@ -29,7 +25,6 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
     } = useContext(GlobalContext);
 
     const isBot = message.sender === "bot";
-    const isCard = message.message_type === "card";
     const isInterview = message.chat_mode === ChatMode.INTERVIEW;
 
     const getIcon = () => {
@@ -58,11 +53,6 @@ export const ChatCard = forwardRef<HTMLDivElement, ChatCardProps>(
         }
       }
     };
-
-    if (isCard) {
-      //NOTE: DEPRECATED
-      return <InterviewQuestionCard message={message.text} ref={ref} />;
-    }
 
     return (
       <div ref={ref} className="w-full">

@@ -13,7 +13,6 @@ import {
   Message,
 } from "@/types";
 import { InterviewQuestion } from "@/types/interview-question";
-import { InterviewQuestionResponse } from "@/types/interview-question-response";
 import { InterviewAssessment } from "@/types/interview_assessment";
 import { Standup } from "@/types/standup";
 
@@ -62,7 +61,6 @@ export enum Endpoint {
   GetInterviewAssessments = "/interview-assessment/list",
   GetInterviewAssessment = "/interview-assessment",
   GetMessages = "/message/list",
-  UpsertInterviewQuestionResponse = "/interview-question-response/upsert/:interview_question_uuid",
 }
 
 type PaginationQuery = { limit?: number; offset?: number };
@@ -245,15 +243,6 @@ export interface EndpointParams {
     body: undefined;
     path: undefined;
   };
-  [Endpoint.UpsertInterviewQuestionResponse]: {
-    query: undefined;
-    body: {
-      response: string;
-    };
-    path: {
-      interview_question_uuid: string;
-    };
-  };
 }
 
 export interface EndpointResponse {
@@ -289,7 +278,6 @@ export interface EndpointResponse {
   [Endpoint.GetInterviewAssessments]: InterviewAssessment[];
   [Endpoint.GetInterviewAssessment]: InterviewAssessment;
   [Endpoint.GetMessages]: Message[];
-  [Endpoint.UpsertInterviewQuestionResponse]: InterviewQuestionResponse;
 }
 
 type QueryType<E extends Endpoint> = E extends keyof EndpointParams

@@ -20,7 +20,7 @@ export interface SocketMessage {
   buttons?: Button[];
   files?: File[];
   context?: string;
-  message_type: "message" | "end" | "card";
+  message_type: "message" | "end";
   chat_mode: ChatMode;
 }
 
