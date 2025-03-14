@@ -9,6 +9,8 @@ import { Button } from "flowbite-react";
 import { useContext, useEffect } from "react";
 import { AiTwotoneNotification } from "react-icons/ai";
 
+const RECONNECT_INTERVAL = 5000; // 5 seconds
+
 export const NotificationToggle = () => {
   const {
     dispatch,
@@ -37,6 +39,31 @@ export const NotificationToggle = () => {
 
     return () => notificationClient?.handleClose();
   }, []);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const connect = () => {
+      if (!notificationClient?.connected) {
+        notificationClient?.handleConnect();
+      }
+    };
+
+    // Initial connection
+    // connect();
+
+    // Reconnect if the socket disconnects
+    interval = setInterval(() => {
+      if (!notificationClient?.connected) {
+        console.log("Reconnecting to socket...");
+        connect();
+      }
+    }, RECONNECT_INTERVAL);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [notificationClient]);
 
   useEffect(() => {
     call();

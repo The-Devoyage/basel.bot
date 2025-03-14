@@ -56,9 +56,6 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
   const [files, setFiles] = useState<File[]>([]);
   const [messageText, setMessageText] = useState<string>("");
   const [suggestion, setSuggestion] = useState<string>("");
-  const [repeatedMessage, setRepeatedMessage] = useState<SocketMessage | null>(
-    null,
-  );
   const router = useRouter();
   const pathname = usePathname();
   const {
@@ -96,7 +93,6 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
     setMessageText("");
     setSuggestion("");
     setFiles([]);
-    setRepeatedMessage(null);
   };
 
   // Update the suggestion based on the current input

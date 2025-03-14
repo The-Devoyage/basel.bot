@@ -10,6 +10,7 @@ from basel.agents.root_agent import init_root_agent
 from basel.agents.standup_agent import init_standup_agent
 from basel.agents.submit_interview_agent import init_submit_interview_agent
 from basel.agents.update_interview_agent import init_update_interview_agent
+from basel.tools.read_s3 import init_read_s3_tool
 from classes.user_claims import UserClaims
 from database.shareable_link import ShareableLink
 from database.user import User
@@ -28,7 +29,7 @@ def aggregate_public_agents(
     # Root Agent
     root_agent = init_root_agent(
         chatting_with=chatting_with,
-        is_candidate=is_candidate,
+        is_current_user=is_candidate,
         subscription_status=subscription_status,
         shareable_link=shareable_link,
         user_claims=user_claims,
@@ -60,8 +61,11 @@ def aggregate_authenticated_agents(
     # Candidate only agents
     if is_current_user:
         # Manage user agent
-        manage_user_agent = init_manage_user_agent(chatting_with)
+        manage_user_agent = init_manage_user_agent(
+            current_user=chatting_with, subscription_status=subscription_status
+        )
         agents.append(manage_user_agent)
+
         # Standup Agent
         standup_agent = init_standup_agent(chatting_with, subscription_status)
         agents.append(standup_agent)

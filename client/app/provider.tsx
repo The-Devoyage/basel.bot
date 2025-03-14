@@ -2,7 +2,7 @@
 
 import { SocketClient, useSocket } from "@/shared/useSocket";
 import { FC, createContext, useEffect, useMemo, useState } from "react";
-import { SocketMessage, Notification, ChatMode } from "@/types";
+import { SocketMessage, Notification } from "@/types";
 import { useVerifyLogin } from "@/shared/useVerifyLogin";
 import { useStore } from "@/shared/useStore";
 import { setShareableLink, setMe } from "@/shared/useStore/auth";

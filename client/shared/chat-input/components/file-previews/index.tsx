@@ -15,7 +15,7 @@ export const FilePreviews = () => {
   return (
     <div className="flex">
       {files.map((f) => (
-        <div className="rounded border-2 border-slate-600 p-1">
+        <div key={f.uuid} className="rounded border-2 border-slate-600 p-1">
           <div className="flex items-center gap-2">
             <BiFile className="h-6 w-6 dark:text-white" />
             <Typography.Heading>{f.file_name}</Typography.Heading>
