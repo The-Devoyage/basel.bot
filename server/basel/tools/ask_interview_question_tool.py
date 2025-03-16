@@ -68,8 +68,9 @@ async def ask_interview_question(ctx: Context, user: User, question_prompt: str)
 
             logger.debug("NEXT QUESTION")
             return f"""
-                The user responded: {event.response}
+                The user responded: "{event.response}"
 
+                **Next Instructions**
                 Continue the interview by using the ask_interview_question_tool.
             """
         else:

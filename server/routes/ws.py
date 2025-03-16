@@ -77,7 +77,8 @@ async def websocket_endpoint(
             )
             sl_claims = cast(ShareableLinkClaims, ShareableLinkClaims(**decoded))
             shareable_link = await ShareableLink.find_one(
-                ShareableLink.uuid == UUID(sl_claims.shareable_link_uuid)
+                ShareableLink.uuid == UUID(sl_claims.shareable_link_uuid),
+                fetch_links=True,
             )
             chatting_with = await User.find_one(User.uuid == UUID(sl_claims.user_uuid))
             if not chatting_with:
@@ -198,6 +199,15 @@ async def websocket_endpoint(
                 chat_time = datetime.now()
                 response_text = ""
                 chat_mode = ChatMode.CHAT
+
+                # Set Initial Context
+                if handler.ctx:
+                    if interview_assessment:
+                        await handler.ctx.set(
+                            "interview_assessment", interview_assessment
+                        )
+                    if shareable_link:
+                        await handler.ctx.set("shareable_link", shareable_link)
 
                 async for event in handler.stream_events():
                     if (

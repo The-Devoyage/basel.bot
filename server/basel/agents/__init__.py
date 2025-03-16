@@ -10,7 +10,6 @@ from basel.agents.root_agent import init_root_agent
 from basel.agents.standup_agent import init_standup_agent
 from basel.agents.submit_interview_agent import init_submit_interview_agent
 from basel.agents.update_interview_agent import init_update_interview_agent
-from basel.tools.read_s3 import init_read_s3_tool
 from classes.user_claims import UserClaims
 from database.shareable_link import ShareableLink
 from database.user import User

@@ -86,7 +86,7 @@ async def create_interview(
         return await interview.to_public_dict()
     except Exception as e:
         logger.error(e)
-        return e
+        raise e
 
 
 def create_create_interview_tool(

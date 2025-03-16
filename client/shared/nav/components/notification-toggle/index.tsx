@@ -49,9 +49,6 @@ export const NotificationToggle = () => {
       }
     };
 
-    // Initial connection
-    // connect();
-
     // Reconnect if the socket disconnects
     interval = setInterval(() => {
       if (!notificationClient?.connected) {
