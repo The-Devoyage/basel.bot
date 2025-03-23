@@ -4,6 +4,7 @@ import { ChatCard } from "@/shared/chat-card";
 import { useContext, useEffect, useState } from "react";
 import { candidateMessage, recruiterMessage } from "./message";
 import { GlobalContext } from "@/app/provider";
+import { ChatMode } from "@/types";
 
 export const WelcomeMessage = () => {
   const [message, setMessage] = useState(candidateMessage);
@@ -28,6 +29,7 @@ export const WelcomeMessage = () => {
         sender: "bot",
         timestamp: new Date(),
         message_type: "message",
+        chat_mode: ChatMode.CHAT,
       }}
     />
   );
