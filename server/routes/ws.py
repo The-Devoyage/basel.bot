@@ -171,13 +171,13 @@ async def websocket_endpoint(
                 # Get Handler
                 handler = None
                 if ctx_dict:
-                    logger.debug(f"RESTORING CONTEXT: {ctx_dict}")
                     # Handle Input Required Events
                     restored_ctx = Context.from_dict(
                         workflow, ctx_dict, serializer=JsonPickleSerializer()
                     )
                     handler = workflow.run(ctx=restored_ctx)
                     if handler.ctx:
+                        logger.debug("FOUND CONTEXT, RESPONDING WITH HUMAN INPUT EVENT")
                         handler.ctx.send_event(
                             HumanResponseEvent(
                                 response=incoming.text,
@@ -253,6 +253,7 @@ async def websocket_endpoint(
                 logger.debug(f"CHAT RESPONSE {response_text}")
 
                 if handler.ctx:
+                    # UI Flags
                     chat_mode = (
                         ChatMode.INTERVIEW
                         if await handler.ctx.get("interview_in_progress", False)
@@ -302,6 +303,7 @@ async def websocket_endpoint(
                 logger.debug(f"UNEXPECTED ERROR WHILE CONNECTED: {e}")
                 socket_response = SocketMessage(
                     text="Sorry, I am having some trouble with that. Let's try again.",
+                    message_type=MessageType.END,
                     timestamp=datetime.now(),
                     sender=SenderIdentifer.BOT,
                 )

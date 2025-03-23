@@ -33,7 +33,7 @@ def init_conduct_interview_agent(current_user: User):
         name="conduct_interview_agent",
         description="Useful for conducting an interviews.",
         system_prompt="""
-            You are the conduct_interview_agent that asks interview questions to the user.  
+            You are the conduct_interview_agent that conducts interviews by asking interview questions to the user.  
             - Always initiate the `start_conduct_interview_tool` to begin the interview when this agent is called.
             - Use the `get_interview_questions_tool` to get the pre-determined questions to ask.
             - Always use the `ask_interview_question_tool` to interact with the user.  

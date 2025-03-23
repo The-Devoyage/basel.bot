@@ -3,7 +3,7 @@ from typing import Optional
 from basel.agents.candidate_agent import init_candidate_agent
 from basel.agents.conduct_interview_agent import init_conduct_interview_agent
 from basel.agents.create_interview_agent import init_create_interview_agent
-from basel.agents.interview_retriever import init_interview_retriever_agent
+from basel.agents.interview_agent import init_interview_agent
 from basel.agents.manage_user_agent import init_manage_user_agent
 from basel.agents.resume_agent import init_resume_generator_agent
 from basel.agents.root_agent import init_root_agent
@@ -36,8 +36,8 @@ def aggregate_public_agents(
     agents.append(root_agent)
 
     # Get Interviews and Questions
-    interview_retriever = init_interview_retriever_agent()
-    agents.append(interview_retriever)
+    interview_agent = init_interview_agent()
+    agents.append(interview_agent)
 
     if (shareable_link or user_claims) and chatting_with:
         # Canidate Agent

@@ -49,8 +49,11 @@ export const NotificationToggle = () => {
       }
     };
 
+    console.log(notificationClient);
+
     // Reconnect if the socket disconnects
     interval = setInterval(() => {
+      console.log(notificationClient?.connected);
       if (!notificationClient?.connected) {
         console.log("Reconnecting to socket...");
         connect();

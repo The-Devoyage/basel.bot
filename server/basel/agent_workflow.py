@@ -81,7 +81,7 @@ async def get_agent_workflow(
         )
         agents.extend(authenticated_agents)
 
-    agent_workflow = AgentWorkflow(agents=agents, root_agent="root_agent")
-    ctx = Context(agent_workflow)
+    agent_workflow = AgentWorkflow(agents=agents, root_agent="root_agent", verbose=True)
+    # ctx = Context(agent_workflow)
 
     return (agent_workflow, chat_history)

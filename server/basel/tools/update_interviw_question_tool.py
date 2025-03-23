@@ -49,7 +49,7 @@ async def update_interview_question(
         return "Something went wrong.."
 
 
-def create_update_interview_question_tool(current_user: User):
+def init_update_interview_question_tool(current_user: User):
     update_interview_question_tool = FunctionTool.from_defaults(
         name="update_interview_question_tool",
         description="Useful to update a question or status of a question associated with an interview but not the interview itself.",
