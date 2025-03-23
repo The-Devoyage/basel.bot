@@ -12,12 +12,15 @@ export const Onboarding = async () => {
     body: null,
   });
 
-  const progress = Object.values(onboarding.data || {}).reduce((prev, next) => {
-    if (next) {
-      prev = prev + 25;
-    }
-    return prev;
-  }, 0);
+  const progress: number = Object.values(onboarding.data || {}).reduce(
+    (prev, next) => {
+      if (next) {
+        prev = prev + 25;
+      }
+      return prev;
+    },
+    0,
+  );
 
   let msg: ReactNode = "";
   if (!onboarding.data?.metas) {
@@ -45,7 +48,14 @@ export const Onboarding = async () => {
   return (
     <Card className="w-full">
       <Typography.Heading className="text-lg">Profile Setup</Typography.Heading>
-      <Progress progress={progress} color="green" labelProgress size="large" />
+      {!!progress && (
+        <Progress
+          progress={progress}
+          color="green"
+          labelProgress
+          size="large"
+        />
+      )}
       <Typography.Paragraph>Welcome to Basel! {msg}</Typography.Paragraph>
     </Card>
   );

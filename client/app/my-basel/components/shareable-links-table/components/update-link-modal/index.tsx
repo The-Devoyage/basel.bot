@@ -82,7 +82,12 @@ export const UpdateLinkModal: FC<{
 
   const interviewOptions =
     interviewsRes.res?.data?.map((i) => ({
-      label: i.position + " - " + i.organization?.name,
+      label:
+        i.position +
+        (i.organization ? " - " + i.organization?.name : "") +
+        " - " +
+        i.description.slice(0, 100) +
+        "...",
       value: i.uuid,
     })) || [];
 

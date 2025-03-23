@@ -12,9 +12,8 @@ export interface Interview {
   url?: string;
   organization?: Organization;
   description: string;
-  question_count: number;
-  response_count: number;
-  total_response_count: number;
+  total_assessments: number;
+  started: boolean;
   submitted: boolean;
   status: boolean;
   created_at: string;

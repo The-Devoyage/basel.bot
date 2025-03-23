@@ -4,6 +4,7 @@ import { GlobalContext } from "@/app/provider";
 import { ChatCard } from "@/shared/chat-card";
 import { Loader } from "@/shared/loader";
 import { Typography } from "@/shared/typography";
+import { ChatMode } from "@/types";
 import { Card } from "flowbite-react";
 import { useContext, useEffect, useRef, useState } from "react";
 import { BiSolidLeaf } from "react-icons/bi";
@@ -110,7 +111,7 @@ export const ScrollingChat = () => {
     >
       {client.messages.map((m, index) => (
         <ChatCard
-          key={m.timestamp?.toString()}
+          key={index}
           message={m}
           ref={
             !client.incomingMessage && index === client?.messages.length - 1
@@ -126,6 +127,7 @@ export const ScrollingChat = () => {
             sender: "bot",
             timestamp: new Date(),
             message_type: "message",
+            chat_mode: ChatMode.CHAT,
           }}
           loading={!client.incomingMessage}
           ref={client.incomingMessage ? lastMessage : undefined}

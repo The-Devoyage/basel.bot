@@ -135,7 +135,9 @@ async def get_shareable_links(
 
         if interview_uuid:
             query.find(
-                ShareableLink.interviews.uuid == interview_uuid, fetch_links=True
+                ShareableLink.interviews.uuid  # type:ignore
+                == interview_uuid,
+                fetch_links=True,
             )
 
         shareable_links = await query.limit(limit).skip(offset).to_list()

@@ -26,7 +26,7 @@ async def update_user(
 
 
 def create_update_user_tool(user: User):
-    create_interview_question_response_tool = FunctionTool.from_defaults(
+    create_update_user_tool = FunctionTool.from_defaults(
         async_fn=lambda first_name=None, last_name=None: update_user(
             user, first_name, last_name
         ),
@@ -37,4 +37,4 @@ def create_update_user_tool(user: User):
         fn_schema=UpdateUserArgs,
     )
 
-    return create_interview_question_response_tool
+    return create_update_user_tool

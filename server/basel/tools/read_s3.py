@@ -41,7 +41,7 @@ async def read_file(file_uuid: str, user: User, prompt: str):
     return response
 
 
-def create_read_s3_tool(user: User):
+def init_read_s3_tool(user: User):
     file_reader_tool = FunctionTool.from_defaults(
         name="read_file_tool",
         async_fn=lambda file_uuid, prompt: read_file(

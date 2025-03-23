@@ -32,6 +32,7 @@ export const MultiSelect: FC<MultiSelectProps> = ({
             {selected.length ? (
               selected.map((o) => (
                 <Badge
+                  key={o.value}
                   onClick={(e) => {
                     e.stopPropagation();
                     onChange?.(o.value);
@@ -60,7 +61,11 @@ export const MultiSelect: FC<MultiSelectProps> = ({
     >
       {remaining.length ? (
         remaining.map((o) => (
-          <Dropdown.Item onClick={() => onChange?.(o.value)}>
+          <Dropdown.Item
+            key={o.value}
+            onClick={() => onChange?.(o.value)}
+            className="text-left"
+          >
             {o.label}
           </Dropdown.Item>
         ))

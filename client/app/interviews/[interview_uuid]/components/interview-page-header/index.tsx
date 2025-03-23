@@ -5,12 +5,13 @@ import Image from "next/image";
 import { Badge, Card } from "flowbite-react";
 import { GrOrganization } from "react-icons/gr";
 import { TakeInterviewButton } from "@/app/components/init-screen/components/recent-interviews/components";
-import { TfiWrite } from "react-icons/tfi";
 import { toDate } from "@/utils";
 import { WiTime9 } from "react-icons/wi";
 import Link from "next/link";
 import { useContext } from "react";
 import { InterviewPageContext } from "../../context";
+import { TfiWrite } from "react-icons/tfi";
+import { StatusBadge } from "@/shared/interview-card/components";
 
 export const InterviewPageHeader = () => {
   const { interview } = useContext(InterviewPageContext);
@@ -35,7 +36,10 @@ export const InterviewPageHeader = () => {
         </div>
         <div className="flex w-full flex-col justify-between space-y-4 md:w-2/3">
           <div className="space-y-2">
-            <PageHeader title={interview.position} />
+            <div className="flex justify-between">
+              <PageHeader title={interview.position} />
+              <StatusBadge interview={interview} />
+            </div>
             <div className="flex gap-2">
               {interview.organization && (
                 <Link href={`/organizations/${interview.organization.slug}`}>
@@ -54,7 +58,8 @@ export const InterviewPageHeader = () => {
               <Badge color="purple">
                 <div className="flex gap-2 py-1">
                   <TfiWrite className="size-4" />
-                  {interview.total_response_count} Responses
+                  {interview.total_assessments} Submission
+                  {interview.total_assessments === 1 ? "" : "s"}
                 </div>
               </Badge>
               <Badge color="green">
@@ -66,8 +71,16 @@ export const InterviewPageHeader = () => {
             </div>
           </div>
           <div className="flex justify-end">
-            <TakeInterviewButton interview={interview} action="take_interview">
-              Take Interview
+            <TakeInterviewButton
+              interview={interview}
+              action="take_interview"
+              disabled={interview.submitted}
+            >
+              {interview?.submitted
+                ? "Interview Complete"
+                : interview?.started
+                  ? "Continue Interview"
+                  : "Start Interview"}
             </TakeInterviewButton>
           </div>
         </div>

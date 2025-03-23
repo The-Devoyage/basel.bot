@@ -10,7 +10,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { SocketMessage, File } from "@/types";
+import { SocketMessage, File, ChatMode } from "@/types";
 import { usePathname, useRouter } from "next/navigation";
 import { GlobalContext } from "@/app/provider";
 
@@ -56,7 +56,6 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
   const [files, setFiles] = useState<File[]>([]);
   const [messageText, setMessageText] = useState<string>("");
   const [suggestion, setSuggestion] = useState<string>("");
-  const [repeatedMessage, setRepeatedMessage] = useState<SocketMessage | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const {
@@ -87,13 +86,13 @@ export const ChatInputContextProvider: FC<{ children: React.ReactNode }> = ({
       sender: "user",
       files,
       message_type: "message",
+      chat_mode: ChatMode.CHAT,
     };
 
     client?.handleSend(message);
     setMessageText("");
     setSuggestion("");
     setFiles([]);
-    setRepeatedMessage(null);
   };
 
   // Update the suggestion based on the current input

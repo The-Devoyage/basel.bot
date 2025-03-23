@@ -1,7 +1,7 @@
 "use client";
 
 import { GlobalContext } from "@/app/provider";
-import { SocketMessage } from "@/types";
+import { ChatMode, SocketMessage } from "@/types";
 import { useContext } from "react";
 
 export type MessageType =
@@ -19,7 +19,8 @@ export type MessageType =
   | "summerize_standups"
   | "generate_resume"
   | "recruiter_interview"
-  | "create_organization_interview";
+  | "create_organization_interview"
+  | "next_question";
 
 export const useHandleMessage = () => {
   const { client } = useContext(GlobalContext);
@@ -87,6 +88,9 @@ export const useHandleMessage = () => {
       case "create_organization_interview":
         text = `I want to create an interview for my organization.`;
         break;
+      case "next_question":
+        text = `I have provided my answer and am ready for the next question`;
+        break;
 
       default:
         text = "Tell me a bit about the Basel platform.";
@@ -98,6 +102,7 @@ export const useHandleMessage = () => {
       sender: "user",
       context,
       message_type: "message",
+      chat_mode: ChatMode.CHAT,
     };
 
     client?.handleSend(message, true, useSlToken);

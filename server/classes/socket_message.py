@@ -1,9 +1,10 @@
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
+from uuid import UUID
 from pydantic import BaseModel
 
-from database.message import SenderIdentifer
+from database.message import ChatMode, SenderIdentifer
 from database.file import File
 
 
@@ -20,6 +21,7 @@ class Button(BaseModel):
 class MessageType(str, Enum):
     MESSAGE = "message"
     END = "end"
+    CARD = "card"
 
 
 class SocketMessage(BaseModel):
@@ -30,3 +32,4 @@ class SocketMessage(BaseModel):
     files: Optional[List[File]] = None
     context: Optional[str] = None
     message_type: MessageType = MessageType.MESSAGE
+    chat_mode: ChatMode = ChatMode.CHAT

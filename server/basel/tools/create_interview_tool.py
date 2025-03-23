@@ -1,9 +1,10 @@
+from functools import partial
 import logging
 from typing import List, Optional
 from uuid import UUID
 from llama_index.core.bridge.pydantic import BaseModel, Field
 from llama_index.core.tools.function_tool import FunctionTool
-
+from llama_index.core.workflow import Context, HumanResponseEvent, InputRequiredEvent
 from database.interview import Interview, InterviewType
 from database.organization import Organization
 from database.subscription import SubscriptionFeature
@@ -34,29 +35,21 @@ class CreateInterviewParams(BaseModel):
     )
 
 
-async def create_interview(
-    current_user: User,
-    description: str,
-    position: str,
+async def validate_access(
     subscription_status: SubscriptionStatus,
-    url: Optional[str] = None,
     organization_uuid: Optional[str] = None,
-    tags: List[str] = [],
 ):
     try:
-        organization = None
         allow_create = check_subscription_permission(
             subscription_status, SubscriptionFeature.CREATE_INTERVIEW
         )
-        interview_type = InterviewType.GENERAL
-
         if not allow_create:
+            logger.warn("User does not have permission to create interview.")
             raise Exception(
                 "User does not have permission to create an interview and needs to upgrade membership."
             )
 
         if organization_uuid:
-            interview_type = InterviewType.APPLICATION
             allow_organization = check_subscription_permission(
                 subscription_status, SubscriptionFeature.MANAGE_ORGANIZATION
             )
@@ -71,43 +64,97 @@ async def create_interview(
             )
             if not organization:
                 raise Exception("Failed to find organization.")
+    except Exception as e:
+        logger.error(f"Validation Failed: {str(e)}")
+        raise e
 
-        interview = await Interview(
-            description=description,
-            created_by=current_user,  # type:ignore
-            organization=organization,  # type:ignore
-            url=url,
-            interview_type=interview_type,
-            position=position,
-            tags=tags,
-        ).create()
-        if not interview:
-            raise Exception("Failed to create interview.")
-        return await interview.to_public_dict()
+
+async def create_interview(
+    ctx: Context,
+    current_user: User,
+    description: str,
+    position: str,
+    subscription_status: SubscriptionStatus,
+    url: Optional[str] = None,
+    organization_uuid: Optional[str] = None,
+    tags: List[str] = [],
+):
+    try:
+        organization = None
+        interview_type = InterviewType.GENERAL
+
+        await validate_access(
+            subscription_status=subscription_status, organization_uuid=organization_uuid
+        )
+
+        if organization_uuid:
+            interview_type = InterviewType.APPLICATION
+
+        pending_confirm_create_interview = await ctx.get(
+            "pending_confirm_create_interview", False
+        )
+
+        if not pending_confirm_create_interview:
+            logger.debug("PENDING CONFIRM CREATE INTERVIEW")
+            await ctx.set("pending_confirm_create_interview", True)
+            ctx.write_event_to_stream(
+                InputRequiredEvent(
+                    prefix=f"""
+Confirm that you want to create the following interview:
+- **Position**: {position}
+- **Description**: {description}
+
+Respond with **yes** to create the interview.
+                    """,
+                )
+            )
+            return None
+
+        event = await ctx.wait_for_event(HumanResponseEvent)
+        await ctx.set("pending_confirm_create_interview", False)
+
+        if event.response.lower() == "yes":
+            logger.debug("CONFIRMED CREATE INTERVIEW")
+            interview = await Interview(
+                description=description,
+                created_by=current_user,  # type:ignore
+                organization=organization,  # type:ignore
+                url=url,
+                interview_type=interview_type,
+                position=position,
+                tags=tags,
+            ).create()
+            if not interview:
+                raise Exception("Failed to create interview.")
+            return f"""
+                The interview has been created. Use the `create_interview_questions_tool` to proceed with creating interview questions.
+                Interview UUID: {interview.uuid}
+            """
+        else:
+            logger.debug("REJECT CREATE INTERVIEW")
+            return """
+                The user has decided not to create the interview for now. Ask them if they want to modify any of the details.
+            """
     except Exception as e:
         logger.error(e)
-        return e
+        raise e
 
 
-def create_create_interview_tool(
+def init_create_interview_tool(
     current_user: User, subscription_status: SubscriptionStatus
 ):
     create_interview_tool = FunctionTool.from_defaults(
-        async_fn=lambda position, description, url=None, organization_uuid=None, tags=[]: create_interview(
+        async_fn=partial(
+            create_interview,
             current_user=current_user,
-            description=description,
-            url=url,
-            organization_uuid=organization_uuid,
-            position=position,
-            tags=tags,
             subscription_status=subscription_status,
         ),
-        name="create_interiew_tool",
-        description="""
-        Useful to insert an interview into the database by the request of a user. 
-        Once created interview questions may be created and associated with the interview.
-        Always confirm before creating.
-        """,
+        name="create_interview_tool",
+        description=(
+            "Useful to insert an interview into the database by the request of a user."
+            "Once created interview questions may be created and associated with the interview."
+            "Always confirm before creating."
+        ),
         fn_schema=CreateInterviewParams,
     )
 
