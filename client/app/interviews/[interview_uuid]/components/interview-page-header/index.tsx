@@ -2,7 +2,7 @@
 
 import { PageHeader } from "@/shared/layout/page-header";
 import Image from "next/image";
-import { Badge, Card } from "flowbite-react";
+import { Badge, Card, Tooltip } from "flowbite-react";
 import { GrOrganization } from "react-icons/gr";
 import { TakeInterviewButton } from "@/app/components/init-screen/components/recent-interviews/components";
 import { toDate } from "@/utils";
@@ -11,7 +11,13 @@ import Link from "next/link";
 import { useContext } from "react";
 import { InterviewPageContext } from "../../context";
 import { TfiWrite } from "react-icons/tfi";
-import { StatusBadge } from "@/shared/interview-card/components";
+import {
+  InterviewTypeBadge,
+  StatusBadge,
+} from "@/shared/interview-card/components";
+import { IoDocumentText } from "react-icons/io5";
+import { InterviewType } from "@/types";
+import { GiGraduateCap } from "react-icons/gi";
 
 export const InterviewPageHeader = () => {
   const { interview } = useContext(InterviewPageContext);
@@ -38,7 +44,10 @@ export const InterviewPageHeader = () => {
           <div className="space-y-2">
             <div className="flex justify-between">
               <PageHeader title={interview.position} />
-              <StatusBadge interview={interview} />
+              <div className="flex justify-center gap-1">
+                <InterviewTypeBadge interview_type={interview.interview_type} />
+                <StatusBadge interview={interview} />
+              </div>
             </div>
             <div className="flex gap-2">
               {interview.organization && (

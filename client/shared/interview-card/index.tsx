@@ -5,7 +5,7 @@ import { Badge, Card, Tooltip } from "flowbite-react";
 import { Typography } from "../typography";
 import { TakeInterviewButton } from "@/app/components/init-screen/components/recent-interviews/components";
 import { FC } from "react";
-import { StatusBadge } from "./components";
+import { InterviewTypeBadge, StatusBadge } from "./components";
 import { useRouter } from "next/navigation";
 import { GrOrganization } from "react-icons/gr";
 import clsx from "clsx";
@@ -39,6 +39,9 @@ export const InterviewCard: FC<{
       <div className="h-54 flex h-full flex-col justify-between gap-2">
         <div className="flex w-full items-start justify-between">
           <div className="flex flex-col">
+            <div className="mb-2">
+              <InterviewTypeBadge interview_type={interview.interview_type} />
+            </div>
             <Typography.Heading className="text-slate-400">
               {dayjs
                 .utc(interview.created_at)
