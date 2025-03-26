@@ -2,17 +2,26 @@
 
 import { Endpoint } from "@/api";
 import { useCallApi } from "@/shared/useCallApi";
-import { Button, Pagination, TextInput, ToggleSwitch } from "flowbite-react";
+import {
+  Button,
+  Pagination,
+  TextInput,
+  ToggleSwitch,
+  Tooltip,
+} from "flowbite-react";
 import { useState, useEffect, useContext, FC } from "react";
 import { InterviewListResults } from "./components";
 import { usePagination } from "@/shared/usePagination";
 import { GlobalContext } from "@/app/provider";
-import { Organization } from "@/types";
+import { InterviewType, Organization } from "@/types";
 
 export const InterviewsList: FC<{
   organization_uuid?: Organization["uuid"];
 }> = ({ organization_uuid }) => {
   const [takenByMe, setTakenByMe] = useState(false);
+  const [interviewType, setInterviewType] = useState<InterviewType | null>(
+    null,
+  );
   const {
     store: {
       auth: { isAuthenticated },
@@ -21,12 +30,17 @@ export const InterviewsList: FC<{
   const [searchTerm, setSearchTerm] = useState<string | undefined>();
   const { pagination, handlePageChange, handleSetTotal, nextOffset } =
     usePagination(12);
+
   const { res, loading, call } = useCallApi(
     {
       endpoint: Endpoint.GetInterviews,
       query: {
         limit: pagination.limit,
         offset: nextOffset,
+        interview_type:
+          interviewType === InterviewType.APPLICATION
+            ? InterviewType.APPLICATION
+            : undefined,
         taken_by_me: takenByMe,
         search_term: searchTerm,
         organization_uuid,
@@ -44,7 +58,7 @@ export const InterviewsList: FC<{
 
   useEffect(() => {
     call();
-  }, [takenByMe, pagination.currentPage]);
+  }, [takenByMe, pagination.currentPage, interviewType]);
 
   const handleSearch = () => {
     call({
@@ -64,13 +78,25 @@ export const InterviewsList: FC<{
     <>
       <div className="flex flex-col gap-2 md:flex-row">
         {isAuthenticated && (
-          <div className="order-2 flex w-full items-center justify-center rounded-md border-2 border-purple-300 p-2 md:order-first md:w-1/4">
-            <ToggleSwitch
-              checked={takenByMe}
-              onChange={(c) => setTakenByMe(c)}
-              label="Taken"
-              color="purple"
-            />
+          <div className="order-2 flex w-full items-center justify-center gap-2 rounded-md border-2 border-purple-300 p-2 md:order-first md:w-1/4">
+            <Tooltip content="Interviews I have started/taken.">
+              <ToggleSwitch
+                checked={takenByMe}
+                onChange={(c) => setTakenByMe(c)}
+                label="Taken"
+                color="purple"
+              />
+            </Tooltip>
+            <Tooltip content="Only show official organization interviews.">
+              <ToggleSwitch
+                checked={interviewType === InterviewType.APPLICATION}
+                onChange={(c) =>
+                  setInterviewType(c ? InterviewType.APPLICATION : null)
+                }
+                label="Applications"
+                color="purple"
+              />
+            </Tooltip>
           </div>
         )}
         <TextInput

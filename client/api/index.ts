@@ -11,6 +11,7 @@ import {
   SubscriptionTier,
   SubscriptionStatus,
   Message,
+  InterviewType,
 } from "@/types";
 import { InterviewQuestion } from "@/types/interview-question";
 import { InterviewAssessment } from "@/types/interview_assessment";
@@ -122,6 +123,7 @@ export interface EndpointParams {
   [Endpoint.GetInterviews]: {
     query: PaginationQuery & {
       taken_by_me?: boolean;
+      interview_type?: InterviewType;
       search_term?: string;
       sl_token?: string;
       organization_uuid?: string;

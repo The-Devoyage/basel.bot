@@ -5,7 +5,7 @@ from chromadb.api.models.Collection import logging
 from fastapi import APIRouter, Depends, HTTPException
 
 from classes.user_claims import UserClaims
-from database.interview import Interview, get_pipeline
+from database.interview import Interview, InterviewType, get_pipeline
 from database.organization import Organization
 from utils.jwt import get_sl_token_claims, optional_auth
 from utils.responses import create_response
@@ -50,6 +50,7 @@ async def get_interview(uuid: str, user_claims: UserClaims = Depends(optional_au
 async def get_interviews(
     search_term: Optional[str] = None,
     taken_by_me: bool = False,
+    interview_type: Optional[InterviewType] = None,
     organization_uuid: Optional[UUID] = None,
     limit: Optional[int] = 10,
     offset: Optional[int] = 0,
@@ -79,6 +80,9 @@ async def get_interviews(
             )
             query.find(Interview.organization.id == organization.id)  # type:ignore
 
+        if interview_type:
+            query.find(Interview.interview_type == interview_type)
+
         if search_term:
             query.find({"$text": {"$search": search_term}})
 
@@ -99,8 +103,6 @@ async def get_interviews(
             .aggregate(pipeline)
             .to_list()
         )
-
-        logger.debug(f"INTS, {interviews}")
 
         return create_response(
             success=True,
